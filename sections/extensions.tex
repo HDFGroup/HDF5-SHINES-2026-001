@@ -5,7 +5,7 @@
 %% ======================================================================
 %%  Section 4 – HDF5 Extensions
 %% ======================================================================
-\section{HDF5 LibraryExtensions}
+\section{HDF5 Library Extensions}
 \label{sec:extensions}
 
 \subsection{Overview}
@@ -13,11 +13,523 @@
 Supply chain-related issues are discussed in more detail in Section~\ref{sec:supply-chain}.
 
 \subsection{Virtual Object Layer (VOL) Connectors}
+\subsubsection{Privacy Risks for VOL Connectors}
+
+HDF5 VOL connectors present one of the most significant privacy challenges in the HDF5 
+ecosystem. When a VOL connector (or a stack of VOL connectors) is used, data privacy can no 
+longer be evaluated by examining only the HDF5 file, its lifecycle, and the workflows in which it 
+is used. Instead, the privacy boundary extends to the entire data ecosystem, including all 
+underlying data sources, connector-generated data and metadata, caches, authentication 
+credentials, network communications, and the dynamically loaded plugin code itself. 
+Consequently, any comprehensive HDF5 privacy model must account for these components, 
+their interactions, and the trust relationships they establish.
+
+We identified the following risks when using HDF5 VOL connectors. 
+
+\paragraph{External Data Sources (P8 Ecosystem Exposure)}\mbox{}\\
+ Users traditionally assume that an HDF5 file contains all of the data 
+being accessed and that inspecting or protecting the file is sufficient to understand and secure 
+the complete dataset. However, this assumption no longer holds when HDF5 VOL connectors 
+are used. A VOL connector can transparently retrieve and integrate data from numerous 
+external sources while presenting it as a single HDF5 file. These sources may include cloud 
+object stores, databases, remote servers accessed through REST or other network services, live 
+data streams, or files in non-HDF5 formats. In addition, connectors may generate derived data, 
+metadata, or virtual objects that do not physically exist in the underlying storage. As a result, 
+users may be unaware of the true origin, location, ownership, and privacy policies governing the 
+data being accessed, making it more difficult to assess privacy risks and apply appropriate 
+protections.
+
+\paragraph{Transparent Data Aggregation (P3 Derived Information, P8 Ecosystem Exposure)}\mbox{}\\
+ A VOL connector can transparently aggregate data from multiple 
+HDF5 files, databases, cloud object stores, external file formats, and live data streams into a 
+single logical HDF5 dataset. For example, a connector could combine data from a geospatial 
+database, near real-time weather and natural disaster feeds, and property assessment records 
+to produce an HDF5 dataset for analyzing the potential impact of natural disasters on property 
+values. From the application's perspective, all of these heterogeneous data sources appear as a 
+single HDF5 dataset, potentially obscuring the number, nature, and privacy policies of the 
+underlying data sources. Such transparent aggregation increases the risk of unintended 
+disclosure because data originating from independent sources with different ownership, access 
+controls, or privacy policies may be analyzed or shared as a single integrated dataset without 
+the user's explicit awareness.
+
+\paragraph{Access to non-HDF5 data (P8 Ecosystem Exposure)}\mbox{}\\
+ VOL connectors can access data in other binary formats, for example 
+TIFF/GeoTIFF, BUFR, GRIB2, and CDF, and special storage systems, for example, DAOS. 
+Therefore, the privacy implications of these formats and storage systems become HDF5 privacy 
+issues.
+
+\paragraph{Generated metadata (P1 Metadata Exposure, P3 Derived Information)}\mbox{}\\
+ VOL connectors may generate their own metadata that in turn may 
+reveal, for example, dataset relationships, storage locations, URLs, cloud bucket names, and 
+provenance. VOL connectors may generate additional metadata; for example, BUFR and GRIB2 
+VOL connectors generate file inventories revealing file organization, create derived attributes 
+and dimension scales even when raw data remain protected.
+
+\paragraph{Network Workflow Artifacts (P6 Workflow Artifacts)}\mbox{}\\
+ HDF5 VOL connectors that access remote data sources generate 
+network workflow artifacts as part of normal operation. These artifacts may include HTTP 
+request and response headers, DNS queries and logs, proxy logs, browser or client history, 
+authentication records, local caches, temporary downloads, and other network-related 
+metadata retained on local or remote systems. Such artifacts can create a detailed record of the 
+datasets accessed, potentially exposing sensitive information even when the underlying data 
+remain protected. Consequently, HDF5 VOL connectors that rely on network communications 
+inherit many of the privacy risks associated with networked systems and should be evaluated 
+within a broader network privacy and security model. 
+
+\paragraph{Caching (P2 Raw Data Exposure, P3 Derived Information}\mbox{}\\
+ HDF5 VOL connectors may cache all sorts of data (metadata, downloaded raw data, 
+authentication information, etc.) that remain after execution and may be shared, copied, and 
+archived. A user may not be even aware of VOL’s artifacts and leaked data.
+
+\paragraph{Provenance leakage (P1 Metadata Exposure, P3 Derived Information, P8 Ecosystem Exposure}\mbox{}\\
+ VOL connectors may reveal provenance information, e.g., data origin, 
+timestamps, organizational structure, modification history. 
+
+\paragraph{Policy Bypass (P8 Ecosystem Exposure)}\mbox{}\\
+ HDF5 applications are generally privacy-policy agnostic and have no inherent 
+awareness of the privacy policies governing the data they access. When VOL connectors are 
+used, the same application may transparently access data originating from multiple sources, 
+each subject to different ownership, access controls, retention requirements, or privacy 
+regulations. Because the application interacts only with the HDF5 API, it may unknowingly 
+combine, process, or redistribute data under incompatible privacy policies, effectively bypassing 
+policy boundaries that would otherwise apply to the individual data sources.
+
+\paragraph{Plugin Trust (P7 Trust adn Supply Chain)}\mbox{}\\
+ HDF5 VOL connectors are dynamically loaded plugins that execute external code 
+within the application's process. As a result, a connector has direct access to the data flowing 
+through the HDF5 API and can inspect, copy, modify, cache, export, or share that data before 
+returning it to the application. A malicious or untrusted VOL connector could therefore 
+compromise the confidentiality, integrity, or privacy of the data without the application's 
+knowledge. Consequently, VOL connectors should be obtained from trusted sources, verified 
+before deployment, and included within the application's overall trust and privacy model.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.25}
+
+%\setlength{\LTleft}{-0.7in}
+%\setlength{\LTright}{-0.7in}
+
+\begin{longtable}{@{}p{0.42\linewidth}p{0.44\widetablewidth}@{}}
+\caption{Primary privacy mechanisms for VOL connector privacy risks}
+\label{tab:vol-privacy-risks}\\
+
+\hline
+\textbf{Risk} & \textbf{Primary Privacy Mechanism} \\
+\hline
+\endfirsthead
+
+\caption[]{Primary privacy mechanisms for VOL connector privacy risks, continued}\\
+\hline
+\textbf{Risk} & \textbf{Primary Privacy Mechanism} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+External Data Sources &
+P8 Ecosystem Exposure \\
+\hline
+
+Transparent Data Aggregation &
+\parbox{\linewidth}{
+\strut
+P3 Derived Information\newline
+P8 Ecosystem Exposure
+\strut
+} \\
+\hline
+
+Access to non-HDF5 Data &
+P8 Ecosystem Exposure \\
+\hline
+
+Generated Metadata &
+\parbox{\linewidth}{
+\strut
+P1 Metadata Exposure\newline
+P3 Derived Information
+\strut
+} \\
+\hline
+
+Network Workflow Artifacts &
+P6 Workflow Artifacts \\
+\hline
+
+Caching &
+\parbox{\linewidth}{
+\strut
+P2 Raw Data Exposure\newline
+P3 Derived Information
+\strut
+} \\
+\hline
+
+Provenance Leakage &
+\parbox{\linewidth}{
+\strut
+P1 Metadata Exposure\newline
+P3 Derived Information\newline
+P8 Ecosystem Exposure
+\strut
+} \\
+\hline
+
+Policy Bypass &
+P8 Ecosystem Exposure \\
+\hline
+
+Plugin Trust &
+P7 Trust and Supply Chain \\
+\hline
+
+\end{longtable}
+\endgroup
+
+
 
 \subsection{Filters Plugins}
+\subsubsection{Privacy Risks for Filters Plugins}
+
+immediately before storage and immediately after retrieval. As a result, the privacy boundary 
+extends beyond the HDF5 file itself and the application that uses the data. Filter plugins execute 
+external code, may create temporary plaintext copies of sensitive data, generate intermediate 
+artifacts, maintain internal state, or transmit information outside the application. Consequently, 
+evaluating privacy risks requires considering not only the stored HDF5 file but also the behavior 
+of the filter plugins, their execution environment, and any artifacts they produce during data 
+processing.
+
+We identified the following major risks when using HDF5 filters.
+
+\paragraph{Metadata leakage via filters identifiers (P1 Metadata Exposure)}\mbox{}\\ 
+The filter pipeline is stored in 
+the file as HDF5 metadata in the object header. Filter identifier and its parameters may reveal 
+security mechanisms, organizational standards, software ecosystem, application domain, etc.  
+
+\paragraph{Data characteristics leakage via filter parameters (P1 Metadata Exposure, P3 Derived 
+Information)}\mbox{}\\
+Filter parameters such as compression level, block sizes, scale-offset parameters, 
+etc. may reveal expected precision, data resolution, floating-point accuracy, acceptable 
+information loss. Usage of lossy filters shows acceptable data approximation, expected error 
+bounds, and precision requirements. Such data characteristics can give insights into 
+assumptions under which data was collected and characteristics of experimental setup.
+
+\paragraph{Sizes of compressed chunks reveal data characteristics (P1 Metadata Exposure, P3 Derived 
+Information)}\mbox{}\\
+Chunk sizes are metadata and can be examined without access to data. Different 
+sizes of compressed chunks may reveal sparsity, repeated patterns, data randomness, and 
+empty regions to name a few. 
+
+\paragraph{Filters operate on plaintext data buffers (P2 Raw Data Exposure)}\mbox{}\\
+Before data compression or 
+encryption is applied filters have access to data. Malicious filter may have access to data before 
+specialized compression or encryption are applied to protect data.
+
+\paragraph{Filters may persist data outside HDF5 (P2 Raw Data Exposure, P6 Workflow Artifacts)}\mbox{}\\
+Filters may allocate memory buffers that may remain in memory, or paged to disk, appear in crash 
+dumps. This sensitive data may persist outside the HDF5 file.
+
+\paragraph{Plugin trust (P7 Trust and Supply Chain)}\mbox{}\\
+As HDF5 VOL connectors, HDF5 filters are dynamically 
+loaded plugins that execute external code within the application's process. If the filter is 
+malicious, it can do anything before passing data to application or to storage, for example, 
+inspect memory, write logs, copy decoded data and send it elsewhere or retain it.  Untrusted 
+filter plugin could compromise data confidentiality, integrity and privacy without application’s 
+knowledge.
+
+\paragraph{Plugin search path (P7 Trust and Supply Chain)}\mbox{}\\
+Dynamic filters are loaded from directories 
+specified by environment variables while the HDF5 library is searching for the requested plugin. 
+Such process may result in loading a malicious filter. On different systems application may load 
+different plugins. Thus, it becomes a supply-chain problem.
+
+\paragraph{Filters may generate derived information (P3 Derived Information).} Since filters have access to 
+data they can generate and store any type of derived information, e.g., statistics, patterns, 
+sparsity characteristics, etc. The derived information may reveal sensitive information about 
+data.
+
+The table below provides primary privacy mechanism for built-in filters and several popular 
+third-party filters.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+
+\setlength{\LTleft}{-0.7in}
+\setlength{\LTright}{-0.7in}
+
+\begin{longtable}{@{}p{0.19\widetablewidth}p{0.25\widetablewidth}p{0.52\widetablewidth}@{}}
+\caption{Primary privacy mechanisms associated with HDF5 filter plugins}
+\label{tab:filter-plugin-privacy}\\
+
+\hline
+\textbf{HDF5 Filter} &
+\parbox{\linewidth}{\textbf{Primary Privacy}\newline\textbf{Categories}} &
+\textbf{Representative Privacy Considerations} \\
+\hline
+\endfirsthead
+
+\caption[]{Primary privacy mechanisms associated with HDF5 filter plugins, continued}\\
+\hline
+\textbf{HDF5 Filter} &
+\parbox{\linewidth}{\textbf{Primary Privacy}\newline\textbf{Categories}} &
+\textbf{Representative Privacy Considerations} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+Deflate (GZIP) &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Compression method, compression level, and resulting chunk sizes may reveal data entropy, sparsity, and redundancy. \\
+\hline
+
+Shuffle &
+P3 Derived Information &
+Byte reordering itself is reversible, but its use together with compression may reveal characteristics of the underlying numeric representation and data organization. \\
+\hline
+
+Fletcher32 &
+P1 Metadata Exposure &
+Checksum metadata reveals integrity protection is used but generally introduces minimal additional privacy risk. \\
+\hline
+
+N-bit &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Bit-width reduction reveals effective numeric precision and expected value ranges, providing insight into experimental accuracy and measurement characteristics. \\
+\hline
+
+Scale-Offset &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Scale factors and offsets reveal expected precision, acceptable quantization error, and data resolution. \\
+\hline
+
+ZFP &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Compression mode (fixed rate, fixed precision, or fixed accuracy) and associated parameters reveal acceptable information loss and numerical accuracy requirements. \\
+\hline
+
+SZ / SZ3 &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Error bounds expose tolerated approximation error and characteristics of scientific datasets. \\
+\hline
+
+Blosc &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Compression algorithm, block size, and shuffle/bitshuffle options reveal storage optimization choices and data organization. \\
+\hline
+
+Zstandard (Zstd) &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Compression level and resulting compressed sizes may reveal entropy and structural properties of datasets. \\
+\hline
+
+LZ4 &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Fast compression with modest ratios may reveal data compressibility through chunk sizes. \\
+\hline
+
+BZIP2 &
+\parbox{\linewidth}{P1 Metadata Exposure\newline P3 Derived Information} &
+Compression characteristics and block sizes may expose redundancy and data structure. \\
+\hline
+
+All Dynamic Filters &
+\parbox{\linewidth}{P2 Raw Data Exposure\newline P6 Workflow Artifacts\newline P7 Trust and Supply Chain} &
+Filters operate on plaintext data before writing or after reading. Dynamically loaded plugins may inspect, cache, copy, or export sensitive data and may generate temporary buffers, logs, or crash artifacts. \\
+\hline
+
+\end{longtable}
+\endgroup
 
 \subsection{Virtual File Drivers (VFD)}
+\subsubsection{Privacy Risks for VFDs}
+
+
+HDF5 VFDs manage how actual bytes are stored and retrieved.  While VFDs perform I/O and do 
+not change logical HDF5 file and data model they may reveal privacy issues related to data 
+movement, data storage, and application’s I/O characteristics.
+
+We identified the following major risks when using HDF5 VFDs.
+
+\paragraph{External Data Sources (P8 Ecosystem Exposure)}\mbox{}\\
+Unlike traditional file I/O, Virtual File Drivers may transparently store and retrieve HDF5 data 
+from cloud object stores, distributed file systems, network storage, memory-resident files, or 
+multiple physical storage devices. Consequently, users and system administrators may 
+incorrectly assume where sensitive information resides and which security policies, regulatory 
+requirements, or administrative controls apply. The privacy boundary therefore extends 
+beyond the HDF5 file to the entire storage ecosystem.
+
+\paragraph{Multiple Copies of Data (P2 Raw Data Exposure, P6 Workflow Artifacts)}
+Some VFDs create additional copies of HDF5 data without the application's explicit awareness. 
+These copies may exist in replicated files, metadata journals, backing stores, memory dumps, 
+swap files, or mirrored storage systems. Because these copies may persist beyond the lifetime 
+of the primary HDF5 file, sensitive information can remain recoverable even after the original 
+file has been deleted or relocated.
+
+\paragraph{Storage Metadata Exposure (P1 Metadata Exposure)}\mbox{}\\
+Although VFDs do not understand HDF5 objects, they manage physical storage and therefore 
+may expose low-level storage metadata, including physical offsets, allocation sizes, storage 
+layouts, and file organization. Such information can reveal characteristics of datasets, storage 
+architecture, and application behavior even without accessing the logical HDF5 objects.
+
+\paragraph{Access Pattern Leakage (P3 Derived Information)}\mbox{}\\
+Storage activity observed by the operating system, distributed file system, storage servers, or 
+cloud infrastructure may reveal application behavior. Access frequency, read/write ratios, 
+sequential versus random I/O, update frequency, and accessed file regions can reveal 
+properties of the underlying datasets, application algorithms, or user activity. These 
+observations enable inference of information that is not explicitly stored within the HDF5 file.
+
+\paragraph{Workflow Artifacts (P6 Workflow Artifacts)}\mbox{}\\
+VFDs may generate artifacts during normal operation, including metadata journals, temporary 
+files, swap files, memory images, crash dumps, replicated storage objects, and cloud access 
+logs. These artifacts frequently persist outside the HDF5 file itself and may retain sensitive 
+information or evidence of application activity.
+
+\paragraph{Plugin Trust (P7 Trust and Supply Chain)}\mbox{}\\
+Dynamically loadable Virtual File Drivers execute external code within the application's process. 
+A malicious or compromised VFD can inspect, modify, retain, duplicate, or export data before 
+writing it to storage or returning it to the application. Consequently, VFDs should be obtained 
+only from trusted sources and considered part of the application's overall trust and privacy 
+model.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+
+\setlength{\LTleft}{-0.7in}
+\setlength{\LTright}{-0.7in}
+
+\begin{longtable}{@{}p{0.16\widetablewidth}p{0.27\widetablewidth}p{0.53\widetablewidth}@{}}
+\caption{Major privacy risks associated with HDF5 Virtual File Drivers}
+\label{tab:vfd-privacy-risks}\\
+
+\hline
+\textbf{HDF5 VFD} &
+\parbox{\linewidth}{
+\textbf{Privacy}\newline
+\textbf{Categories}
+} &
+\textbf{Representative Privacy Risks} \\
+\hline
+\endfirsthead
+
+\caption[]{Major privacy risks associated with HDF5 Virtual File Drivers, continued}\\
+\hline
+\textbf{HDF5 VFD} &
+\parbox{\linewidth}{
+\textbf{Privacy}\newline
+\textbf{Categories}
+} &
+\textbf{Representative Privacy Risks} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+SEC2 &
+P2 Raw Data Exposure &
+Disk blocks allocated for new HDF5 files may contain residual information if the underlying storage is not securely initialized or overwritten. \\
+\hline
+
+STDIO &
+P2 Raw Data Exposure &
+Similar to the SEC2 driver, persistent storage may expose residual data remaining on reused disk blocks. \\
+\hline
+
+Core &
+\parbox{\linewidth}{
+P2 Raw Data Exposure\newline
+P6 Workflow Artifacts
+} &
+Stores the entire HDF5 file in memory. Sensitive information may persist in process memory, swap space, or operating-system crash dumps. When the backing-store option is enabled, the in-memory file is written to persistent storage upon closing. \\
+\hline
+
+Family &
+P2 Raw Data Exposure &
+Splits a logical HDF5 file into multiple physical files. Misconfigured permissions or incomplete deletion of family members may expose portions of the dataset. \\
+\hline
+
+Split &
+\parbox{\linewidth}{
+P1 Metadata Exposure\newline
+P2 Raw Data Exposure\newline
+P8 Ecosystem Exposure
+} &
+Stores metadata and raw data in separate files, which may have different permissions or reside on different storage systems. The driver also creates multiple physical copies of file information. \\
+\hline
+
+Multi &
+\parbox{\linewidth}{
+P1 Metadata Exposure\newline
+P2 Raw Data Exposure\newline
+P8 Ecosystem Exposure
+} &
+Stores different HDF5 memory types in separate files. Independent storage locations and permissions increase the risk of metadata and raw data disclosure. \\
+\hline
+
+Mirror &
+\parbox{\linewidth}{
+P2 Raw Data Exposure\newline
+P7 Trust and Supply Chain\newline
+P8 Ecosystem Exposure
+} &
+Replicates HDF5 data to a remote mirror service. Privacy depends on secure communication, trusted mirror daemons, authentication, and protection of replicated copies. \\
+\hline
+
+Log (VFD SWMR) &
+\parbox{\linewidth}{
+P1 Metadata Exposure\newline
+P6 Workflow Artifacts
+} &
+Metadata journaling creates persistent journal files containing metadata snapshots for crash recovery, leaving additional workflow artifacts outside the HDF5 file. \\
+\hline
+
+MPI-I/O &
+\parbox{\linewidth}{
+P1 Metadata Exposure\newline
+P2 Raw Data Exposure\newline
+P8 Ecosystem Exposure
+} &
+Transfers metadata and raw data through the underlying HPC communication infrastructure. Unless protected by lower-layer mechanisms, network traffic may expose sensitive information. \\
+\hline
+
+Subfiling &
+\parbox{\linewidth}{
+P1 Metadata Exposure\newline
+P2 Raw Data Exposure\newline
+P8 Ecosystem Exposure
+} &
+Divides a logical HDF5 file into multiple subfiles distributed across storage devices. Fragmentation and independently managed files increase the risk of unauthorized disclosure through misconfigured access controls. \\
+\hline
+
+Onion &
+\parbox{\linewidth}{
+P1 Metadata Exposure\newline
+P2 Raw Data Exposure\newline
+P3 Derived Information
+} &
+Maintains historical versions of HDF5 files, allowing recovery of deleted or overwritten data and reconstruction of metadata evolution, provenance, and workflow history. \\
+\hline
+
+ROS3 &
+\parbox{\linewidth}{
+P6 Workflow Artifacts\newline
+P8 Ecosystem Exposure
+} &
+Accesses HDF5 files stored in S3-compatible object stores. HTTP requests, DNS queries, cloud access logs, and HTTP Range requests create network artifacts and extend the privacy boundary to cloud infrastructure. \\
+\hline
+
+\end{longtable}
+\endgroup
+
 
 \subsection{Audit Findings and Mitigation Priorities}
-
 \end{document}
