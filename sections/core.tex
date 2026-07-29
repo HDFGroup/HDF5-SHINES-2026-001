@@ -168,8 +168,7 @@ compression or encryption, information describing their storage organization, la
 access methods may remain accessible and reveal sensitive contextual information about the 
 underlying data or the processes that generated them.
 
-\paragraph{Data Assets}
-
+\paragraph{Data Assets}\mbox{}\\ 
 The primary assets requiring protection are the scientific data themselves. In HDF5, these 
 include data stored in HDF5 objects, such as files, groups, datasets, datatypes, and dataspaces, 
 which represent experimental observations, measurements, simulations, images, 
@@ -194,8 +193,7 @@ or access methods may remain accessible and reveal sensitive contextual informat
 the underlying data or the processes that generated them.
 
 
-\paragraph{Metadata Assets}
-
+\paragraph{Metadata Assets}\mbox{}\\
 User-defined metadata often constitute one of the most privacy-sensitive asset classes in HDF5. 
 The format was intentionally designed as a self-describing data model that allows extensive 
 contextual information to be stored alongside scientific data. While HDF5 attributes are the most 
@@ -219,8 +217,7 @@ descriptive attributes, storage relationships, user block contents, and other co
 information that could disclose sensitive information about the data, their origin, 
 or the organization that produced them.
 
-\paragraph{Structural Metadata Assets}
-
+\paragraph{Structural Metadata Assets}\mbox{}\\
 Privacy-sensitive information may also be inferred from the structural characteristics of HDF5 files. 
 Structural metadata assets include user-defined organizational structures, such as 
 the hierarchical arrangement of objects, dataset storage layouts (e.g., contiguous, chunked, 
@@ -243,8 +240,7 @@ Like scientific data and user-defined metadata, structural metadata may be expos
 HDF5 applications or by direct examination of the binary file format without using HDF5 software.
 
 
-\paragraph{Derived and Reconstructed Information}
-
+\paragraph{Derived and Reconstructed Information}\mbox{}\\
 Privacy-sensitive information in HDF5 may also arise through inference or reconstruction 
 from combinations of available data and metadata. Derived assets include relationships 
 inferred from multiple HDF5 datasets, external links, object references, 
@@ -259,8 +255,7 @@ are examined in isolation. Consequently, privacy-sensitive assets extend beyond 
 stored data and metadata to include information that can be inferred through aggregation, 
 correlation, reconstruction, or other forms of analysis.
 
-\paragraph{Workflow and Applications Artifacts}
-
+\paragraph{Workflow and Applications Artifacts}\mbox{}\\
 Privacy-sensitive assets in HDF5 extend beyond data and metadata stored within HDF5 files 
 to include artifacts created by applications, processing workflows, and the surrounding 
 software ecosystem. These artifacts include command outputs (e.g., h5dump output), 
@@ -1249,7 +1244,7 @@ team from pretending that “more tests” is a plan.
 In this section we summarize privacy threats in HDF5 based on the audit findings and 
 describe mitigation strategies and their priorities.
 
-\paragraph{Overview of Privacy Threat Categories:}
+\paragraph{Overview of Privacy Threat Categories}\mbox{}\\
 
 The HDF5 Privacy Exposure Model ~\cite{PVEM} identifies 
 seven categories of privacy threats that describe the principal mechanisms through which 
@@ -1305,7 +1300,8 @@ replicate results across multiple storage systems. Consequently, privacy risks s
 be evaluated across the complete scientific data lifecycle rather than 
 by considering individual HDF5 files in isolation.
 
-\paragraph{Mitigation Priorities.}
+\paragraph{Mitigation Priorities}\mbox{}\\
+
 Because HDF5 was designed to maximize scientific data sharing, portability, 
 interoperability, and long-term usability rather than enforce privacy, 
 no single mechanism can eliminate all privacy risks. Effective privacy protection 
@@ -1316,7 +1312,8 @@ including applications, plugins, workflows, storage systems, and organizational
 practices rather than solely of the HDF5 file format. 
 Here we list mitigation strategies and their priorities.
 
-\paragraph{Priority 1: \emph{Privacy exposure awareness.}}
+\paragraph{Priority 1: \emph{Privacy exposure awareness}}\mbox{}\\
+
 Scientists, software developers, data stewards, and infrastructure providers should 
 recognize that HDF5's self-describing nature inherently exposes contextual 
 information in many ways. Privacy reviews should therefore evaluate not only 
@@ -1325,7 +1322,7 @@ derived products, and information that may be inferred through aggregation or
 correlation. Reviews should also take into consideration possible privacy 
 exposure during data lifecycle. 
 
-\paragraph{Priority 2: \emph{Privacy exposure through HDF5 tools and plugins awareness.}}
+\paragraph{Priority 2: \emph{Privacy exposure through HDF5 tools and plugins awareness}}\mbox{}\\
 The HDF5 ecosystem extends beyond the core HDF5 software (i.e., file format and the library), 
 and includes a diverse collection of command-line utilities, visualization tools, 
 analysis libraries, VOL connectors, VFDs, filters, and third-party applications. 
@@ -1340,7 +1337,8 @@ implications of their tools, minimize unnecessary generation of sensitive artifa
 and provide users with mechanisms to control logging, metadata generation, and 
 retention of intermediate products.
 
-\paragraph{Priority 3: \emph{Privacy-aware system design.}}
+\paragraph{Priority 3: \emph{Privacy-aware system design}}\mbox{}\\
+
 HDF5 software systems should be built with data privacy in mind. Applications should 
 minimize collection and retention of unnecessary metadata, avoid embedding sensitive 
 information in object names or descriptive attributes, remove temporary processing 
@@ -1349,7 +1347,8 @@ generated metadata introduced during data conversion or interoperability.
 Workflow designers should review intermediate products, logs, cached datasets, and 
 derived files before publication or long-term archival. 
 
-\paragraph{Priority 4: \emph{Data encryption as privacy control.}}
+\paragraph{Priority 4: \emph{Data encryption as privacy control}}\mbox{}\\
+
 Encryption represents an important but limited privacy control. 
 
 Currently, HDF5 doesn’t support data encryption that allows I/O on encrypted 
