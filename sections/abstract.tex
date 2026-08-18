@@ -4,9 +4,11 @@
 
 \begin{abstract}
 
-Very abstract\ldots
+HDF5 is a foundational component of the scientific software ecosystem, yet it has never undergone a systematic, ecosystem-wide review of its safety, security, and privacy properties. This report presents such an audit, spanning the core library and file format, the command-line tools, the extension mechanisms (VOL connectors, filter plugins, and virtual file drivers), language bindings, applications built on HDF5, the upstream and downstream software supply chain, independent format implementations, and long-term data accessibility.
 
-hello
+Two findings dominate. First, HDF5's CVE history is not a collection of unrelated defects but a small number of recurring root-cause classes, chiefly the use of unvalidated file-derived sizes, counts, and offsets in low-level C memory operations. We therefore argue that patching individual crashes is insufficient and propose a program built on an explicit invariant registry for each on-disk structure, a two-phase parser boundary separating decode from object construction, centralized checked arithmetic, structure-aware fuzzing, and file-open security profiles that make hostile input a first-class concern. Second, privacy exposure in HDF5 arises largely from normal, correct operation rather than from an attack: the format's self-describing metadata, structural layout, workflow artifacts, and extension mechanisms can disclose sensitive information even when raw data are protected. Encryption is a necessary but partial control.
+
+Throughout, we frame the recurring failure as trust-boundary confusion and give prioritized mitigations for library maintainers, extension authors, downstream projects, and end users. Although the subject is HDF5, the analysis is intended to generalize to comparable open-source scientific data ecosystems.
 \end{abstract}
 
 \vfill
