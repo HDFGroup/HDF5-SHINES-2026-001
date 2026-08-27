@@ -54,6 +54,9 @@
 
 \usepackage{svg}
 
+% Short URLs
+\DeclareFieldFormat{url}{\href{#1}{\mkbibacro{URL}}}
+
 % Document metadata: Title, author(s), etc
 \title{HDF5 Audit Report}
 \author{Gerd Heber and Elena Pourmal}
