@@ -204,4 +204,27 @@ mechanisms; they are not additional formally rated findings.
     historic HDF5 files remain operationally relevant.
 \end{itemize}
 
+The following identifier names a recommendation only; it does not assign risk,
+urgency, effort, dependency, or implementation order.
+
+\subsubsection*{Recommendation SUP-S1: Maintain a producer/consumer profile
+compatibility and migration matrix}
+
+For every supported producer, reader, binding, and packaging profile, record the
+HDF5 version and linkage, ABI, enabled filters and plugins, VOL/VFD features,
+parallel and MPI assumptions, file-locking policy, and format bounds. Preserve
+representative artifacts and state the expected accept or controlled-reject
+result for each supported pair. When a mismatch is discovered, inventory the
+affected artifacts and publish a deterministic repair, rebuild, migration, or
+documented compatibility path rather than relying on the fact that one older
+environment happened to accept the file.
+
+Acceptance requires a finite, versioned supported-profile catalog, matrix, and
+fixture set in CI; diagnostics that identify the mismatched capability; and a
+tested deterministic disposition for every incompatible supported pair:
+repair, rebuild, migration, controlled rejection with a supported alternative,
+or an accountable exception. Release SBOM and feature reporting under
+\code{CORE-S11} and \code{APP-S6} supply provenance inputs but do not, by
+themselves, demonstrate compatibility or treatment of legacy artifacts.
+
 \end{document}
