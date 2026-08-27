@@ -5,23 +5,299 @@
 \section{Introduction}
 \label{sec:intro}
 
-\subsection{Purpose}
+\subsection{Purpose and Engagement Type}
+\label{sec:engagement-purpose}
+
+This report presents a targeted, evidence-based technical assessment of
+safety, security, and privacy risks in the HDF5 software and data ecosystem.
+Its purpose is to identify systemic risk patterns, explain the trust boundaries
+at which those risks arise, and recommend mitigations for the organizations and
+individuals that develop, distribute, deploy, or use HDF5.
+
+The term \emph{audit} denotes a documented technical examination. This
+engagement is not a compliance certification, attestation engagement,
+penetration test, or exhaustive line-by-line source-code review. It expresses
+no independent assurance opinion and does not certify that any HDF5 release,
+application, file, or deployment is safe, secure, privacy-preserving,
+conforming, or free from defects. Authorship and sponsorship are disclosed in
+the front matter.
+
+\subsection{Objectives and Intended Audience}
+\label{sec:engagement-objectives}
+
+The objectives of the assessment are to:
+
+\begin{enumerate}
+    \item identify important assets, interfaces, capabilities, trust boundaries,
+          and failure modes across the HDF5 ecosystem;
+    \item distinguish accidental safety and data-integrity failures from
+          adversarial security failures and privacy harms arising during
+          authorized operation;
+    \item identify recurring root-cause classes rather than treating individual
+          crashes, CVEs, disclosures, and interoperability failures as
+          unrelated events;
+    \item examine how risk propagates between the file format, core library,
+          tools, extensions, bindings, applications, supply chain, and
+          independent implementations;
+    \item distinguish file-format conformance, acceptance by a particular
+          implementation, and safe use in a particular deployment;
+    \item recommend mitigations attributable to the actors able to implement
+          and enforce them; and
+    \item identify lessons applicable to comparable open-source scientific data
+          ecosystems.
+\end{enumerate}
+
+The primary audience is The HDF Group's maintainers, security responders,
+release engineers, and technical governance bodies. Additional audiences
+include extension and plugin authors, binding and independent-implementation
+maintainers, downstream application and distribution maintainers, operators of
+data-ingestion services, research-infrastructure teams, data stewards, and
+security and privacy reviewers.
+
+Recommendations are assigned, where possible, to the layer able to enforce
+them. A control failure at an application or deployment boundary is not
+classified as a core-library defect merely because an HDF5 mechanism was
+involved.
 
 \subsection{Scope}
+\label{sec:assessment-scope}
 
-Out of scope:
+Component scope is not binary in this report. The assessment distinguishes the
+following levels of coverage:
+
+\begin{description}
+    \item[Primary assessment objects.]
+    These are the HDF5 on-disk format; the core C library, with emphasis on its
+    handling of file-controlled metadata; HDF5 command-line tools; the capability,
+    trust, and privacy characteristics of VOL connectors, filter plugins, and
+    Virtual File Drivers as extension classes; and HDF5 build, release, and
+    dependency configuration. The report states findings and mitigations for
+    these objects.
+
+    \item[Boundary case studies.]
+    Selected downstream incidents and interoperability disputes are examined to
+    determine how HDF5 capabilities interact with application authority,
+    deployment policy, or independent implementations. The cases include model
+    and dataset ingestion, external-resource resolution, plugin loading, and
+    conformance disputes involving files produced by independent writers. The
+    referenced projects are not audited as products.
+
+    \item[Contextual references.]
+    Other components are identified to describe ecosystem reach, dependency
+    relationships, compatibility consequences, or potential exposure. A
+    contextual reference does not constitute an assessment or assurance
+    conclusion about that component.
+\end{description}
+
+Case studies and samples are selected purposively according to exposure to
+untrusted input or ambient authority, evidence of a recurring failure class,
+interoperability or archival consequence, and relevance to cross-cutting
+mitigations. They are not a statistical sample and do not support prevalence or
+frequency estimates.
+
+In this report, \emph{ecosystem-wide} describes the breadth of surfaces
+considered. It does not mean that every implementation, configuration, or
+downstream product was examined exhaustively.
+
+\paragraph{Out of scope.}
+The following are outside the engagement:
+
 \begin{itemize}
-    \item PHDF5
-    \item HDFView
-    \item HSDS
-    \item AI
+    \item HSDS source code, client behavior, REST endpoints, authentication and
+          authorization, tenant isolation, deployment configuration, storage
+          backends, and service availability;
+    \item a complete safety, security, or privacy assessment of HDFView, Keras,
+          TensorFlow, Hugging Face, PureHDF, or any other application, service,
+          framework, or independent implementation cited as a case study or
+          ecosystem dependency;
+    \item general AI or machine-learning safety, model behavior, training,
+          inference, and framework functionality unrelated to an HDF5
+          integration boundary;
+    \item detailed assessment of MPI semantics, collective-I/O correctness,
+          concurrency, fault tolerance, performance, or parallel-filesystem
+          security in Parallel HDF5;
+    \item exhaustive review or testing of every HDF5 release, platform, build
+          configuration, compiler, filter, connector, binding, application,
+          package, or independent implementation;
+    \item penetration testing of production services, exploit development, or
+          proof that every defect or vulnerability class has been identified;
+    \item assessment of a particular organization's production infrastructure,
+          credentials, identity systems, network controls, or operational
+          procedures, except as context for a cited incident or mitigation; and
+    \item legal, regulatory, contractual, research-ethics, or functional-safety
+          certification.
 \end{itemize}
 
-\subsubsection{Safety}
+References to HDFView identify downstream exposure or reader behavior, not an
+HDFView finding. References to machine-learning frameworks or services concern
+only their handling of HDF5-controlled inputs. References to Parallel HDF5 are
+limited to the configuration, dependency, extension, or trust-boundary
+characteristics expressly discussed.
 
-\subsubsection{Security}
+HSDS may appear in ecosystem diagrams for context, but no conclusion about
+HSDS should be inferred.
 
-\subsubsection{Privacy}
+\subsection{Assessment Dimensions}
+\label{sec:assessment-dimensions}
+
+\paragraph{Safety.}
+Safety means operational robustness and protection of data integrity,
+availability, recoverability, interoperability, and long-term accessibility in
+the absence of a malicious actor. Relevant conditions include malformed,
+truncated, inconsistent, or partially written files; resource exhaustion; I/O
+failure; incompatible implementations; and foreseeable misuse. Safety in this
+report does not mean regulated functional or physical safety.
+
+\paragraph{Security.}
+Security concerns the possibility that an adversary can compromise
+confidentiality, integrity, or availability, or cause a process to exercise
+authority contrary to the operator's intent. The principal threat scenario is
+an HDF5 file, metadata field, external reference, plugin requirement, archive,
+or model artifact controlled by an untrusted party and processed by an
+application possessing filesystem, network, compute, plugin-loading, or
+credential authority.
+
+The assessment includes memory-safety defects, denial of service, resource
+exhaustion, external-resource resolution, dynamic code loading, downstream
+deserialization, and supply-chain compromise. A security consequence does not
+require a defect in the HDF5 format or parser: an intentional HDF5 capability
+can become an attack mechanism when a downstream application interprets
+file-controlled instructions using authority unavailable to the file's
+originator.
+
+\paragraph{Privacy.}
+Privacy concerns adverse consequences arising from the disclosure, retention,
+inference, aggregation, correlation, or secondary use of information. Such
+consequences may arise during authorized and otherwise correct operation,
+without a security breach. The assessment includes scientific data,
+descriptive and structural metadata, object names and attributes, provenance,
+workflow artifacts, caches, temporary copies, external resources, and
+information that becomes sensitive when datasets are combined.
+
+The report evaluates privacy-exposure mechanisms and possible technical or
+governance controls. It does not determine compliance with privacy statutes,
+regulations, contracts, consent requirements, institutional policies, or
+research-ethics obligations.
+
+\subsection{Temporal Boundary and Evidence Basis}
+\label{sec:evidence-boundary}
+
+The evidence cutoff for this revision is August 27, 2026. Public evidence
+available on or before that date is eligible for consideration. Later
+developments are outside this revision unless expressly incorporated as
+subsequent-event updates.
+
+The historical analysis has no fixed lower date and includes earlier releases
+where necessary to examine cited vulnerabilities, compatibility behavior, and
+implementation changes. Because this is a historical, ecosystem-level
+assessment, no single software baseline applies. A conclusion concerning one
+release, commit, build configuration, platform, or third-party version is not
+presumed to apply to others. Version-specific conclusions are bounded by the
+artifact identifiers cited with them. Where an exact artifact is not identified,
+a statement should be read as an architectural or historical class-level
+observation, not as a release-specific conclusion.
+
+The principal evidence consists of published HDF5 specifications and API
+documentation; selected source code and build configurations; security policies,
+advisories, and CVE records; issue and pull-request discussions; cited commits
+and regression artifacts; and authoritative documentation or incident reports
+from representative downstream and independent projects.
+
+\subsection{Methodology}
+\label{sec:assessment-methodology}
+
+The engagement uses a qualitative, risk-informed technical-assessment method:
+
+\begin{enumerate}
+    \item \textbf{Surface and trust-boundary mapping.}
+          The ecosystem is decomposed into format, parser, tool, extension,
+          binding, application, supply-chain, independent-implementation, and
+          data-lifecycle surfaces.
+
+    \item \textbf{Asset and harm analysis.}
+          The assessment identifies relevant data, metadata, code, credentials,
+          compute and storage resources, availability, interoperability, and
+          interpretability, together with plausible safety, security, and
+          privacy consequences.
+
+    \item \textbf{Document and artifact examination.}
+          Specifications, documentation, public source artifacts, vulnerability
+          records, fixes, issue records, build configuration, and representative
+          ecosystem documentation are examined.
+
+    \item \textbf{Root-cause and pattern analysis.}
+          Defects and incidents are grouped by the earliest violated invariant
+          or trust-boundary failure supported by the evidence, rather than only
+          by crash type, CVE identifier, or affected application.
+
+    \item \textbf{Conformance and interoperability analysis.}
+          Acceptance by one HDF5 reader is not treated as proof that a file
+          conforms to the applicable specification, and rejection by another
+          reader is not treated as proof that it does not. Where implementations
+          disagree, the analysis distinguishes the normative requirement,
+          writer behavior, reader validation, and compatibility policy.
+
+    \item \textbf{Mitigation analysis.}
+          Controls are evaluated according to potential impact, exposure to the
+          failure mode, breadth and recurrence, existing controls, evidence
+          strength, urgency, implementation dependencies, and the actor able to
+          enforce them. Controls addressing cross-cutting root causes or enabling
+          prerequisite protections are distinguished from local remediations.
+          Risk severity and implementation sequence are treated as separate
+          judgments.
+\end{enumerate}
+
+For incidents involving multiple components, the analysis distinguishes the
+HDF5 mechanism, the authority supplied by the host application, the failed
+control or policy boundary, and the resulting impact. The presence of HDF5 in
+an exploit chain is not, without additional evidence, classified as a parser or
+file-format defect.
+
+The report distinguishes, where practicable, among:
+
+\begin{description}
+    \item[Documented observation:] directly supported by a cited specification,
+          source artifact, test, advisory, incident record, or maintainer
+          diagnosis; the applicable discussion distinguishes source-reported
+          evidence from independent reproduction;
+    \item[Reasoned inference:] a conclusion drawn from observations, with
+          material assumptions and uncertainty identified; and
+    \item[Recommendation:] a proposed control to be validated through
+          implementation and acceptance evidence.
+\end{description}
+
+Unless a finding expressly records an independent reproduction or test, it
+should be understood as the result of document, artifact, or architecture
+examination rather than independent dynamic verification.
+
+\subsection{Limitations and Assurance}
+\label{sec:assessment-limitations}
+
+This assessment is time-bounded and based predominantly on public evidence. It
+is not an exhaustive review of the HDF5 source tree, every file-format feature,
+every configuration, or every ecosystem component. Representative sampling
+supports conclusions about observed mechanisms and recurring classes; it does
+not establish their frequency throughout the ecosystem.
+
+Public CVE and issue records may be incomplete, duplicated, disputed, or
+subsequently corrected. Deployment-specific likelihood and impact depend on
+application privileges, isolation, resource limits, enabled features, data
+sensitivity, and provenance. Proposed mitigations are evaluated analytically
+unless an implementation and verification procedure is expressly cited.
+
+This report provides no formal assurance or certification opinion. Its
+conclusions are bounded by the assessment objects, methods, evidence, and
+cutoff described above. The absence of a reported finding does not establish
+the absence of defects, vulnerabilities, safety failures, or privacy risk.
+
+Mitigation priorities express the authors' risk-informed judgment. They become
+auditable commitments only when paired with an owner, affected scope, target
+horizon, implementation status, acceptance criteria, and residual-risk
+decision.
+
+\subsection{Privacy Context}
+\label{sec:privacy-context}
+
 The National Institute of Standards and Technology (NIST) defines privacy as “a condition that safeguards 
 human autonomy and dignity through various means, including confidentiality, predictability, manageability, 
 and disassociability.” Historically, privacy was interpreted as preventing unauthorized access to or 
@@ -59,8 +335,8 @@ by discovering hidden relationships across data stored in HDF5 and enabling new 
 that may not have been anticipated when data were originally collected. As a result, data stored in 
 the HDF5 files may experience evolving privacy characteristics through its lifecycle.
 
-Therefore, privacy exposure in HDF5 is not a matter of unauthorized access, data breaches, 
-or unsafe usage or malicious behavior, i.e., it is different from data security and safety.  
+Therefore, privacy exposure in HDF5 is not limited to unauthorized access, data breaches,
+unsafe use, or malicious behavior; it is distinct from, but can overlap with, data security and safety.
 By design HDF5 file format and library do not guarantee data privacy. In addition, privacy risks may 
 emerge during legitimate scientific workflows, through data sharing, reuse, and analysis.
 In this document we audit privacy assets and different privacy exposure mechanisms (or surfaces) 
@@ -68,21 +344,20 @@ in HDF5 with the goal to raise awareness about privacy risks when using HDF5.
 
 
 
-\section{Motivation}
-\label{sec:motivation}
+\section{Assessment Surfaces}
+\label{sec:assessment-surfaces}
+
+Figure~\ref{fig:hdf5-assessment-surfaces} maps the principal components and
+interfaces considered when identifying HDF5 risk. Inclusion in the figure
+provides ecosystem context and does not override the scope levels and
+limitations defined in Section~\ref{sec:assessment-scope}. In particular, HSDS
+is shown for context but remains outside the engagement.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{images/HDF5_Surfaces.png}
-    \caption{HDF5 vulnerability sites (interfaces: rounded rectangles)}
+    \caption{HDF5 assessment surfaces (interfaces: rounded rectangles)}
+    \label{fig:hdf5-assessment-surfaces}
 \end{figure}
-
-\subsection{Problem Statement}
-
-\subsection{Goals}
-
-\begin{itemize}
-    \item Emphasize broader applicability for comparable OSEs
-\end{itemize}
 
 \end{document}
