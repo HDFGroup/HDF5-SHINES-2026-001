@@ -179,6 +179,12 @@ surface through h5py and HDF5 library behavior. \\
 
 \subsection{Audit Findings and Mitigation Planning}
 
+The build-and-feature mismatch theme is recorded as evidence-backlog item
+\code{SUP-SAFE-001} in Appendix~\ref{app:findings-register}. It is not a formal
+finding pending a bounded affected population and evidence sufficient to assign
+exposure. The bullets below describe ecosystem conditions and potential failure
+mechanisms; they are not additional formally rated findings.
+
 \begin{itemize}
     \item HDF5 changes have a large transitive blast radius because many users
     reach HDF5 through netCDF, GDAL, h5py, MATLAB, or domain formats rather than

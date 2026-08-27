@@ -10,28 +10,115 @@
 
 \subsection{Overview}
 
-\begin{itemize}
-    \item HDF5 library playing footsie with the file format spec: GitHub issue 6409 \cite{hdf5-gh-issue-6409}
-\end{itemize}
-
 \begin{description}
-    \item[PureHDF] Managed .NET read/write without native binaries
-    \item[jHDF] JVM HDF5 reading
-    \item[netCDF-Java] JVM netCDF/HDF-EOS/HDF5 scientific-data reading 
-    \item[pyfive] Pure Python read-only inspection
-    \item[jsfive] Browser-side direct HDF5 read
-    \item[scigolib/hdf5] Pure Go read/write 
-    \item[hdf5-pure and rustyhdf5-format/rustyhdf5] Pure Rust read/write
-    \item[async-hdf5 or h5coro] Cloud object-store chunk mapping
-    \item[JLD2.jl]  Julia-native persistence in HDF5-compatible files
+    \item[PureHDF] Managed .NET read/write without native binaries.
+    \item[jHDF] JVM HDF5 reading.
+    \item[netCDF-Java] JVM netCDF/HDF-EOS/HDF5 scientific-data reading.
+    \item[pyfive] Pure Python read-only inspection.
+    \item[jsfive] Browser-side direct HDF5 reading.
+    \item[scigolib/hdf5] Pure Go read/write.
+    \item[hdf5-pure and rustyhdf5-format/rustyhdf5] Pure Rust read/write.
+    \item[async-hdf5 or h5coro] Cloud object-store chunk mapping.
+    \item[JLD2.jl] Julia-native persistence in HDF5-compatible files.
 \end{description}
 
+Independent readers and writers are valuable checks on both the prose
+specification and the reference implementation. They also expose a three-way
+distinction essential to interoperability analysis: a file can be accepted by
+one reader, conform to or violate the normative format independently of that
+acceptance, and remain safe or unsafe for a particular deployment. Reader
+acceptance alone is not conformance evidence.
+
+\subsection{Two Distinct 2026 Chunk-Layout Cases}
+
+The two cases below produced superficially similar upgrade failures, but they
+must not be combined. One involved a reader imposing a stronger condition than
+the format required; the other involved contradictory writer output that older
+readers had tolerated.
+
+\subsubsection{Sufficient but Nonminimal Encoding}
+
+HDF5 issue \#6409 concerns version-4 chunk-layout dimension widths. The format
+required an encoded width sufficient to hold the dimension value, but did not
+require the smallest possible width. The exact-width check present in HDF5
+2.0.0, 2.1.0, and 2.1.1 could therefore reject a specification-permitted,
+nonminimal encoding produced by an independent writer. The merged HDF5-side
+change accepts any sufficient width and was tracked against 2.2.0
+\cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432}. PureHDF separately changed new
+output to match the reference reader's expectation
+\cite{purehdf-gh-issue-168,purehdf-pr-160}.
+Formal finding \code{IND-SAF-001} records the historical reader-side
+interoperability risk; issue closure is not, by itself, verification of every
+release artifact or backport.
+
+\subsubsection{Contradictory PureHDF Metadata}
+
+HDF5 issue \#6534 began as a suspected HDF5 2.0 regression because the same
+production-derived file opened with HDF5 1.10.10 and 1.14.6 but failed with
+HDF5 2.0. Maintainer byte-level analysis identified a different condition in
+the affected PureHDF 2.1.2 output: float64 datatype metadata declared an
+eight-byte element while the version-4 chunk-layout message recorded a
+four-byte stored element. The file was internally inconsistent; the older
+readers had been permissive, and the HDF5 2.0 rejection was correct
+\cite{hdf5-gh-issue-6534,purehdf-gh-issue-164}.
+
+The reporter described a continuously written production acquisition pipeline
+and a reader-version pin as the immediate workaround. A technical metadata-
+repair path was proposed and older readers remained a workaround, although the
+reporter said rewriting the files was not operationally feasible in that
+pipeline. The evidence therefore supports bounded operational and archival
+harm, not irreversible data loss. Formal finding \code{IND-SAF-002} records
+this writer-side condition. Existing affected files remain a migration and
+inventory question even after corrected writer output is deployed.
 
 
 \subsection{Audit Findings and Mitigation Planning}
 
-The main risk across all direct-format implementations is not opening simple files; it is coverage of the long tail: dense groups, fractal heaps, shared object-header messages, all chunk-index variants, references, VLEN, compound/nested datatypes, virtual datasets, external storage, SWMR flags, user blocks, non-core filters, unusual libver bounds, and files produced by different HDF5 library releases. For any production use, build a compatibility corpus and round-trip the generated files using \texttt{h5dump}, \texttt{h5debug}, \texttt{h5py/libhdf5}, and the target-independent implementation.
+The main interoperability challenge across direct-format implementations is not
+opening simple files; it is coverage of the long tail: dense groups, fractal
+heaps, shared object-header messages, chunk-index variants, references, VLEN,
+compound and nested datatypes, virtual datasets, external storage, SWMR flags,
+user blocks, non-core filters, unusual library-version bounds, and files
+produced by different HDF5 releases. This architectural observation is not
+assigned a risk tier without a concrete affected workflow. The two bounded
+formal findings are \code{IND-SAF-001} and \code{IND-SAF-002} in
+Appendix~\ref{app:findings-register}.
 
-Machine-readable specification: \texttt{hdf5-pickles}
+The \code{IND-S} identifiers below identify recommendations only; their numbers
+do not express risk, urgency, effort, dependency, or implementation order.
+
+\subsubsection*{Recommendation IND-S1: Maintain a differential conformance and compatibility corpus}
+
+Independent writers should validate generated files against normative on-disk
+invariants and a matrix of current and supported older reference readers.
+Reference-library maintainers should preserve independent-writer fixtures that
+exercise specification-permitted alternatives, not only files emitted by
+libhdf5 itself. The shared corpus should include both positive fixtures, which
+must be accepted, and negative fixtures, which contain a single intentional
+inconsistency and must be rejected predictably.
+
+At minimum, the program should:
+
+\begin{itemize}
+    \item round-trip generated files through \code{h5dump}, \code{h5debug},
+          h5py/libhdf5, and the independent implementation;
+    \item test every supported chunk-layout and index variant, datatype width,
+          filter pipeline, external-resource form, and library-version bound;
+    \item preserve two separate regression cases: \#6409 for sufficient but
+          nonminimal widths and \#6534 for contradictory element sizes;
+    \item report the writer, writer version, format bounds, reader, reader
+          version, and expected accept/reject result for every fixture; and
+    \item inventory already-produced files when a writer defect is discovered,
+          provide a deterministic repair or migration tool, and preserve
+          checksums and provenance across repair.
+\end{itemize}
+
+Acceptance requires the current supported-reader matrix to accept every valid
+fixture, reject every intentionally invalid fixture with a controlled and
+documented diagnostic, and demonstrate a reproducible repair path for the
+legacy PureHDF case.
+
+The machine-readable specification project \code{hdf5-pickles} is a natural
+source for generating and checking these fixtures~\cite{hdf5-pickles}.
 
 \end{document}

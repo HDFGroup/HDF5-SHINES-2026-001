@@ -546,13 +546,20 @@ architectural treatment may therefore address the same finding on different
 delivery horizons.
 
 Every formal finding record should contain a stable identifier, scenario,
-dimension, affected scope, evidence, I/E rationale, inherent-risk tier, rating
-status, confidence, and linked recommendation identifiers. Every recommendation
+dimension, affected scope, evidence, I/E rationale, an inherent-risk tier when
+evaluated or explicit no-tier/NE notation, rating status, confidence, and linked
+recommendation identifiers. Every recommendation
 record should separately identify the findings addressed, enforcing actor or
 owner, urgency, dependencies, effort, sequence and target horizon, acceptance
 evidence, status, and residual-risk decision. Numbered recommendation
 identifiers in later sections identify items only; they do not establish risk,
 urgency, effort, dependency, or delivery order.
+
+The populated report-wide register is Appendix~\ref{app:findings-register}.
+That appendix is authoritative for formal ratings in this revision: chapter
+narrative, recommendation numbering, CVE metadata, and descriptive uses of
+words such as ``high'' or ``important'' do not create an additional rating
+unless they map to a registered finding.
 
 \subsection{Limitations and Assurance}
 \label{sec:assessment-limitations}

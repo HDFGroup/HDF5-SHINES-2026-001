@@ -90,7 +90,8 @@ unsafe cleanup/lifetime paths &
 Use-after-free, double-free, leaks, and null dereferences show that malformed input
 often breaks unwinding logic as much as the primary decode logic. \\
 unbounded traversal, recursion, loop-progress, and resource-limit failures & 
-External-reference/path-opening behavior is a policy boundary, not necessarily a parser memory-safety defect.\\
+File-controlled graphs, dimensions, and metadata can drive recursion, repeated
+work, or allocation without a structural progress rule or explicit budget.\\
 legacy tool attack surface &
 \code{gif2h5}, HDF to GIF conversion, \code{h5dump}, and \code{h5repack} appear
 repeatedly. Removal of \code{gif2h5} was a structural mitigation, not just a patch. \\
@@ -456,10 +457,17 @@ is not necessarily limited to the HDF5 file specified on the command line but ma
 the broader HDF5 ecosystem.
 \subsection{Audit Findings and Mitigation Planning}
 
+Formal core and official-tool findings are registered as
+\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001},
+\code{CORE-PRIV-001}, and \code{CORE-SAFE-001} in
+Appendix~\ref{app:findings-register}. The two shared-event security findings
+are provisional historical parser-boundary scenarios; they do not assert that
+every current HDF5 release contains every represented defect.
+
 \subsubsection{Security and Safety}
 
-The blunt conclusion: HDF5’s CVE history is mostly malformed-file
-parsing pressure against a complex binary metadata machine.
+The selected CVE history shows repeated malformed-file parsing pressure
+against a complex binary metadata machine.
 The fix direction should not be “patch each crash.” It should be
 systematic metadata validation at decode boundaries, explicit
 invariants for each on-disk structure, fuzz corpora tied to invariants,

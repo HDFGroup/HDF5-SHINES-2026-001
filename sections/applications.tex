@@ -56,13 +56,13 @@ application deserialization layered on HDF5 &
 arbitrary code execution &
 Keras CVE-2025-9905: crafted \code{.h5/.hdf5} model archives can execute code
 because legacy \code{.h5} loading did not honor \code{safe_mode=True} for
-\code{Lambda}-layer pickled code~\cite{cve-2025-9905}. &
+\code{Lambda}-layer pickled code~\cite{cve-2025-9905,keras-ghsa-36rr-ww3j-vrjv}. &
 ML frameworks often use HDF5 as a model container, then deserialize
 framework-level objects from it. \\
 external references and file path indirection &
 arbitrary local file read, path traversal, data exfiltration &
 Keras CVE-2026-1669: crafted \code{.keras} model file using HDF5 external
-dataset references could read local files~\cite{cve-2026-1669}. &
+dataset references could read local files~\cite{cve-2026-1669,keras-ghsa-3m4q-jmj6-r34q}. &
 HDF5 supports links and external storage mechanisms. External links store both
 target filename and object path; external storage can resolve raw-data files
 through prefixes and current working directory rules~\cite{hdf5-data-model}. \\
@@ -70,14 +70,15 @@ unbounded resource allocation &
 memory exhaustion / interpreter crash &
 Keras CVE-2026-0897: crafted \code{.keras} archive with
 \code{model.weights.h5} declaring an extremely large dataset shape could exhaust
-memory and crash Python~\cite{cve-2026-0897}. &
+memory and crash Python~\cite{cve-2026-0897,keras-ghsa-mgx6-5cf9-rr43}. &
 HDF5 metadata can declare logical shapes much larger than the actual useful
 payload; application code may allocate based on declared shape before policy
 checks. \\
 dynamic plugin loading and search paths &
 local privilege escalation / arbitrary code loading &
 TensorFlow CVE-2026-2492: HDF5 plugin handling loaded plugins from an unsecured
-location, enabling local privilege escalation~\cite{cve-2026-2492}. &
+location, enabling local privilege escalation
+\cite{cve-2026-2492,zdi-26-116,tensorflow-commit-46e7f7f}. &
 HDF5 supports dynamic plugin loading, and plugin paths can be affected by
 defaults or \code{HDF5_PLUGIN_PATH}; dynamic loading can also be disabled via
 \code{H5PLset_loading_state()} or
@@ -93,11 +94,47 @@ helper-tool exposure &
 crashes or code execution through inspection/conversion utilities &
 \code{h5dump} appears in older and newer issues; CVE-2026-34734 describes a
 heap-use-after-free in the \code{h5dump} helper utility triggered by a malicious
-\code{.h5} file~\cite{cve-2026-34734}. &
+\code{.h5} file~\cite{cve-2026-34734,hdf5-ghsa-w7v2-9cmr-pwwj}. &
 Applications often call \code{h5dump}, \code{h5repack}, or converters as
 ``safe inspection'' tools on untrusted files. \\
 \end{longtable}
 \endgroup
+
+\subsection{Boundary Case Study: External Raw Storage and the Hugging Face Incident}
+\label{sec:huggingface-external-storage-case}
+
+The July 2026 Hugging Face incident is a concrete example of an application
+trust-boundary failure involving an intentional HDF5 capability. Hugging Face
+reports that its dataset service processed attacker-supplied, valid HDF5 files
+whose datasets declared local paths as external raw storage. The worker read
+\code{/proc/self/environ} and source files with its own filesystem permissions
+and returned the bytes as dataset rows. Hugging Face expressly distinguishes
+this file-disclosure vector, which executed no code, from a separate Jinja2
+injection that supplied code execution~\cite{huggingface-agent-intrusion-2026}.
+
+The HDF Group likewise concludes that external raw storage was the mechanism,
+not an HDF5 parser vulnerability: the documented feature behaved as designed,
+while the authority-bearing service acted as a confused deputy. Updating
+libhdf5 alone would not remove that service boundary; the relevant controls are
+fail-closed external-resource policy, preflight inspection, path confinement,
+least-privileged workers, and credential isolation
+\cite{hdfgroup-mechanism-not-vulnerability-2026}.
+
+The h5py community expressly considered the same boundary. Maintainers described
+per-dataset external-storage checks as possible but laborious, recommended
+sandboxing genuinely untrusted files, opened upstream issue \#6618 because
+h5py had no direct enforcement mechanism, and discussed a simpler detection
+API. Issue \#6618 in turn asks for unified controls at or before external-resource
+resolution across raw storage, external links, and virtual-dataset sources. The
+discussion records policy and API proposals, including use of the external
+\code{h5policy} prototype as a proving ground; this report does not treat those
+proposals as delivered controls~\cite{h5py-gh-issue-2891,hdf5-gh-issue-6618}.
+Formal finding \code{APP-SEC-001} in
+Appendix~\ref{app:findings-register} rates the
+incident at the affected service boundary. The similar Keras external-dataset
+failure is separately registered as \code{APP-SEC-003}; recurrence of a
+mechanism does not erase the differences in product, version, and deployment
+scope.
 
 \paragraph{The unifying root cause:} The repeated mistake is \textit{trust-boundary confusion}.
 HDF5 sits at the boundary between a file and the process.
@@ -123,6 +160,12 @@ The common issue is \textbf{unsafe interpretation of HDF5-controlled
 metadata at the application boundary.}
 
 \subsection{Audit Findings and Mitigation Planning}
+
+The formal application findings are \code{APP-SEC-001} through
+\code{APP-SEC-005} in Appendix~\ref{app:findings-register}. Their ratings apply
+to the bounded versions and deployments stated there, not to Keras,
+TensorFlow, Hugging Face, or applications using HDF5 as undifferentiated
+projects.
 
 Mitigation has to be layered. Patching \texttt{libhdf5}
 alone will not fix Keras model deserialization, TensorFlow plugin

@@ -13,10 +13,10 @@
 Supply chain-related issues are discussed in more detail in Section~\ref{sec:supply-chain}.
 
 \subsection{Virtual Object Layer (VOL) Connectors}
-\subsubsection{Privacy Risks for VOL Connectors}
+\subsubsection{Privacy-Relevant Mechanisms for VOL Connectors}
 
-HDF5 VOL connectors present one of the most significant privacy challenges in the HDF5 
-ecosystem. When a VOL connector (or a stack of VOL connectors) is used, data privacy can no 
+HDF5 VOL connectors can substantially broaden a deployment's privacy-assessment
+boundary. When a VOL connector (or a stack of VOL connectors) is used, data privacy can no
 longer be evaluated by examining only the HDF5 file, its lifecycle, and the workflows in which it 
 is used. Instead, the privacy boundary extends to the entire data ecosystem, including all 
 underlying data sources, connector-generated data and metadata, caches, authentication 
@@ -24,7 +24,8 @@ credentials, network communications, and the dynamically loaded plugin code itse
 Consequently, any comprehensive HDF5 privacy model must account for these components, 
 their interactions, and the trust relationships they establish.
 
-We identified the following risks when using HDF5 VOL connectors. 
+The following mechanisms can create deployment-specific privacy exposure when
+HDF5 VOL connectors are used.
 
 \paragraph{External Data Sources (P8 Ecosystem Exposure)}\mbox{}\\
  Users traditionally assume that an HDF5 file contains all of the data 
@@ -55,8 +56,8 @@ the user's explicit awareness.
 \paragraph{Access to non-HDF5 data (P8 Ecosystem Exposure)}\mbox{}\\
  VOL connectors can access data in other binary formats, for example 
 TIFF/GeoTIFF, BUFR, GRIB2, and CDF, and special storage systems, for example, DAOS. 
-Therefore, the privacy implications of these formats and storage systems become HDF5 privacy 
-issues.
+Therefore, the privacy implications of these formats and storage systems must
+be included in the deployment's HDF5 privacy assessment.
 
 \paragraph{Generated metadata (P1 Metadata Exposure, P3 Derived Information)}\mbox{}\\
  VOL connectors may generate their own metadata that in turn may 
@@ -191,10 +192,11 @@ P7 Trust and Supply Chain \\
 
 
 
-\subsection{Filters Plugins}
-\subsubsection{Privacy Risks for Filters Plugins}
+\subsection{Filter Plugins}
+\subsubsection{Privacy-Relevant Mechanisms for Filter Plugins}
 
-immediately before storage and immediately after retrieval. As a result, the privacy boundary 
+Filter plugins operate on data immediately before storage and immediately after
+retrieval. As a result, the privacy boundary
 extends beyond the HDF5 file itself and the application that uses the data. Filter plugins execute 
 external code, may create temporary plaintext copies of sensitive data, generate intermediate 
 artifacts, maintain internal state, or transmit information outside the application. Consequently, 
@@ -202,7 +204,8 @@ evaluating privacy risks requires considering not only the stored HDF5 file but 
 of the filter plugins, their execution environment, and any artifacts they produce during data 
 processing.
 
-We identified the following major risks when using HDF5 filters.
+The following mechanisms can create deployment-specific privacy exposure when
+HDF5 filters are used.
 
 \paragraph{Metadata leakage via filters identifiers (P1 Metadata Exposure)}\mbox{}\\ 
 The filter pipeline is stored in 
@@ -348,14 +351,16 @@ Filters operate on plaintext data before writing or after reading. Dynamically l
 \endgroup
 
 \subsection{Virtual File Drivers (VFD)}
-\subsubsection{Privacy Risks for VFDs}
+\subsubsection{Privacy-Relevant Mechanisms for VFDs}
 
 
-HDF5 VFDs manage how actual bytes are stored and retrieved.  While VFDs perform I/O and do 
-not change logical HDF5 file and data model they may reveal privacy issues related to data 
-movement, data storage, and application’s I/O characteristics.
+HDF5 VFDs manage how actual bytes are stored and retrieved. While VFDs perform
+I/O and do not change the logical HDF5 file and data model, they can create
+privacy-relevant exposure through data movement, storage, and application I/O
+characteristics.
 
-We identified the following major risks when using HDF5 VFDs.
+The following mechanisms can create deployment-specific privacy exposure when
+HDF5 VFDs are used.
 
 \paragraph{External Data Sources (P8 Ecosystem Exposure)}\mbox{}\\
 Unlike traditional file I/O, Virtual File Drivers may transparently store and retrieve HDF5 data 
@@ -531,30 +536,41 @@ Accesses HDF5 files stored in S3-compatible object stores. HTTP requests, DNS qu
 \endgroup
 
 
-\subsection{Audit Findings and Mitigation Planning}
+\subsection{Architectural Observations and Mitigation Planning}
+
+The general privacy-boundary observation in this section is recorded as
+evidence-backlog item \code{EXT-PRIV-001} in
+Appendix~\ref{app:findings-register}. It is not a formal finding because the
+report has not defined a deployment-specific sensitive-data population,
+recipient, retention condition, impact, or exposure. The recommendations below
+remain valid control proposals; their presence does not silently convert the
+observation into a rated finding.
 
 \subsubsection{Privacy}
 
-The audit of HDF5 library extensions demonstrates that privacy risks extend well beyond the 
-HDF5 file itself. VOL connectors, filter plugins, and Virtual File Drivers introduce new privacy 
-exposure surfaces through external data sources, dynamically loaded plugins, storage systems, 
-cloud services, and network infrastructure. These mechanisms may expose raw data, metadata, 
-derived information, workflow artifacts, or information about the surrounding software 
-ecosystem, even when the HDF5 file itself is adequately protected. The following sections 
-summarize the principal audit findings for each extension mechanism and present
+The architectural analysis identifies ways in which privacy boundaries may
+extend beyond the HDF5 file itself. VOL connectors, filter plugins, and Virtual
+File Drivers can add external data sources, dynamically loaded plugins, storage
+systems, cloud services, and network infrastructure. Depending on a concrete
+deployment, these mechanisms may expose raw data, metadata, derived information,
+workflow artifacts, or information about the surrounding software ecosystem,
+even when the HDF5 file itself is adequately protected. The following sections
+summarize the principal observations for each extension mechanism and present
 mitigation recommendations to improve privacy awareness, transparency, and trustworthiness within
 the HDF5 ecosystem.
 
 \paragraph{Privacy – HDF5 VOL Connectors}\mbox{}
-\paragraph{Audit Findings}\mbox{}\\
-The audit identified HDF5 VOL connectors as one of the largest sources of privacy exposure 
-within the HDF5 ecosystem. Unlike the HDF5 core library, VOL connectors extend the privacy 
-boundary beyond the HDF5 file to include external data sources, cloud services, databases, 
-network infrastructure, authentication systems, caches, and dynamically loaded plugins. Because 
+\paragraph{Architectural observations}\mbox{}\\
+The analysis identifies VOL connectors as a particularly broad potential
+extension of the privacy boundary. Unlike the HDF5 core library, a VOL
+connector may reach external data sources, cloud services, databases, network
+infrastructure, authentication systems, caches, and dynamically loaded plugins. Because
 applications interact only with the HDF5 API, users may be unaware of the true origin of data, 
 the privacy policies governing those data, or the workflow artifacts generated during processing. 
-Consequently, privacy risks arise not only from the HDF5 file itself but also from the broader 
-software ecosystem accessed by the connector.
+Consequently, deployment-specific privacy exposure can arise not only from the
+HDF5 file itself but also from the broader software ecosystem accessed by the
+connector; the resulting harm and risk depend on the data, recipients, and
+controls in that deployment.
 \paragraph{Recommendations}\mbox{}\\
 The following VOL identifiers identify recommendations in this track. Their
 numbers do not express risk, urgency, effort, dependency, or implementation
@@ -603,19 +619,24 @@ loading untrusted plugins from user-writable or publicly accessible locations.
 
 Future versions of HDF5 could further improve security by providing configurable policies that restrict 
 connector loading based on connector identity, implemented transparency and introspection, or 
-administrative policy. Users and HDF5 applications developers should switch to the latest
-HDF5 releases that support digital signature verification for dynamically loaded plugins. 
+administrative policy. Where signed-plugin verification is used, users and
+application developers should deploy HDF5 2.2.0 or a later verified release,
+build it with \code{HDF5_REQUIRE_SIGNED_PLUGINS=ON}, configure and protect the
+trusted keystore, sign approved connector artifacts, and test rejection of
+unsigned or untrusted plugins; upgrading alone does not enable the control
+(Table~\ref{tab:tools-tests-security-features}).
 \paragraph{Recommendation VOL-S4 - Follow privacy-aware connector development guidelines}\mbox{}\\*
 Future connector implementations should minimize unnecessary metadata generation, avoid 
 persistent caches unless explicitly requested, and clearly document connector's privacy characteristics.
 
 \paragraph{Privacy – HDF5 Filter Plugins}\mbox{}
-\paragraph{Audit Findings}\mbox{}\\
-The audit found that HDF5 filters alter the privacy characteristics of HDF5 data because they 
+\paragraph{Architectural observations}\mbox{}\\
+The analysis shows that HDF5 filters can alter a deployment's privacy
+characteristics because they
 execute immediately before storage and immediately after retrieval while operating directly on 
 plaintext data. Filter parameters, compression characteristics, and generated metadata may reveal 
 information about the underlying datasets even when the data themselves remain protected. 
-Dynamically loaded filter plugins further introduce supply-chain risks because they execute 
+Dynamically loaded filter plugins also introduce a security-relevant supply-chain mechanism because they execute
 arbitrary code within the application's process and may generate temporary artifacts outside the 
 HDF5 file.
 \paragraph{Recommendations}\mbox{}\\
@@ -629,8 +650,12 @@ loading untrusted plugins from user-writable or publicly accessible locations.
 
 Future versions of HDF5 could further improve security by providing configurable policies that restrict
 connector loading based on connector identity, implemented transparency and introspection, or
-administrative policy. Users and HDF5 applications developers should switch to the latest
-HDF5 releases that support digital signature verification for dynamically loaded plugins.
+administrative policy. Where signed-plugin verification is used, users and
+application developers should deploy HDF5 2.2.0 or a later verified release,
+build it with \code{HDF5_REQUIRE_SIGNED_PLUGINS=ON}, configure and protect the
+trusted keystore, sign approved filter artifacts, and test rejection of
+unsigned or untrusted plugins; upgrading alone does not enable the control
+(Table~\ref{tab:tools-tests-security-features}).
 
 \paragraph{Recommendation FILTER-S2 - Select and document filter configurations with privacy in mind}\mbox{}\\*
 Filter identifiers and parameters are stored in HDF5 object headers and are required for correct 
@@ -661,8 +686,9 @@ Built-in and registered filters should document:
 \end{itemize}
 
 \paragraph{Privacy – HDF5 Virtual File Drivers}\mbox{}
-\paragraph{Audit Findings}\mbox{}\\
-The audit found that Virtual File Drivers primarily affect privacy through physical storage 
+\paragraph{Architectural observations}\mbox{}\\
+The analysis shows that Virtual File Drivers can affect a deployment's privacy
+boundary through physical storage
 management rather than the logical HDF5 data model. VFDs influence where data are stored, 
 how they are replicated, transmitted, cached, or versioned, and consequently extend the HDF5 
 privacy boundary to operating systems, distributed storage systems, cloud infrastructure, and 
@@ -697,18 +723,24 @@ loading untrusted plugins from user-writable or publicly accessible locations.
 
 Future versions of HDF5 could further improve security by providing configurable policies that restrict
 VFD plugin loading based on VFD's identity, implemented transparency and introspection, or
-administrative policy. Users and HDF5 applications developers should switch to the latest
-HDF5 releases that support digital signature verification for dynamically loaded plugins.
+administrative policy. Where signed-plugin verification is used, users and
+application developers should deploy HDF5 2.2.0 or a later verified release,
+build it with \code{HDF5_REQUIRE_SIGNED_PLUGINS=ON}, configure and protect the
+trusted keystore, sign approved VFD artifacts, and test rejection of unsigned
+or untrusted plugins; upgrading alone does not enable the control
+(Table~\ref{tab:tools-tests-security-features}).
 
 \paragraph{Summary}\mbox{}\\
-The audit demonstrates that HDF5 library extensions fundamentally alter the privacy 
-characteristics of HDF5 data. While the HDF5 core library primarily exposes information 
-through the file format itself, VOL connectors, filter plugins, and Virtual File Drivers extend the 
-privacy boundary beyond the HDF5 file to include external software, storage systems, network 
-infrastructure, cloud services, and dynamically loaded plugins. Consequently, effective privacy 
-protection requires evaluating not only HDF5 files but also the complete execution environment 
-in which HDF5 operates. This broader ecosystem perspective should guide the design, 
-implementation, deployment, and auditing of future HDF5 extensions.
+The analysis shows that HDF5 library extensions can alter a deployment's
+privacy characteristics. While the HDF5 core library primarily exposes
+information through the file format itself, VOL connectors, filter plugins, and
+Virtual File Drivers can extend the privacy boundary to external software,
+storage systems, network infrastructure, cloud services, and dynamically loaded
+plugins. The existence and magnitude of harm remain deployment-specific.
+Effective privacy assessment should therefore evaluate both HDF5 files and the
+execution environment in which HDF5 operates. This broader ecosystem
+perspective should guide the design, implementation, deployment, and review of
+future HDF5 extensions.
 
 
 
