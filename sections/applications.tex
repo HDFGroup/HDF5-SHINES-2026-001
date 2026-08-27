@@ -29,16 +29,16 @@ triaged or referred to their maintainers.
 \setlength{\LTright}{-0.7in}
 
 \begin{longtable}{@{}p{0.18\widetablewidth}p{0.18\widetablewidth}p{0.32\widetablewidth}p{0.28\widetablewidth}@{}}
-\caption{Common application-level HDF5 failure families}
+\caption{Representative application-level HDF5 failure mechanisms}
 \label{tab:application-hdf5-failure-families}\\
 \hline
-\textbf{Family} & \textbf{Typical failure} & \textbf{Examples} & \textbf{Why it is common} \\
+\textbf{Family} & \textbf{Typical failure} & \textbf{Examples} & \textbf{Application-boundary mechanism} \\
 \hline
 \endfirsthead
 
-\caption[]{Common application-level HDF5 failure families, continued}\\
+\caption[]{Representative application-level HDF5 failure mechanisms, continued}\\
 \hline
-\textbf{Family} & \textbf{Typical failure} & \textbf{Examples} & \textbf{Why it is common} \\
+\textbf{Family} & \textbf{Typical failure} & \textbf{Examples} & \textbf{Application-boundary mechanism} \\
 \hline
 \endhead
 
@@ -167,6 +167,17 @@ to the bounded versions and deployments stated there, not to Keras,
 TensorFlow, Hugging Face, or applications using HDF5 as undifferentiated
 projects.
 
+\paragraph{Priority reconciliation.}\mbox{}\\
+Any equivalent deployment that still gives untrusted HDF5 input automatic
+access to file-selected external resources follows the Immediate route for
+\code{APP-SEC-001}: contain it before the next job and no later than 24 hours
+after identification. Confirmed affected scope for \code{APP-SEC-002},
+\code{APP-SEC-003}, and \code{APP-SEC-005} receives Near-term treatment;
+\code{APP-SEC-004} receives Planned treatment. The historical Hugging Face
+rating is not a current residual-risk rating of that service. Application
+patches and compensating controls in Phase~1 must not wait for the reusable
+core APIs and integrations proposed for Phase~2.
+
 Mitigation has to be layered. Patching \texttt{libhdf5}
 alone will not fix Keras model deserialization, TensorFlow plugin
 path handling, or application-level external-reference policy.
@@ -204,12 +215,16 @@ But this needs to become a cohesive security profile, not a set of hidden knobs.
 
 \subsubsection*{Recommendation APP-S2: Ship a preflight validator}
 
-Create a validator that reads metadata only and returns a policy decision before the application allocates large arrays or deserializes model objects.
+Create a validator that reads metadata before the application allocates large
+arrays or deserializes model objects. Preflight is not a stand-alone
+authorization: its result must be bound to the same open handle or verified
+immutable file identity used by runtime loading, and runtime hooks must fail
+closed if the file, policy, or external-resource target changes.
 
 Example output:
 \begin{minted}{json}
 {
-  "safe_for_untrusted_load": false,
+  "eligible_under_profile": false,
   "reasons": [
     "external dataset reference outside sandbox",
     "dataset declares 8.7 TB logical size",
@@ -248,8 +263,10 @@ do not resolve paths relative to current working
 do not honor HDF5_PLUGIN_PATH in model loading
     contexts
 \end{verbatim}   
-This directly addresses the Keras arbitrary-code issue, the Keras arbitrary-file-read issue, the Keras memory-exhaustion
-issue, and the TensorFlow plugin-search-path issue.
+These loader defaults directly address \code{APP-SEC-002} through
+\code{APP-SEC-004}. The plugin clauses provide defense in depth for
+\code{APP-SEC-005}; its primary linked controls are \code{APP-S5} and
+\code{CORE-S10}.
 
 \subsubsection*{Recommendation APP-S4: Make external references opt-in}
 
@@ -296,7 +313,9 @@ never load plugins in setuid, service, notebook-hub,
     allowlisted
 \end{verbatim}
 
-Sandboxing plugins\ldots
+Where a required plugin cannot be disabled, run the file-processing boundary
+with least privilege and process isolation in addition to enforcing protected
+paths, explicit allowlisting, and resource limits.
 
 \subsubsection*{Recommendation APP-S6: Require downstream SBOM and version reporting}
 
@@ -311,10 +330,11 @@ external-reference policy
 safe-mode policy
 \end{verbatim}
 
-This solves a practical problem: a user seeing “HDF5 CVE” in a
+This reduces a practical applicability ambiguity: a user seeing “HDF5 CVE” in a
 scanner often cannot tell whether they are affected through
 \code{libhdf5}, an official tool, a vendored copy, a Python wheel,
-a model loader, or a plugin.
+a model loader, or a plugin. Reporting supplies census inputs; it does not by
+itself establish that a deployment is affected, compatible, or remediated.
 
 \subsubsection*{Recommendation APP-S7: Split CVE classification into scope tags}
 
@@ -332,7 +352,9 @@ not-HDF5
 duplicate/rejected
 \end{verbatim}
 
-This avoids bad prioritization. A heap overflow in
+This prevents scope collapse and supplies an input to triage. Each bounded
+scenario must still be rated and routed under the report-wide rubric; a tag
+does not assign priority. A heap overflow in
 \code{H5T__conv_struct_opt} is not the same class as Keras
 ignoring \code{safe_mode} for legacy \code{.h5} files, even though both
 mention HDF5.
@@ -346,16 +368,16 @@ mention HDF5.
 \setlength{\LTleft}{-0.7in}
 \setlength{\LTright}{-0.7in}
 \begin{longtable}{@{}p{0.25\widetablewidth}p{0.71\widetablewidth}@{}}
-\caption{Minimum safe policies for downstream HDF5 use cases}
+\caption{Baseline protective controls requiring deployment-specific validation}
 \label{tab:downstream-hdf5-safe-policies}\\
 \hline
-\textbf{Downstream use case} & \textbf{Minimum safe policy} \\
+\textbf{Downstream use case} & \textbf{Baseline protective controls} \\
 \hline
 \endfirsthead
 
-\caption[]{Minimum safe policies for downstream HDF5 use cases, continued}\\
+\caption[]{Baseline protective controls requiring deployment-specific validation, continued}\\
 \hline
-\textbf{Downstream use case} & \textbf{Minimum safe policy} \\
+\textbf{Downstream use case} & \textbf{Baseline protective controls} \\
 \hline
 \endhead
 
@@ -369,29 +391,35 @@ viewing unknown \code{.h5} files &
 run in a sandbox; disable plugins; disable external references; cap metadata
 and output size \\
 loading ML models &
-never load untrusted legacy \code{.h5}; disable Lambda/pickled code; validate
-tensor shapes before allocation \\
+use a verified fixed loader or reject or contain affected legacy formats;
+disable executable reconstruction, external references, and plugins; enforce
+aggregate and per-object budgets before allocation \\
 cloud upload service &
-preflight only; no plugin loading; no external file access; resource limits;
+enforcement-coupled preflight and runtime denial bound to the same file
+identity; no plugin loading or external file access; resource limits and
 process isolation \\
 HPC workflow &
 separate trusted internal files from imported files; scrub environment; pin
 plugin directories; use module-level HDF5 version floors \\
 desktop scientific app &
-prompt before following external references; ship patched HDF5; avoid writable
-global plugin dirs \\
+default-deny external references; permit only explicit, path-confined opt-in
+after validation; ship applicable fixes; avoid writable global plugin dirs \\
 package/distribution &
-publish SBOM; expose HDF5 version; rebuild promptly after HDF5 security
-releases \\
+publish SBOM; expose HDF5 version; confirm applicability and meet the
+finding-specific response horizon, retaining tested containment when a rebuild
+is unavailable \\
 library binding &
 expose security controls in the binding API, not just through environment
 variables \\
 \end{longtable}
 \endgroup
 
-\paragraph{What The HDF Group can do to reduce downstream CVEs:}
-The most useful move is not just more parser hardening.
-It is to give downstreams safe controls that are easy to use.
+\paragraph{Reusable controls The HDF Group can provide to reduce downstream exposure:}
+For reusable downstream prevention, parser hardening should be paired with
+enforceable controls that applications can use easily. Publish recipes using
+controls available today in parallel, and update them as the Phase~2 APIs ship.
+This delivery sequence does not replace or defer Immediate or Near-term
+application treatment.
 
 Recommended deliverables:
 \begin{verbatim}
@@ -407,7 +435,7 @@ H5Pset_max_link_traversal_depth(fapl, n)
 h5validate --profile untrusted --json file.h5
 \end{verbatim}
 
-Then publish downstream recipes for Keras, TensorFlow, h5py,
-netCDF, MATLAB, R, Java, and cloud services.
+Maintain downstream recipes for Keras, TensorFlow, h5py, netCDF, MATLAB, R,
+Java, and cloud services as current controls and standardized APIs evolve.
 
 \end{document}

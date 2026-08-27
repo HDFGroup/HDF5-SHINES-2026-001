@@ -70,16 +70,16 @@ See table~\ref{tab:external-source-defaults} for details.
 
 For this audit, downstream dependencies are projects that compile against,
 dynamically load, package, or define data conventions on top of HDF5. The HDF5
-ecosystem is much larger than any static list, so the most important downstreams
-are best identified by blast radius: broad installation footprint, long-lived
-archival data, domain-standard file conventions, or use as an intermediate layer
-for other tools. The following categories of downstreams are especially
-relevant.
+ecosystem is much larger than any static list, so representative downstreams
+were selected for broad installation footprint, long-lived archival data,
+domain-standard file conventions, or use as an intermediate layer for other
+tools. These are sampling criteria, not formal risk ranks. The following
+categories are especially relevant to the assessment scope.
 
 \begin{description}[leftmargin=1.5em,style=nextline]
     \item[Scientific data models and exchange formats.]
-    The highest-impact downstream is netCDF-4, which uses HDF5 as the storage
-    layer for the enhanced netCDF data model and is central to climate, weather,
+    A prominent downstream is netCDF-4, which uses HDF5 as the storage layer for
+    the enhanced netCDF data model and is central to climate, weather,
     ocean, atmospheric, and other Earth-system data workflows~\cite{netcdf4-format}.
     NASA HDF-EOS5, NeXus, and CGNS similarly define domain-specific conventions
     over HDF5 for Earth observation, neutron/x-ray/muon facilities, and CFD or
@@ -151,7 +151,7 @@ Important for mesh and simulation-result exchange; parallel-HDF5 behavior and
 large-file support affect production simulation workflows. \\
 h5py, PyTables, and pandas HDFStore &
 Python interfaces and tabular/array storage layers. &
-Common bridge between binary HDF5 files and Python analysis. Wheel and conda
+Widely used bridge between binary HDF5 files and Python analysis. Wheel and conda
 packaging can hide which HDF5 build is actually loaded. \\
 rhdf5, HDF5.jl, MATLAB HDF5 APIs &
 R, Julia, and MATLAB access layers. &
@@ -163,7 +163,7 @@ Converts HDF5 issues into geospatial ingestion issues, especially for
 remote-sensing products with complex metadata and nested subdatasets. \\
 ParaView/VTK, ITK, HDFView, and viewers &
 Interactive inspection, visualization, and conversion. &
-Frequently open untrusted or externally generated files; defensive parsing,
+May open untrusted or externally generated files; defensive parsing,
 filter availability, and plugin search paths matter. \\
 ADIOS2 and simulation I/O layers &
 Alternative I/O stacks with HDF5 read/write engines or compatibility paths. &
@@ -185,11 +185,22 @@ finding pending a bounded affected population and evidence sufficient to assign
 exposure. The bullets below describe ecosystem conditions and potential failure
 mechanisms; they are not additional formally rated findings.
 
+\paragraph{Priority reconciliation.}\mbox{}\\
+Ecosystem reach and transitive blast radius justify the census in \code{RM-1A},
+but do not assign \code{SUP-SAFE-001} a tier or response urgency. The roadmap
+schedules a bounded producer/consumer mismatch study in \code{RM-2F}; a
+supported-profile compatibility and provenance program follows in \code{RM-3E}
+and \code{RM-4A}. If the study substantiates a concrete affected population and
+harm, the resulting finding is rated and routed under the report-wide rubric
+rather than inheriting a priority from this chapter's project list.
+
 \begin{itemize}
     \item HDF5 changes have a large transitive blast radius because many users
     reach HDF5 through netCDF, GDAL, h5py, MATLAB, or domain formats rather than
     through the HDF5 C API directly.
-    \item ABI and packaging mismatches are a recurring downstream risk. Python,
+    \item ABI and packaging mismatches are a plausible downstream mismatch
+    mechanism; this assessment did not establish their frequency or affected
+    population. Python,
     R, Julia, MATLAB, MPI, and system-package environments may all load different
     HDF5 builds in the same organization.
     \item File parsing is a practical security boundary. Viewers, converters,
@@ -226,5 +237,11 @@ repair, rebuild, migration, controlled rejection with a supported alternative,
 or an accountable exception. Release SBOM and feature reporting under
 \code{CORE-S11} and \code{APP-S6} supply provenance inputs but do not, by
 themselves, demonstrate compatibility or treatment of legacy artifacts.
+
+Maintaining the supported-profile catalog and CI matrix is a proactive
+assurance control; it does not by itself create or close a formal finding.
+Mismatch-specific repair, rebuild, migration, controlled rejection, or
+exception is selected only after \code{RM-2F} bounds the affected profile
+population and consequence.
 
 \end{document}

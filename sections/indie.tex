@@ -63,10 +63,12 @@ readers had been permissive, and the HDF5 2.0 rejection was correct
 \cite{hdf5-gh-issue-6534,purehdf-gh-issue-164}.
 
 The reporter described a continuously written production acquisition pipeline
-and a reader-version pin as the immediate workaround. A technical metadata-
+and a reader-version pin as the contemporaneous workaround. A technical metadata-
 repair path was proposed and older readers remained a workaround, although the
 reporter said rewriting the files was not operationally feasible in that
-pipeline. The evidence therefore supports bounded operational and archival
+pipeline. The pin restored availability but was neither a conformance repair
+nor the report's Immediate urgency category. The evidence therefore supports
+bounded operational and archival
 harm, not irreversible data loss. Formal finding \code{IND-SAF-002} records
 this writer-side condition. Existing affected files remain a migration and
 inventory question even after corrected writer output is deployed.
@@ -83,6 +85,16 @@ produced by different HDF5 releases. This architectural observation is not
 assigned a risk tier without a concrete affected workflow. The two bounded
 formal findings are \code{IND-SAF-001} and \code{IND-SAF-002} in
 Appendix~\ref{app:findings-register}.
+
+\paragraph{Priority reconciliation.}\mbox{}\\
+Both findings are Moderate and follow the Planned route; neither is ordered
+ahead of the other by issue chronology or recommendation numbering. Phase~2
+therefore verifies the exact supported reader artifacts, preserves positive and
+negative fixtures, inventories the affected legacy PureHDF population, and
+provides a deterministic repair, migration, or compatibility disposition.
+Invariant and sustainment work continues in Phases~3--4. A production or
+archival population discovered to be actively interrupted may be expedited,
+but that scoped decision does not revise the historical inherent ratings.
 
 The \code{IND-S} identifiers below identify recommendations only; their numbers
 do not express risk, urgency, effort, dependency, or implementation order.
@@ -109,14 +121,17 @@ At minimum, the program should:
     \item report the writer, writer version, format bounds, reader, reader
           version, and expected accept/reject result for every fixture; and
     \item inventory already-produced files when a writer defect is discovered,
-          provide a deterministic repair or migration tool, and preserve
-          checksums and provenance across repair.
+          provide a deterministic repair, regeneration, migration, or supported
+          compatibility disposition, and preserve checksums and provenance when
+          bytes change.
 \end{itemize}
 
 Acceptance requires the current supported-reader matrix to accept every valid
 fixture, reject every intentionally invalid fixture with a controlled and
-documented diagnostic, and demonstrate a reproducible repair path for the
-legacy PureHDF case.
+documented diagnostic, and demonstrate a reproducible repair, regeneration,
+migration, or accountable supported-compatibility disposition for the complete
+defined legacy PureHDF population, preserving checksums and provenance when
+bytes change.
 
 The machine-readable specification project \code{hdf5-pickles} is a natural
 source for generating and checking these fixtures~\cite{hdf5-pickles}.
