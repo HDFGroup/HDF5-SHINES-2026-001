@@ -613,11 +613,11 @@ HDF5 inherits many of the same classes of privacy risks identified by NIST, alth
 differently in scientific and engineering environments. 
 
 HDF5 was designed to maximize data shareability, extensibility, portability, and long-term usability, 
-and doesn’t enforce data privacy or provide data protection mechanism. Its rich metadata model, 
+and doesn’t enforce data privacy or provide data protection mechanisms. Its rich metadata model, 
 self-describing structure, plugin architecture, and interoperability layers can expose information 
 extending beyond the raw data stored within the file. Sensitive information in HDF5 ecosystems may emerge 
 through HDF5 internal and user-defined metadata, for example, HDF5 attributes, object names, 
-file organization, and objects properties. It may be exposed during HDF5 data lifecycle through 
+file organization, and object properties. It may be exposed during the HDF5 data lifecycle through 
 provenance records, workflow artifacts, and correlations across multiple datasets and files. 
 
 A common misconception in scientific computing is that privacy concerns are resolved once 
@@ -631,7 +631,7 @@ exposure frequently results from accumulation of data and metadata over time rat
 of a single sensitive piece of raw data or metadata.
 
 The privacy risks are amplified by current scientific practice of data openness and shareability.  
-HDF5 datasets increasingly move across organization, systems, cloud platforms, workflows, and public 
+HDF5 datasets increasingly move across organizations, systems, cloud platforms, workflows, and public 
 and private repositories. Data are routinely repurposed beyond their original intent and analyzed by 
 users who were not involved in their creation. Machine learning systems further amplify these concerns 
 by discovering hidden relationships across data stored in HDF5 and enabling new forms of inference 
@@ -640,10 +640,10 @@ the HDF5 files may experience evolving privacy characteristics through its lifec
 
 Therefore, privacy exposure in HDF5 is not limited to unauthorized access, data breaches,
 unsafe use, or malicious behavior; it is distinct from, but can overlap with, data security and safety.
-By design HDF5 file format and library do not guarantee data privacy. In addition, privacy risks may 
+By design, the HDF5 file format and library do not guarantee data privacy. In addition, privacy risks may 
 emerge during legitimate scientific workflows, through data sharing, reuse, and analysis.
-In this document we audit privacy assets and different privacy exposure mechanisms (or surfaces) 
-in HDF5 with the goal to raise awareness about privacy risks when using HDF5. 
+In this document, we audit privacy assets and different privacy exposure mechanisms (or surfaces) 
+in HDF5 with the goal of raising awareness about privacy risks when using HDF5. 
 
 
 

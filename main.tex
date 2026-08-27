@@ -51,15 +51,15 @@
 \setminted[bash]{fontsize=\scriptsize,breaklines}
 \setminted[toml]{fontsize=\scriptsize,breaklines}
 
-
 \usepackage{svg}
 
 % Short URLs
 \DeclareFieldFormat{url}{\href{#1}{\mkbibacro{URL}}}
 
 % Document metadata: Title, author(s), etc
+
 \title{HDF5 Audit Report}
-\author{Gerd Heber and Elena Pourmal}
+\author{Gerd Heber\footnote{The HDF Group, \code{gheber@hdfgroup.org}} and Elena Pourmal\footnote{Lifeboat, LLC, \code{elena.pourmal@lifeboat.llc}}}
 \date{\today}
 \rfcversion{2026-001}
 \organization{HDFG}
@@ -73,7 +73,6 @@
 
 % Bibliography references, for use in main document
 \addbibresource{support/rfc.bib}
-
 
 %% Start the main document
 \begin{document}
