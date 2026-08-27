@@ -237,14 +237,13 @@ The engagement uses a qualitative, risk-informed technical-assessment method:
           disagree, the analysis distinguishes the normative requirement,
           writer behavior, reader validation, and compatibility policy.
 
-    \item \textbf{Mitigation analysis.}
-          Controls are evaluated according to potential impact, exposure to the
-          failure mode, breadth and recurrence, existing controls, evidence
-          strength, urgency, implementation dependencies, and the actor able to
-          enforce them. Controls addressing cross-cutting root causes or enabling
-          prerequisite protections are distinguished from local remediations.
-          Risk severity and implementation sequence are treated as separate
-          judgments.
+    \item \textbf{Risk and mitigation analysis.}
+          Adverse-event scenarios are evaluated under the report-wide inherent-
+          risk method in Section~\ref{sec:risk-rubric}. Recommendations are then
+          analyzed separately for control coverage, enforcing actor, response
+          urgency, implementation dependencies, effort, sequence, and acceptance
+          evidence. Cross-cutting controls and prerequisite protections are
+          distinguished from local remediations.
 \end{enumerate}
 
 For incidents involving multiple components, the analysis distinguishes the
@@ -270,6 +269,291 @@ Unless a finding expressly records an independent reproduction or test, it
 should be understood as the result of document, artifact, or architecture
 examination rather than independent dynamic verification.
 
+\subsection{Report-wide Risk Rating and Mitigation Planning}
+\label{sec:risk-rubric}
+
+This subsection defines the only risk-rating method used in this report. A
+formal rating applies to a specific adverse-event scenario, not to a technology,
+chapter, CVE count, root-cause family, recommendation, or implementation task.
+Each rated finding states, directly or by reference, the assessment object and
+affected version or surface; the initiating actor or non-adversarial event; the
+condition, exposure, and material preconditions; the assets or people affected;
+the credible consequence; and, when time materially affects the rating, the
+assessment horizon. Materially different versions, deployments, preconditions,
+or consequences are rated separately.
+
+A risk scenario can be summarized as follows:
+
+\begin{quote}
+Given \emph{[actor or non-adversarial event]}, \emph{[assessment object and
+scope]}, and \emph{[exposure and preconditions]}, \emph{[condition or event]}
+may cause \emph{[harm]} to \emph{[assets, people, operations, or other
+organizations]} \emph{[during the material assessment horizon, if any]}.
+\end{quote}
+
+\paragraph{Inherent risk.}
+Inherent risk is the risk presented by the stated scenario in its defined
+assessed population and deployment. It includes only controls that are mandatory
+and intrinsic to the identified implementation, version, and scoped default
+configuration; it gives no credit for optional, compensating,
+organization-specific, or proposed controls. A feature, configuration,
+privilege, or user action required to reach the condition is a scenario
+precondition and informs exposure; it is not an implementation-effort factor. A
+disabled-by-default or opt-in state constrains exposure only when that state is
+part of the stated scope. Deployments in which the feature is enabled are rated
+separately when the difference is material.
+
+Where the effectiveness and coverage of existing controls are supported by
+evidence, a finding may also state \emph{current residual risk}. A
+\emph{target residual risk} may be projected for a recommendation, but it is not
+treated as achieved until the control passes its acceptance criteria. Neither
+current nor target residual risk replaces the inherent-risk rating. When a
+residual rating is stated, it uses the same criteria and identifies the controls
+credited in the assessment.
+
+Inherent risk combines the impact and exposure levels in
+Table~\ref{tab:risk-factor-criteria} using
+Table~\ref{tab:inherent-risk-matrix}. Exposure is the rubric's reachability and
+recurrence axis: it expresses how readily and commonly the scenario arises
+under the stated conditions, not a numerical probability. The axes and tiers
+are ordinal; their labels are not numeric scores and are not multiplied.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}p{0.10\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}p{0.64\linewidth}@{}}
+\caption{Report-wide impact and exposure criteria}
+\label{tab:risk-factor-criteria}\\
+\hline
+\textbf{Level} & \textbf{Name} & \textbf{Decision rule} \\
+\hline
+\endfirsthead
+
+\caption[]{Report-wide impact and exposure criteria, continued}\\
+\hline
+\textbf{Level} & \textbf{Name} & \textbf{Decision rule} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+I1 & Limited impact &
+Transient or localized effect with routine recovery; no material incorrect
+result, durable data loss, sensitive disclosure, or harm to individuals. \\
+
+I2 & Material impact &
+Meaningful workflow interruption; recoverable data loss or corruption; a
+persistent but bounded compatibility or scientific-validity problem; or
+limited disclosure, inference, or privacy harm affecting a defined population. \\
+
+I3 & Serious impact &
+Major data loss, corruption, or outage; process compromise or unauthorized
+resource access; consequential scientific invalidity; or substantial sensitive-
+information disclosure or privacy harm. \\
+
+I4 & Severe or systemic impact &
+Widespread, cross-tenant, or privileged compromise; irreversible loss of unique
+or critical scientific records; large-scale disclosure of highly sensitive
+information; or ecosystem- or mission-level disruption. \\
+
+E1 & Exceptional exposure &
+The scenario requires an unusual configuration and several restrictive
+preconditions, affects a narrow surface, and is exceptional within the stated
+assessed population. \\
+
+E2 & Constrained exposure &
+The scenario is realistic but limited to an opt-in feature, restricted actor
+capability, uncommon workflow, or multiple material preconditions. \\
+
+E3 & Broad exposure &
+The scenario arises in a common workflow or deployment, has few material
+preconditions, commonly crosses a trust boundary, or recurs within the stated
+assessed population. \\
+
+E4 & Routine exposure &
+The scenario arises during default or normal operation, is broadly reachable
+and repeatable, or is straightforward to trigger or automate. Malicious intent
+is not required for safety or privacy harm. \\
+
+\end{longtable}
+\endgroup
+
+\begin{center}
+\begin{minipage}{0.90\linewidth}
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\captionof{table}{Report-wide inherent-risk matrix}
+\label{tab:inherent-risk-matrix}
+\begin{tabular}{@{}lcccc@{}}
+\hline
+\textbf{Impact} & \textbf{E1} & \textbf{E2} & \textbf{E3} & \textbf{E4} \\
+\hline
+I4 Severe/systemic & High     & High     & Critical & Critical \\
+I3 Serious         & Moderate & High     & High     & Critical \\
+I2 Material        & Low      & Moderate & Moderate & High \\
+I1 Limited         & Low      & Low      & Moderate & Moderate \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+The following decision rules apply:
+
+\begin{enumerate}
+    \item Use the greatest credible impact supported by evidence, not an
+          unconstrained theoretical worst case.
+    \item Judge exposure from the stated reachability, preconditions, deployment
+          prevalence, and recurrence. A confirmed incident establishes
+          feasibility but does not by itself establish ecosystem-wide exposure.
+          Absence of adequate prevalence or recurrence evidence changes
+          confidence or rating status; it does not establish E1.
+    \item Rate the scenario at the boundary where authority and control reside.
+          Participation in an exploit chain does not assign the full impact to
+          every component in that chain.
+    \item Split findings when affected versions, deployment profiles, or
+          consequences would produce materially different ratings.
+    \item Do not add or average safety, security, and privacy impacts. Record
+          each applicable dimension and identify the substantiated impact that
+          controls the overall rating.
+    \item Do not translate CVSS scores, CVE counts, publicity, privacy-exposure
+          category codes, or recommendation numbers into this rating.
+    \item State a time horizon when it materially affects impact or exposure.
+          Do not directly order ratings that use materially different horizons.
+\end{enumerate}
+
+\paragraph{Evidence confidence and rating status.}
+Confidence records uncertainty in the evidence and is separate from both
+exposure and risk:
+
+\begin{description}
+    \item[High confidence.] Direct, scope-specific primary evidence supports the
+          condition and material rating assumptions through reproduction or
+          mutually consistent specification, source, fix, and test artifacts.
+    \item[Moderate confidence.] Credible primary evidence supports the scenario,
+          but an important element such as reproduction, prevalence, version
+          boundaries, or causal attribution remains incomplete.
+    \item[Low confidence.] The scenario or rating depends materially on
+          incomplete, disputed, secondary, or uncorroborated evidence.
+\end{description}
+
+Confidence is not multiplied into, added to, or subtracted from inherent risk.
+If uncertainty could change the tier, the report gives the plausible range and
+the controlling assumptions rather than silently lowering the rating.
+
+A rating record also states one of the following statuses:
+
+\begin{description}
+    \item[Rated.] Both axes and the resulting tier are supported by the cited
+          evidence.
+    \item[Provisional.] Both axes can be estimated, but material uncertainty
+          remains and is expressly stated.
+    \item[NE---not evaluated.] At least one axis lacks sufficient evidence. An
+          NE finding is not implicitly Low risk.
+    \item[N/A---not applicable.] The item is not a risk-bearing finding, such as
+          a recommendation, implementation task, or program theme.
+\end{description}
+
+Narrative findings that do not state impact, exposure, tier, status, and
+confidence carry no formal report-wide rating.
+
+\paragraph{Risk and implementation planning are separate.}
+The risk record and the recommendation record are separate. The following
+planning fields never change the inherent-risk rating:
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth}p{0.68\linewidth}@{}}
+\caption{Treatment-planning fields kept separate from inherent risk}
+\label{tab:treatment-planning-fields}\\
+\hline
+\textbf{Field} & \textbf{Recording rule} \\
+\hline
+\endfirsthead
+
+\caption[]{Treatment-planning fields kept separate from inherent risk,
+continued}\\
+\hline
+\textbf{Field} & \textbf{Recording rule} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Response urgency &
+Records \emph{Immediate}, \emph{Near-term}, \emph{Planned}, or
+\emph{Monitor}, with the rationale and target horizon. It is determined
+from current residual risk, time to harm, active exploitation or recurrence,
+and stated risk tolerance---not from dependencies or effort. \\
+
+Implementation dependencies &
+Lists concrete prerequisite recommendation or decision identifiers. Use
+\emph{None known} when none are identified and \emph{TBD} when dependency
+analysis has not been performed; do not encode dependencies as severity. \\
+
+Effort &
+Records \emph{Not estimated}, \emph{Small} (localized change), \emph{Medium}
+(multi-module or coordinated change), or \emph{Large} (architectural,
+cross-project, compatibility, or migration work). Estimate work independently
+of elapsed duration or delivery horizon. Effort is not subtracted from risk. \\
+
+Implementation sequence &
+Records a delivery wave or order together with its concrete prerequisite or
+enabling rationale. Recommendation identifiers alone do not establish sequence,
+and delivery order is not a risk rating. \\
+
+Owner and target horizon &
+Names the actor with authority to implement or accept the recommendation and
+the intended completion date or release. \\
+
+Acceptance evidence &
+States the observable test, artifact, or operational evidence required to mark
+the recommendation complete and reassess residual risk. \\
+
+Residual-risk decision &
+Records the verified remaining rating and the accountable decision to accept,
+further reduce, avoid, or transfer it. \\
+
+\end{longtable}
+\endgroup
+
+Unless a stricter stated risk tolerance applies, the default response-urgency
+rule maps Critical current residual risk to \emph{Immediate}, High to
+\emph{Near-term}, Moderate to \emph{Planned}, and Low to
+\emph{Monitor}. Active exploitation or recurrence, imminent harm, or a
+credible irreversible consequence can raise urgency. When current residual risk
+has not been assessed, inherent risk is the conservative provisional baseline.
+Dependencies and effort may shape the delivery plan or require an interim
+containment action, but they never lower response urgency. Any departure from
+this mapping requires a recorded rationale and accountable decision.
+
+A Critical scenario remains Critical even when its mitigation is high effort.
+An enabling action may appear earlier because it is a prerequisite; the action
+does not thereby acquire a risk rating. Immediate containment and a later
+architectural treatment may therefore address the same finding on different
+delivery horizons.
+
+Every formal finding record should contain a stable identifier, scenario,
+dimension, affected scope, evidence, I/E rationale, inherent-risk tier, rating
+status, confidence, and linked recommendation identifiers. Every recommendation
+record should separately identify the findings addressed, enforcing actor or
+owner, urgency, dependencies, effort, sequence and target horizon, acceptance
+evidence, status, and residual-risk decision. Numbered recommendation
+identifiers in later sections identify items only; they do not establish risk,
+urgency, effort, dependency, or delivery order.
+
 \subsection{Limitations and Assurance}
 \label{sec:assessment-limitations}
 
@@ -280,7 +564,7 @@ supports conclusions about observed mechanisms and recurring classes; it does
 not establish their frequency throughout the ecosystem.
 
 Public CVE and issue records may be incomplete, duplicated, disputed, or
-subsequently corrected. Deployment-specific likelihood and impact depend on
+subsequently corrected. Deployment-specific exposure and impact depend on
 application privileges, isolation, resource limits, enabled features, data
 sensitivity, and provenance. Proposed mitigations are evaluated analytically
 unless an implementation and verification procedure is expressly cited.
@@ -290,10 +574,12 @@ conclusions are bounded by the assessment objects, methods, evidence, and
 cutoff described above. The absence of a reported finding does not establish
 the absence of defects, vulnerabilities, safety failures, or privacy risk.
 
-Mitigation priorities express the authors' risk-informed judgment. They become
-auditable commitments only when paired with an owner, affected scope, target
-horizon, implementation status, acceptance criteria, and residual-risk
-decision.
+Inherent-risk ratings express the authors' evidence-based judgment under
+Section~\ref{sec:risk-rubric}; an unrated finding is not assumed to be Low risk.
+Numbered recommendation identifiers do not express risk, urgency, effort,
+dependency, or sequence. Recommendations become auditable commitments only when
+paired with an owner, affected scope, target horizon, implementation status,
+acceptance criteria, and residual-risk decision.
 
 \subsection{Privacy Context}
 \label{sec:privacy-context}

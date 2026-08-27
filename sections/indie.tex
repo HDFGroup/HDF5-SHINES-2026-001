@@ -28,7 +28,7 @@
 
 
 
-\subsection{Audit Findings and Mitigation Priorities}
+\subsection{Audit Findings and Mitigation Planning}
 
 The main risk across all direct-format implementations is not opening simple files; it is coverage of the long tail: dense groups, fractal heaps, shared object-header messages, all chunk-index variants, references, VLEN, compound/nested datatypes, virtual datasets, external storage, SWMR flags, user blocks, non-core filters, unusual libver bounds, and files produced by different HDF5 library releases. For any production use, build a compatibility corpus and round-trip the generated files using \texttt{h5dump}, \texttt{h5debug}, \texttt{h5py/libhdf5}, and the target-independent implementation.
 
