@@ -5,23 +5,597 @@
 \section{Introduction}
 \label{sec:intro}
 
-\subsection{Purpose}
+\subsection{Purpose and Engagement Type}
+\label{sec:engagement-purpose}
+
+This report presents a targeted, evidence-based technical assessment of
+safety, security, and privacy risks in the HDF5 software and data ecosystem.
+Its purpose is to identify systemic risk patterns, explain the trust boundaries
+at which those risks arise, and recommend mitigations for the organizations and
+individuals that develop, distribute, deploy, or use HDF5.
+
+The term \emph{audit} denotes a documented technical examination. This
+engagement is not a compliance certification, attestation engagement,
+penetration test, or exhaustive line-by-line source-code review. It expresses
+no independent assurance opinion and does not certify that any HDF5 release,
+application, file, or deployment is safe, secure, privacy-preserving,
+conforming, or free from defects. Authorship and sponsorship are disclosed in
+the front matter.
+
+\subsection{Objectives and Intended Audience}
+\label{sec:engagement-objectives}
+
+The objectives of the assessment are to:
+
+\begin{enumerate}
+    \item identify important assets, interfaces, capabilities, trust boundaries,
+          and failure modes across the HDF5 ecosystem;
+    \item distinguish accidental safety and data-integrity failures from
+          adversarial security failures and privacy harms arising during
+          authorized operation;
+    \item identify recurring root-cause classes rather than treating individual
+          crashes, CVEs, disclosures, and interoperability failures as
+          unrelated events;
+    \item examine how risk propagates between the file format, core library,
+          tools, extensions, bindings, applications, supply chain, and
+          independent implementations;
+    \item distinguish file-format conformance, acceptance by a particular
+          implementation, and safe use in a particular deployment;
+    \item recommend mitigations attributable to the actors able to implement
+          and enforce them; and
+    \item identify lessons applicable to comparable open-source scientific data
+          ecosystems.
+\end{enumerate}
+
+The primary audience is The HDF Group's maintainers, security responders,
+release engineers, and technical governance bodies. Additional audiences
+include extension and plugin authors, binding and independent-implementation
+maintainers, downstream application and distribution maintainers, operators of
+data-ingestion services, research-infrastructure teams, data stewards, and
+security and privacy reviewers.
+
+Recommendations are assigned, where possible, to the layer able to enforce
+them. A control failure at an application or deployment boundary is not
+classified as a core-library defect merely because an HDF5 mechanism was
+involved.
 
 \subsection{Scope}
+\label{sec:assessment-scope}
 
-Out of scope:
+Component scope is not binary in this report. The assessment distinguishes the
+following levels of coverage:
+
+\begin{description}
+    \item[Primary assessment objects.]
+    These are the HDF5 on-disk format; the core C library, with emphasis on its
+    handling of file-controlled metadata; HDF5 command-line tools; the capability,
+    trust, and privacy characteristics of VOL connectors, filter plugins, and
+    Virtual File Drivers as extension classes; and HDF5 build, release, and
+    dependency configuration. The report states findings and mitigations for
+    these objects.
+
+    \item[Boundary case studies.]
+    Selected downstream incidents and interoperability disputes are examined to
+    determine how HDF5 capabilities interact with application authority,
+    deployment policy, or independent implementations. The cases include model
+    and dataset ingestion, external-resource resolution, plugin loading, and
+    conformance disputes involving files produced by independent writers. The
+    referenced projects are not audited as products.
+
+    \item[Contextual references.]
+    Other components are identified to describe ecosystem reach, dependency
+    relationships, compatibility consequences, or potential exposure. A
+    contextual reference does not constitute an assessment or assurance
+    conclusion about that component.
+\end{description}
+
+Case studies and samples are selected purposively according to exposure to
+untrusted input or ambient authority, evidence of a recurring failure class,
+interoperability or archival consequence, and relevance to cross-cutting
+mitigations. They are not a statistical sample and do not support prevalence or
+frequency estimates.
+
+In this report, \emph{ecosystem-wide} describes the breadth of surfaces
+considered. It does not mean that every implementation, configuration, or
+downstream product was examined exhaustively.
+
+\paragraph{Out of scope.}
+The following are outside the engagement:
+
 \begin{itemize}
-    \item PHDF5
-    \item HDFView
-    \item HSDS
-    \item AI
+    \item HSDS source code, client behavior, REST endpoints, authentication and
+          authorization, tenant isolation, deployment configuration, storage
+          backends, and service availability;
+    \item a complete safety, security, or privacy assessment of HDFView, Keras,
+          TensorFlow, Hugging Face, PureHDF, or any other application, service,
+          framework, or independent implementation cited as a case study or
+          ecosystem dependency;
+    \item general AI or machine-learning safety, model behavior, training,
+          inference, and framework functionality unrelated to an HDF5
+          integration boundary;
+    \item detailed assessment of MPI semantics, collective-I/O correctness,
+          concurrency, fault tolerance, performance, or parallel-filesystem
+          security in Parallel HDF5;
+    \item exhaustive review or testing of every HDF5 release, platform, build
+          configuration, compiler, filter, connector, binding, application,
+          package, or independent implementation;
+    \item penetration testing of production services, exploit development, or
+          proof that every defect or vulnerability class has been identified;
+    \item assessment of a particular organization's production infrastructure,
+          credentials, identity systems, network controls, or operational
+          procedures, except as context for a cited incident or mitigation; and
+    \item legal, regulatory, contractual, research-ethics, or functional-safety
+          certification.
 \end{itemize}
 
-\subsubsection{Safety}
+References to HDFView identify downstream exposure or reader behavior, not an
+HDFView finding. References to machine-learning frameworks or services concern
+only their handling of HDF5-controlled inputs. References to Parallel HDF5 are
+limited to the configuration, dependency, extension, or trust-boundary
+characteristics expressly discussed.
 
-\subsubsection{Security}
+HSDS may appear in ecosystem diagrams for context, but no conclusion about
+HSDS should be inferred.
 
-\subsubsection{Privacy}
+\subsection{Assessment Dimensions}
+\label{sec:assessment-dimensions}
+
+\paragraph{Safety.}
+Safety means operational robustness and protection of data integrity,
+availability, recoverability, interoperability, and long-term accessibility in
+the absence of a malicious actor. Relevant conditions include malformed,
+truncated, inconsistent, or partially written files; resource exhaustion; I/O
+failure; incompatible implementations; and foreseeable misuse. Safety in this
+report does not mean regulated functional or physical safety.
+
+\paragraph{Security.}
+Security concerns the possibility that an adversary can compromise
+confidentiality, integrity, or availability, or cause a process to exercise
+authority contrary to the operator's intent. The principal threat scenario is
+an HDF5 file, metadata field, external reference, plugin requirement, archive,
+or model artifact controlled by an untrusted party and processed by an
+application possessing filesystem, network, compute, plugin-loading, or
+credential authority.
+
+The assessment includes memory-safety defects, denial of service, resource
+exhaustion, external-resource resolution, dynamic code loading, downstream
+deserialization, and supply-chain compromise. A security consequence does not
+require a defect in the HDF5 format or parser: an intentional HDF5 capability
+can become an attack mechanism when a downstream application interprets
+file-controlled instructions using authority unavailable to the file's
+originator.
+
+\paragraph{Privacy.}
+Privacy concerns adverse consequences arising from the disclosure, retention,
+inference, aggregation, correlation, or secondary use of information. Such
+consequences may arise during authorized and otherwise correct operation,
+without a security breach. The assessment includes scientific data,
+descriptive and structural metadata, object names and attributes, provenance,
+workflow artifacts, caches, temporary copies, external resources, and
+information that becomes sensitive when datasets are combined.
+
+The report evaluates privacy-exposure mechanisms and possible technical or
+governance controls. It does not determine compliance with privacy statutes,
+regulations, contracts, consent requirements, institutional policies, or
+research-ethics obligations.
+
+\subsection{Temporal Boundary and Evidence Basis}
+\label{sec:evidence-boundary}
+
+The evidence cutoff for this revision is August 27, 2026. Public evidence
+available on or before that date is eligible for consideration. Later
+developments are outside this revision unless expressly incorporated as
+subsequent-event updates.
+
+The historical analysis has no fixed lower date and includes earlier releases
+where necessary to examine cited vulnerabilities, compatibility behavior, and
+implementation changes. Because this is a historical, ecosystem-level
+assessment, no single software baseline applies. A conclusion concerning one
+release, commit, build configuration, platform, or third-party version is not
+presumed to apply to others. Version-specific conclusions are bounded by the
+artifact identifiers cited with them. Where an exact artifact is not identified,
+a statement should be read as an architectural or historical class-level
+observation, not as a release-specific conclusion.
+
+The principal evidence consists of published HDF5 specifications and API
+documentation; selected source code and build configurations; security policies,
+advisories, and CVE records; issue and pull-request discussions; cited commits
+and regression artifacts; and authoritative documentation or incident reports
+from representative downstream and independent projects.
+
+\subsection{Methodology}
+\label{sec:assessment-methodology}
+
+The engagement uses a qualitative, risk-informed technical-assessment method:
+
+\begin{enumerate}
+    \item \textbf{Surface and trust-boundary mapping.}
+          The ecosystem is decomposed into format, parser, tool, extension,
+          binding, application, supply-chain, independent-implementation, and
+          data-lifecycle surfaces.
+
+    \item \textbf{Asset and harm analysis.}
+          The assessment identifies relevant data, metadata, code, credentials,
+          compute and storage resources, availability, interoperability, and
+          interpretability, together with plausible safety, security, and
+          privacy consequences.
+
+    \item \textbf{Document and artifact examination.}
+          Specifications, documentation, public source artifacts, vulnerability
+          records, fixes, issue records, build configuration, and representative
+          ecosystem documentation are examined.
+
+    \item \textbf{Root-cause and pattern analysis.}
+          Defects and incidents are grouped by the earliest violated invariant
+          or trust-boundary failure supported by the evidence, rather than only
+          by crash type, CVE identifier, or affected application.
+
+    \item \textbf{Conformance and interoperability analysis.}
+          Acceptance by one HDF5 reader is not treated as proof that a file
+          conforms to the applicable specification, and rejection by another
+          reader is not treated as proof that it does not. Where implementations
+          disagree, the analysis distinguishes the normative requirement,
+          writer behavior, reader validation, and compatibility policy.
+
+    \item \textbf{Risk and mitigation analysis.}
+          Adverse-event scenarios are evaluated under the report-wide inherent-
+          risk method in Section~\ref{sec:risk-rubric}. Recommendations are then
+          analyzed separately for control coverage, enforcing actor, response
+          urgency, implementation dependencies, effort, sequence, and acceptance
+          evidence. Cross-cutting controls and prerequisite protections are
+          distinguished from local remediations.
+\end{enumerate}
+
+For incidents involving multiple components, the analysis distinguishes the
+HDF5 mechanism, the authority supplied by the host application, the failed
+control or policy boundary, and the resulting impact. The presence of HDF5 in
+an exploit chain is not, without additional evidence, classified as a parser or
+file-format defect.
+
+The report distinguishes, where practicable, among:
+
+\begin{description}
+    \item[Documented observation:] directly supported by a cited specification,
+          source artifact, test, advisory, incident record, or maintainer
+          diagnosis; the applicable discussion distinguishes source-reported
+          evidence from independent reproduction;
+    \item[Reasoned inference:] a conclusion drawn from observations, with
+          material assumptions and uncertainty identified; and
+    \item[Recommendation:] a proposed control to be validated through
+          implementation and acceptance evidence.
+\end{description}
+
+Unless a finding expressly records an independent reproduction or test, it
+should be understood as the result of document, artifact, or architecture
+examination rather than independent dynamic verification.
+
+\subsection{Report-wide Risk Rating and Mitigation Planning}
+\label{sec:risk-rubric}
+
+This subsection defines the only risk-rating method used in this report. A
+formal rating applies to a specific adverse-event scenario, not to a technology,
+chapter, CVE count, root-cause family, recommendation, or implementation task.
+Each rated finding states, directly or by reference, the assessment object and
+affected version or surface; the initiating actor or non-adversarial event; the
+condition, exposure, and material preconditions; the assets or people affected;
+the credible consequence; and, when time materially affects the rating, the
+assessment horizon. Materially different versions, deployments, preconditions,
+or consequences are rated separately.
+
+A risk scenario can be summarized as follows:
+
+\begin{quote}
+Given \emph{[actor or non-adversarial event]}, \emph{[assessment object and
+scope]}, and \emph{[exposure and preconditions]}, \emph{[condition or event]}
+may cause \emph{[harm]} to \emph{[assets, people, operations, or other
+organizations]} \emph{[during the material assessment horizon, if any]}.
+\end{quote}
+
+\paragraph{Inherent risk.}
+Inherent risk is the risk presented by the stated scenario in its defined
+assessed population and deployment. It includes only controls that are mandatory
+and intrinsic to the identified implementation, version, and scoped default
+configuration; it gives no credit for optional, compensating,
+organization-specific, or proposed controls. A feature, configuration,
+privilege, or user action required to reach the condition is a scenario
+precondition and informs exposure; it is not an implementation-effort factor. A
+disabled-by-default or opt-in state constrains exposure only when that state is
+part of the stated scope. Deployments in which the feature is enabled are rated
+separately when the difference is material.
+
+Where the effectiveness and coverage of existing controls are supported by
+evidence, a finding may also state \emph{current residual risk}. A
+\emph{target residual risk} may be projected for a recommendation, but it is not
+treated as achieved until the control passes its acceptance criteria. Neither
+current nor target residual risk replaces the inherent-risk rating. When a
+residual rating is stated, it uses the same criteria and identifies the controls
+credited in the assessment.
+
+Inherent risk combines the impact and exposure levels in
+Table~\ref{tab:risk-factor-criteria} using
+Table~\ref{tab:inherent-risk-matrix}. Exposure is the rubric's reachability and
+recurrence axis: it expresses how readily and commonly the scenario arises
+under the stated conditions, not a numerical probability. The axes and tiers
+are ordinal; their labels are not numeric scores and are not multiplied.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}p{0.10\linewidth}>{\raggedright\arraybackslash}p{0.18\linewidth}p{0.64\linewidth}@{}}
+\caption{Report-wide impact and exposure criteria}
+\label{tab:risk-factor-criteria}\\
+\hline
+\textbf{Level} & \textbf{Name} & \textbf{Decision rule} \\
+\hline
+\endfirsthead
+
+\caption[]{Report-wide impact and exposure criteria, continued}\\
+\hline
+\textbf{Level} & \textbf{Name} & \textbf{Decision rule} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+I1 & Limited impact &
+Transient or localized effect with routine recovery; no material incorrect
+result, durable data loss, sensitive disclosure, or harm to individuals. \\
+
+I2 & Material impact &
+Meaningful workflow interruption; recoverable data loss or corruption; a
+persistent but bounded compatibility or scientific-validity problem; or
+limited disclosure, inference, or privacy harm affecting a defined population. \\
+
+I3 & Serious impact &
+Major data loss, corruption, or outage; process compromise or unauthorized
+resource access; consequential scientific invalidity; or substantial sensitive-
+information disclosure or privacy harm. \\
+
+I4 & Severe or systemic impact &
+Widespread, cross-tenant, or privileged compromise; irreversible loss of unique
+or critical scientific records; large-scale disclosure of highly sensitive
+information; or ecosystem- or mission-level disruption. \\
+
+E1 & Exceptional exposure &
+The scenario requires an unusual configuration and several restrictive
+preconditions, affects a narrow surface, and is exceptional within the stated
+assessed population. \\
+
+E2 & Constrained exposure &
+The scenario is realistic but limited to an opt-in feature, restricted actor
+capability, uncommon workflow, or multiple material preconditions. \\
+
+E3 & Broad exposure &
+The scenario arises in a common workflow or deployment, has few material
+preconditions, commonly crosses a trust boundary, or recurs within the stated
+assessed population. \\
+
+E4 & Routine exposure &
+The scenario arises during default or normal operation, is broadly reachable
+and repeatable, or is straightforward to trigger or automate. Malicious intent
+is not required for safety or privacy harm. \\
+
+\end{longtable}
+\endgroup
+
+\begin{center}
+\begin{minipage}{0.90\linewidth}
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\captionof{table}{Report-wide inherent-risk matrix}
+\label{tab:inherent-risk-matrix}
+\begin{tabular}{@{}lcccc@{}}
+\hline
+\textbf{Impact} & \textbf{E1} & \textbf{E2} & \textbf{E3} & \textbf{E4} \\
+\hline
+I4 Severe/systemic & High     & High     & Critical & Critical \\
+I3 Serious         & Moderate & High     & High     & Critical \\
+I2 Material        & Low      & Moderate & Moderate & High \\
+I1 Limited         & Low      & Low      & Moderate & Moderate \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+The following decision rules apply:
+
+\begin{enumerate}
+    \item Use the greatest credible impact supported by evidence, not an
+          unconstrained theoretical worst case.
+    \item Judge exposure from the stated reachability, preconditions, deployment
+          prevalence, and recurrence. A confirmed incident establishes
+          feasibility but does not by itself establish ecosystem-wide exposure.
+          Absence of adequate prevalence or recurrence evidence changes
+          confidence or rating status; it does not establish E1.
+    \item Rate the scenario at the boundary where authority and control reside.
+          Participation in an exploit chain does not assign the full impact to
+          every component in that chain.
+    \item Split findings when affected versions, deployment profiles, or
+          consequences would produce materially different ratings.
+    \item Do not add or average safety, security, and privacy impacts. Record
+          each applicable dimension and identify the substantiated impact that
+          controls the overall rating.
+    \item Do not translate CVSS scores, CVE counts, publicity, privacy-exposure
+          category codes, or recommendation numbers into this rating.
+    \item State a time horizon when it materially affects impact or exposure.
+          Do not directly order ratings that use materially different horizons.
+\end{enumerate}
+
+\paragraph{Evidence confidence and rating status.}
+Confidence records uncertainty in the evidence and is separate from both
+exposure and risk:
+
+\begin{description}
+    \item[High confidence.] Direct, scope-specific primary evidence supports the
+          condition and material rating assumptions through reproduction or
+          mutually consistent specification, source, fix, and test artifacts.
+    \item[Moderate confidence.] Credible primary evidence supports the scenario,
+          but an important element such as reproduction, prevalence, version
+          boundaries, or causal attribution remains incomplete.
+    \item[Low confidence.] The scenario or rating depends materially on
+          incomplete, disputed, secondary, or uncorroborated evidence.
+\end{description}
+
+Confidence is not multiplied into, added to, or subtracted from inherent risk.
+If uncertainty could change the tier, the report gives the plausible range and
+the controlling assumptions rather than silently lowering the rating.
+
+A rating record also states one of the following statuses:
+
+\begin{description}
+    \item[Rated.] Both axes and the resulting tier are supported by the cited
+          evidence.
+    \item[Provisional.] Both axes can be estimated, but material uncertainty
+          remains and is expressly stated.
+    \item[NE---not evaluated.] At least one axis lacks sufficient evidence. An
+          NE finding is not implicitly Low risk.
+    \item[N/A---not applicable.] The item is not a risk-bearing finding, such as
+          a recommendation, implementation task, or program theme.
+\end{description}
+
+Narrative findings that do not state impact, exposure, tier, status, and
+confidence carry no formal report-wide rating.
+
+\paragraph{Risk and implementation planning are separate.}
+The risk record and the recommendation record are separate. The following
+planning fields never change the inherent-risk rating:
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth}p{0.68\linewidth}@{}}
+\caption{Treatment-planning fields kept separate from inherent risk}
+\label{tab:treatment-planning-fields}\\
+\hline
+\textbf{Field} & \textbf{Recording rule} \\
+\hline
+\endfirsthead
+
+\caption[]{Treatment-planning fields kept separate from inherent risk,
+continued}\\
+\hline
+\textbf{Field} & \textbf{Recording rule} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Response urgency &
+Records \emph{Immediate}, \emph{Near-term}, \emph{Planned}, or
+\emph{Monitor}, with the rationale and target horizon. It is determined
+from current residual risk, time to harm, active exploitation or recurrence,
+and stated risk tolerance---not from dependencies or effort. \\
+
+Implementation dependencies &
+Lists concrete prerequisite recommendation or decision identifiers. Use
+\emph{None known} when none are identified and \emph{TBD} when dependency
+analysis has not been performed; do not encode dependencies as severity. \\
+
+Effort &
+Records \emph{Not estimated}, \emph{Small} (localized change), \emph{Medium}
+(multi-module or coordinated change), or \emph{Large} (architectural,
+cross-project, compatibility, or migration work). Estimate work independently
+of elapsed duration or delivery horizon. Effort is not subtracted from risk. \\
+
+Implementation sequence &
+Records a delivery wave or order together with its concrete prerequisite or
+enabling rationale. Recommendation identifiers alone do not establish sequence,
+and delivery order is not a risk rating. \\
+
+Owner and target horizon &
+Names the actor with authority to implement or accept the recommendation and
+the intended completion date or release. \\
+
+Acceptance evidence &
+States the observable test, artifact, or operational evidence required to mark
+the recommendation complete and reassess residual risk. \\
+
+Residual-risk decision &
+Records the verified remaining rating and the accountable decision to accept,
+further reduce, avoid, or transfer it. \\
+
+\end{longtable}
+\endgroup
+
+Unless a stricter stated risk tolerance applies, the default response-urgency
+rule maps Critical current residual risk to \emph{Immediate}, High to
+\emph{Near-term}, Moderate to \emph{Planned}, and Low to
+\emph{Monitor}. Active exploitation or recurrence, imminent harm, or a
+credible irreversible consequence can raise urgency. When current residual risk
+has not been assessed, inherent risk is the conservative provisional baseline.
+Dependencies and effort may shape the delivery plan or require an interim
+containment action, but they never lower response urgency. Any departure from
+this mapping requires a recorded rationale and accountable decision.
+
+A Critical scenario remains Critical even when its mitigation is high effort.
+An enabling action may appear earlier because it is a prerequisite; the action
+does not thereby acquire a risk rating. Immediate containment and a later
+architectural treatment may therefore address the same finding on different
+delivery horizons.
+
+Every formal finding record should contain a stable identifier, scenario,
+dimension, affected scope, evidence, I/E rationale, an inherent-risk tier when
+evaluated or explicit no-tier/NE notation, rating status, confidence, and linked
+recommendation identifiers. Every recommendation
+record should separately identify the findings addressed, enforcing actor or
+owner, urgency, dependencies, effort, sequence and target horizon, acceptance
+evidence, status, and residual-risk decision. Numbered recommendation
+identifiers in later sections identify items only; they do not establish risk,
+urgency, effort, dependency, or delivery order.
+
+The populated report-wide register is Appendix~\ref{app:findings-register}.
+That appendix is authoritative for formal ratings in this revision: chapter
+narrative, recommendation numbering, CVE metadata, and descriptive uses of
+words such as ``high'' or ``important'' do not create an additional rating
+unless they map to a registered finding.
+Appendix~\ref{app:phased-roadmap} separately groups the recommendations into
+proposed work packages with accountable roles, dependencies, effort, phase
+gates, acceptance evidence, and residual-risk decision requirements. Those
+planning fields do not revise the register's inherent ratings or represent
+stakeholder-approved commitments until adopted and assigned.
+
+\subsection{Limitations and Assurance}
+\label{sec:assessment-limitations}
+
+This assessment is time-bounded and based predominantly on public evidence. It
+is not an exhaustive review of the HDF5 source tree, every file-format feature,
+every configuration, or every ecosystem component. Representative sampling
+supports conclusions about observed mechanisms and recurring classes; it does
+not establish their frequency throughout the ecosystem.
+
+Public CVE and issue records may be incomplete, duplicated, disputed, or
+subsequently corrected. Deployment-specific exposure and impact depend on
+application privileges, isolation, resource limits, enabled features, data
+sensitivity, and provenance. Proposed mitigations are evaluated analytically
+unless an implementation and verification procedure is expressly cited.
+
+This report provides no formal assurance or certification opinion. Its
+conclusions are bounded by the assessment objects, methods, evidence, and
+cutoff described above. The absence of a reported finding does not establish
+the absence of defects, vulnerabilities, safety failures, or privacy risk.
+
+Inherent-risk ratings express the authors' evidence-based judgment under
+Section~\ref{sec:risk-rubric}; an unrated finding is not assumed to be Low risk.
+Numbered recommendation identifiers do not express risk, urgency, effort,
+dependency, or sequence. Recommendations become auditable commitments only when
+paired with an owner, affected scope, target horizon, implementation status,
+acceptance criteria, and residual-risk decision.
+
+\subsection{Privacy Context}
+\label{sec:privacy-context}
+
 The National Institute of Standards and Technology (NIST) defines privacy as “a condition that safeguards 
 human autonomy and dignity through various means, including confidentiality, predictability, manageability, 
 and disassociability.” Historically, privacy was interpreted as preventing unauthorized access to or 
@@ -59,8 +633,8 @@ by discovering hidden relationships across data stored in HDF5 and enabling new 
 that may not have been anticipated when data were originally collected. As a result, data stored in 
 the HDF5 files may experience evolving privacy characteristics through its lifecycle.
 
-Therefore, privacy exposure in HDF5 is not a matter of unauthorized access, data breaches, 
-or unsafe usage or malicious behavior, i.e., it is different from data security and safety.  
+Therefore, privacy exposure in HDF5 is not limited to unauthorized access, data breaches,
+unsafe use, or malicious behavior; it is distinct from, but can overlap with, data security and safety.
 By design HDF5 file format and library do not guarantee data privacy. In addition, privacy risks may 
 emerge during legitimate scientific workflows, through data sharing, reuse, and analysis.
 In this document we audit privacy assets and different privacy exposure mechanisms (or surfaces) 
@@ -68,21 +642,20 @@ in HDF5 with the goal to raise awareness about privacy risks when using HDF5.
 
 
 
-\section{Motivation}
-\label{sec:motivation}
+\section{Assessment Surfaces}
+\label{sec:assessment-surfaces}
+
+Figure~\ref{fig:hdf5-assessment-surfaces} maps the principal components and
+interfaces considered when identifying HDF5 risk. Inclusion in the figure
+provides ecosystem context and does not override the scope levels and
+limitations defined in Section~\ref{sec:assessment-scope}. In particular, HSDS
+is shown for context but remains outside the engagement.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{images/HDF5_Surfaces.png}
-    \caption{HDF5 vulnerability sites (interfaces: rounded rectangles)}
+    \caption{HDF5 assessment surfaces (interfaces: rounded rectangles)}
+    \label{fig:hdf5-assessment-surfaces}
 \end{figure}
-
-\subsection{Problem Statement}
-
-\subsection{Goals}
-
-\begin{itemize}
-    \item Emphasize broader applicability for comparable OSEs
-\end{itemize}
 
 \end{document}

@@ -47,6 +47,14 @@
 	addendum = "(accessed: 04.06.2026)"
 }
 
+@online{hdf5-ghsa-w7v2-9cmr-pwwj,
+	author = "{The HDF Group}",
+	title = "{{H5T\_\_conv\_struct} Use After Free}",
+	year = "2026",
+	url = "https://github.com/HDFGroup/hdf5/security/advisories/GHSA-w7v2-9cmr-pwwj",
+	addendum = "(accessed: 27.08.2026)"
+}
+
 @online{cve-2026-1669,
 	author = "Google LLC",
 	title = "{CVE-2026-1669}",
@@ -69,6 +77,54 @@
 	year = "2025",
 	url = "https://www.cve.org/CVERecord?id=CVE-2025-9905",
 	addendum = "(accessed: 21.05.2026)"
+}
+
+@online{keras-ghsa-36rr-ww3j-vrjv,
+	author = "{Keras Team}",
+	title = "{Legacy {HDF5} Model Loading Ignores {safe\_mode=True}}",
+	year = "2025",
+	url = "https://github.com/keras-team/keras/security/advisories/GHSA-36rr-ww3j-vrjv",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{keras-ghsa-3m4q-jmj6-r34q,
+	author = "{Keras Team}",
+	title = "{Local File Disclosure via {HDF5} External Storage During Keras Weight Loading}",
+	year = "2026",
+	url = "https://github.com/keras-team/keras/security/advisories/GHSA-3m4q-jmj6-r34q",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{keras-ghsa-mgx6-5cf9-rr43,
+	author = "{Keras Team}",
+	title = "{Denial of Service via Malicious {HDF5} Shape Metadata in a Keras Model}",
+	year = "2026",
+	url = "https://github.com/keras-team/keras/security/advisories/GHSA-mgx6-5cf9-rr43",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{zdi-26-116,
+	author = "{Trend Micro Zero Day Initiative}",
+	title = "{TensorFlow {HDF5} Library Uncontrolled Search Path Element Local Privilege Escalation Vulnerability}",
+	year = "2026",
+	url = "https://www.zerodayinitiative.com/advisories/ZDI-26-116/",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{tensorflow-commit-46e7f7f,
+	author = "{TensorFlow Authors}",
+	title = "{Commit 46e7f7f: Disable Loading {HDF5} Plugins}",
+	year = "2025",
+	url = "https://github.com/tensorflow/tensorflow/commit/46e7f7fb144fd11cf6d17c23dd47620328d77082",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{talos-hdf5-2016-0176,
+	author = "{Cisco Talos}",
+	title = "{{HDF5} Group libhdf5 {H5T\_ARRAY} Code Execution Vulnerability}",
+	year = "2016",
+	url = "https://www.talosintelligence.com/vulnerability_reports/TALOS-2016-0176",
+	addendum = "(accessed: 27.08.2026)"
 }
 
 @online{cve-2021-36977,
@@ -155,7 +211,79 @@
 	title = "{HDF5 lib is more restrictive than file format spec}",
 	year = "2026",
 	url = "https://github.com/HDFGroup/hdf5/issues/6409",
-	addendum = "(accessed: 21.05.2026)"
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{hdf5-gh-pr-6432,
+	author = "Fortner, Neil",
+	title = "{Allow Reading of Files with Chunk Dimensions Encoded Using More Bytes than Necessary}",
+	year = "2026",
+	url = "https://github.com/HDFGroup/hdf5/pull/6432",
+	addendum = "(accessed: 27.08.2026; merged pull request)"
+}
+
+@online{hdf5-gh-issue-6534,
+	author = "Abbo93",
+	title = "{Regression in 2.0.0 Chunk Layout Decoder Fails on Valid Files from Third-Party Writers (PureHDF)}",
+	year = "2026",
+	url = "https://github.com/HDFGroup/hdf5/issues/6534",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{hdf5-gh-issue-6618,
+	author = "takluyver",
+	title = "{Option(s) to Disable Various Kinds of External File Access}",
+	year = "2026",
+	url = "https://github.com/HDFGroup/hdf5/issues/6618",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{h5py-gh-issue-2891,
+	author = "chinhnguyen007",
+	title = "{Local File Access Through Untrusted {HDF5} External Dataset References}",
+	year = "2026",
+	url = "https://github.com/h5py/h5py/issues/2891",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{hdfgroup-mechanism-not-vulnerability-2026,
+	author = "{The HDF Group}",
+	title = "{{HDF5} Was the Mechanism, Not the Vulnerability}",
+	year = "2026",
+	url = "https://www.hdfgroup.org/2026/08/23/hdf5-was-the-mechanism-not-the-vulnerability/",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{huggingface-agent-intrusion-2026,
+	author = "Hugo Larcher and Adrien Carreira and raphael g and Christophe Rannou",
+	title = "{Anatomy of a Frontier Lab Agent Intrusion: A Technical Timeline of the July 2026 Incident}",
+	year = "2026",
+	url = "https://huggingface.co/blog/agent-intrusion-technical-timeline",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{purehdf-gh-issue-164,
+	author = "Abbo93",
+	title = "{Compatibility Warning: HDF5 2.0.0 / h5py 3.16.0 Regression Breaks Reading PureHDF Files}",
+	year = "2026",
+	url = "https://github.com/Apollo3zehn/PureHDF/issues/164",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{purehdf-gh-issue-168,
+	author = "Blackclaws",
+	title = "{Chunked Datasets Are Unreadable by HDF5 2.x: Chunk Dimension Size Encoded Length Is Hardcoded}",
+	year = "2026",
+	url = "https://github.com/Apollo3zehn/PureHDF/issues/168",
+	addendum = "(accessed: 27.08.2026)"
+}
+
+@online{purehdf-pr-160,
+	author = "Mark Lambert",
+	title = "{Make Tests Runnable on Windows and with Newer h5dump, with Related Fixes}",
+	year = "2026",
+	url = "https://github.com/Apollo3zehn/PureHDF/pull/160",
+	addendum = "(accessed: 27.08.2026; merged pull request)"
 }
 
 @online{hdf5-pickles,

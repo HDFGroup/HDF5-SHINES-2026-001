@@ -10,21 +10,17 @@
 
 \subsection{Overview}
 
-Complete:
-\begin{itemize}
-    \item C\#
-    \item Java
-    \item Python
-    \item JavaScript
-    \item Rust
-\end{itemize}
-
-Partials\ldots
+Bindings for C\#, Java, Python, JavaScript, Rust, and other languages mediate
+between HDF5's C interfaces and language-specific object, memory, exception,
+packaging, and deployment models. This chapter uses the Python-facing cases
+below only as boundary references. It does not claim exhaustive coverage of
+those binding families or establish that a condition observed in a downstream
+framework is caused by the binding through which HDF5 was reached.
 
 \subsection{Python}
 
 \begin{itemize}
-    \item CVE-2025-995 \cite{cve-2025-9905}
+    \item CVE-2025-9905 \cite{cve-2025-9905}
     \item CVE-2026-0897 \cite{cve-2026-0897}
     \item CVE-2026-1669 \cite{cve-2026-1669}
     \item CVE-2026-2492 \cite{cve-2026-2492}
@@ -32,6 +28,24 @@ Partials\ldots
 
 \subsection{Java}
 
-\subsection{Audit Findings and Mitigation Priorities}
+No Java-specific adverse-event scenario was sufficiently developed for a
+formal finding in this revision. Java remains within the ecosystem census and
+control-exposure scope described below.
+
+\subsection{Audit Findings and Mitigation Planning}
+
+This chapter does not establish an additional binding-specific formal finding.
+The listed Keras and TensorFlow cases are rated at their application boundaries
+as \code{APP-SEC-002} through \code{APP-SEC-005} in
+Appendix~\ref{app:findings-register}; their presence in a Python-facing workflow
+does not make them h5py or Python-binding findings without separate evidence.
+
+\paragraph{Priority reconciliation.}\mbox{}\\
+Wrappers and bindings therefore have no separate report-wide urgency in this
+revision. They participate in the Phase~1 version, linkage, feature, and
+authority census and should expose the controls required by the applicable
+application package. When a binding is part of a deployment matching a formal
+finding, that finding's response clock controls; the chapter in which a CVE is
+mentioned does not create a second priority.
 
 \end{document}

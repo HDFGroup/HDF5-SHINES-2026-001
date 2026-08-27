@@ -1,0 +1,207 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\subsection{Overall Assessment Conclusion}
+
+Within the engagement scope and the August 27, 2026 evidence cutoff, this
+assessment supports a bounded conclusion: HDF5 input is not necessarily inert
+data. File-controlled metadata can reach memory, allocation, traversal,
+external-resource, plugin, deserialization, storage, and disclosure boundaries.
+Risk arises at the component that supplies and controls the relevant authority,
+and not every appearance of HDF5 in an adverse event is therefore a defect in
+the core library or file format.
+
+The evidence supports four ecosystem-level judgments. First, historically
+affected core and official-tool paths exhibit recurring failures to validate
+file-derived values before trusted C operations; local fixes can treat a known
+variant, but class elimination requires invariant-driven prevention and
+continuing regression evidence. Second, applications can turn documented HDF5
+capabilities into security mechanisms when they process untrusted files with
+ambient filesystem, plugin-loading, deserialization, or resource authority.
+Third, reader acceptance, format conformance, and safe deployment are separate
+decisions: permissive historical acceptance is not proof that a file is
+consistent, and stricter rejection is not automatically a regression. Fourth,
+privacy harm can arise during correct and authorized operation because payload
+protection does not necessarily protect metadata, structure, derived
+information, caches, logs, or other workflow artifacts.
+
+\begin{notebox}
+The registered scenarios have a determinate, conditional mitigation-priority
+order, and confirmed applicable scope follows it. No exception permits a known,
+uncontained Critical-equivalent external-resource path to process untrusted
+input; any other variance requires a scoped, accountable, expiring record and
+tested interim control. The rubric and response routing control---not chapter
+order, recommendation number, CVE count, publicity, effort, or dependency.
+This is neither a universal HDF5 rating nor a certification or conclusion about
+an unassessed release or deployment.
+\end{notebox}
+
+The authoritative register contains twelve formal findings: seven Rated, four
+Provisional, and one NE. Their tiers comprise one Critical, four High, two
+Moderate--High ranges, four Moderate, and one finding without an assigned tier.
+Two additional observations remain in the evidence-and-scoping backlog. These
+counts describe the bounded scenarios in Appendix~\ref{app:findings-register};
+they are not prevalence estimates and must not be aggregated into a score for
+HDF5 as a technology.
+
+\subsection{Reconciled Mitigation Priorities}
+
+Table~\ref{tab:conclusion-priority-reconciliation} summarizes the only
+report-wide ordering. The program census is due within 30 days of roadmap
+adoption; a finding-response clock starts when an affected deployment or
+equivalent exposure is identified. Treatment removes or controls the concrete
+scenario; prevention addresses recurrence and may continue after the scoped
+finding is reassessed.
+
+\begingroup
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.18\linewidth}>{\raggedright\arraybackslash}p{0.26\linewidth}>{\raggedright\arraybackslash}p{0.31\linewidth}>{\raggedright\arraybackslash}p{0.19\linewidth}@{}}
+\caption{Conclusion-level reconciliation of mitigation priorities}
+\label{tab:conclusion-priority-reconciliation}\\
+\hline
+\textbf{Decision lane} & \textbf{Records} & \textbf{Required outcome} &
+\textbf{Boundary} \\
+\hline
+\endfirsthead
+
+\caption[]{Conclusion-level reconciliation of mitigation priorities, continued}\\
+\hline
+\textbf{Decision lane} & \textbf{Records} & \textbf{Required outcome} &
+\textbf{Boundary} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Immediate---before the next untrusted job and within 24 hours of identification &
+\code{APP-SEC-001}; a separately confirmed Critical-equivalent service
+exposure under \code{APP-SEC-003} &
+Stop or sandbox attacker-selected external-resource resolution; remove
+unnecessary worker authority, preserve evidence, and rotate exposed secrets
+where indicated. &
+Applies to an equivalent still-exposed deployment, not automatically to every
+HDF5 service or to Hugging Face's present state. \\
+
+Near-term---treatment within 30 days of affected-scope identification &
+\code{CORE-SEC-001}, \code{CORE-TOOL-001}, \code{CORE-PRIV-001},
+\code{APP-SEC-002}, \code{APP-SEC-003}, \code{APP-SEC-005} &
+Use the program census to identify scope; patch, upgrade, isolate, or deploy a
+tested compensating control for each affected deployment; minimize sensitive
+plaintext metadata and verify the enforcing trust boundary. &
+Census: 30 days after roadmap adoption. Treatment: 30 days after affected-scope
+identification. Ranges route at their upper bound; dependencies do not extend
+treatment. \\
+
+Planned---within 90 days or the next supported release or migration window,
+whichever is sooner &
+\code{CORE-SEC-002}, \code{APP-SEC-004}, \code{IND-SAF-001},
+\code{IND-SAF-002} &
+Bound file-controlled work and allocation; verify exact reader/writer behavior;
+inventory affected artifacts; and provide tested repair, migration, or
+controlled compatibility handling. &
+Expedite a scoped item when an affected production pipeline, archive, or
+service is identified. \\
+
+Evidence action---no assigned risk urgency &
+\code{CORE-SAFE-001}, \code{EXT-PRIV-001}, \code{SUP-SAFE-001} &
+Perform bounded, reproducible studies sufficient to rate and route a supported
+scenario or to document a negative result over the tested scope. &
+NE and backlog status do not mean Low risk. The Phase~2 administrative target
+is not a risk-response category. \\
+
+Continuing prevention and sustainment &
+Relevant formal findings and conditional evidence records &
+Deliver strict processing and preflight controls, invariant-driven parsing,
+checked arithmetic, differential conformance tests, governed extension loading,
+privacy-lifecycle controls, provenance, release gates, and reassessment. &
+Phases~2--4 may run in parallel. Structural work does not defer earlier
+treatment or acquire an inherent-risk tier of its own. \\
+
+\end{longtable}
+\endgroup
+
+This ordering also reconciles the chapters. The application chapter owns the
+only Immediate route. The core and tool chapter combines Near-term treatment of
+confirmed affected High and upper-bound-High scope with Planned resource controls and
+longer-term class prevention. The independent-implementation chapter owns two
+Planned interoperability treatments. Extension privacy and supply-chain
+mismatch themes remain evidence actions until a concrete affected population
+and harm are established. The wrappers and long-term-access chapters create no
+additional formal priority in this revision. Appendix~\ref{app:phased-roadmap}
+then translates these lanes into accountable work packages without changing
+their inherent risk.
+
+\subsection{Significance of the 2026 Developments}
+
+The Hugging Face incident and HDF5 issue \#6618 sharpen the application-boundary
+conclusion. The incident demonstrates that a valid, documented external-storage
+capability can become a repeatable disclosure mechanism when an automatic
+service supplies filesystem authority on behalf of an untrusted file. That
+evidence supports Immediate containment of equivalent deployments and the need
+for unified, enforcement-coupled external-resource policy. It does not support
+reclassifying the mechanism as a core parser vulnerability, treating a policy
+proposal as an implemented control, or assigning the incident's Critical tier
+to every HDF5 consumer
+\cite{huggingface-agent-intrusion-2026,
+hdfgroup-mechanism-not-vulnerability-2026,h5py-gh-issue-2891,
+hdf5-gh-issue-6618}.
+
+The PureHDF case sharpens the safety and interoperability conclusion in a
+different way. Older-reader acceptance of contradictory chunk metadata did not
+make the file conforming, while the separate sufficient-but-nonminimal case
+shows that stricter validation can itself reject a permitted encoding. Together
+the cases require a normative invariant decision, paired positive and negative
+fixtures, exact supported-reader verification, an inventory of affected legacy
+files, and deterministic repair or migration. The correct response is neither
+permissiveness by default nor strictness without compatibility evidence
+\cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432,hdf5-gh-issue-6534,
+purehdf-gh-issue-164}.
+
+The developments therefore reinforce the rubric rather than reorder it by
+recency or publicity. The Hugging Face evidence supports a Critical
+application-boundary scenario with an Immediate conditional response; the two
+independent-implementation cases support Moderate safety scenarios with Planned
+treatment. Both show why the enforcing actor, affected scope, consequence, and
+acceptance evidence must be explicit.
+
+\subsection{Assurance, Closure, and Residual Risk}
+
+This report does not establish that any proposed mitigation has been adopted or
+that current residual risk has been reduced. Unless a record expressly states
+otherwise, the assessment relied on public document and artifact examination
+rather than independent reproduction. Current installed populations, exact fix
+coverage across supported releases, and deployment-specific control
+effectiveness remain incomplete. Every roadmap package is therefore
+\emph{Proposed / implementation not verified} at publication, and no
+residual-risk acceptance is recorded.
+
+Priority becomes an auditable commitment only after the roadmap authority
+adopts or modifies the plan, defines the census boundary, assigns named owners
+and due dates, and preserves finding-by-scope response records. A concrete
+finding may close after verified local treatment removes its scoped scenario
+and the accountable authority records the residual-risk disposition; the
+separate recurrence-prevention program remains open until its own acceptance
+evidence passes. Every package requires independent verification and a
+residual-risk disposition. For High and Critical scope, the verifier must also
+be separate from the package owner, rollout approver, and risk acceptor.
+
+The practical conclusion is consequently twofold. Known affected populations
+should be treated on their response clocks without waiting for architectural
+work, and HDF5's recurring classes should be addressed structurally without
+pretending that local closure proves class elimination. Applied together, those
+tracks convert the report from a catalog of concerns into a testable mitigation
+program: constrain file-selected capabilities at authority boundaries, validate
+file-derived state before trusted object construction, decide compatibility
+against normative evidence, and govern privacy across the full data lifecycle.
+
+\end{document}

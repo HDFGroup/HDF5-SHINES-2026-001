@@ -8,13 +8,18 @@
 \section{HDF5 Core Library and File Format}
 \label{sec:core-lib-format}
 
-\subsection{Accidents Waiting to Happen -- HDF5 Safety}
+\subsection{HDF5 Safety Observations and Evidence Gaps}
 
 \begin{itemize}
     \item Disk full~\cite{forum-11714}
     \item File corruption~\cite{forum-file-corruption}
     \item Long-term data accessibility and interpretability, see section~\ref{sec:long-haul}
 \end{itemize}
+
+These observations do not establish response urgency. The bounded
+storage-exhaustion scenario remains \code{CORE-SAFE-001} (NE) pending the
+evidence study in \code{RM-2D}; the long-term-access discussion creates no
+additional formal finding in this revision.
 
 \subsection{Verify and Verify -- HDF5 Security}
 
@@ -27,12 +32,13 @@
 A CVE history summary is included in Appendix~\ref{app:cve-history-summary}.
 The list mixes true HDF5-library issues, removed-tool issues,
 duplicate/rejected/not-HDF5 entries, and entries with no commit URL.
-The main pattern is not “many unrelated bugs”; it is repeated failure to validate
-file-derived structure sizes, offsets, counts, message lengths, continuation chunks,
-datatype metadata, or filter parameters before using them in low-level C memory
-operations. The 2025 entries alone show repeated heap overflows, use-after-free,
+A recurring class represented in the selected history is failure to validate
+file-derived structure sizes, offsets, counts, message lengths, continuation
+chunks, datatype metadata, or filter parameters before using them in low-level
+C memory operations. The 2025 entries include heap overflows, use-after-free,
 null dereference, memory leak, and resource-consumption defects across object
-headers, file-space metadata, type conversion, filters, and metadata cache code.
+headers, file-space metadata, type conversion, filters, and metadata cache
+code. This qualitative clustering does not estimate ecosystem frequency.
 
 The fix commentary confirms that several CVEs were symptoms of corrupted metadata
 not being rejected early. (Examples: the file-space page-size fix added a sanity
@@ -42,8 +48,8 @@ the self-referential continuation-message fix checks expected versus actual
 deserialized object-header chunks; and the cache-image fix added buffer-size
 arguments, overflow checks, input validation, and cleanup.)
 
-The major root-cause categories are tighter than the CVE count
-suggests, and are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}.
+The observed root-cause categories are more compact than a CVE-by-CVE list and
+are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}.
 
 \begingroup
 \small
@@ -54,14 +60,14 @@ suggests, and are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}.
 \setlength{\LTright}{-0.7in}
 
 \begin{longtable}{@{}p{0.28\widetablewidth}p{0.68\widetablewidth}@{}}
-\caption{Major root-cause categories in the HDF5 CVE history}
+\caption{Observed root-cause categories in the selected HDF5 CVE history}
 \label{tab:hdf5-cve-root-cause-categories}\\
 \hline
 \textbf{Root-cause category} & \textbf{What it means for HDF5} \\
 \hline
 \endfirsthead
 
-\caption[]{Major root-cause categories in the HDF5 CVE history, continued}\\
+\caption[]{Observed root-cause categories in the selected HDF5 CVE history, continued}\\
 \hline
 \textbf{Root-cause category} & \textbf{What it means for HDF5} \\
 \hline
@@ -74,7 +80,7 @@ suggests, and are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}.
 \endlastfoot
 
 unchecked file-derived sizes / counts / offsets &
-The dominant class. HDF5 metadata controls object layout, heap blocks, chunks,
+A recurring evidenced class. HDF5 metadata controls object layout, heap blocks, chunks,
 dataspaces, filters, links, and type descriptors. When those fields are malformed,
 C code later trusts them. \\
 inconsistent internal bookkeeping &
@@ -90,7 +96,8 @@ unsafe cleanup/lifetime paths &
 Use-after-free, double-free, leaks, and null dereferences show that malformed input
 often breaks unwinding logic as much as the primary decode logic. \\
 unbounded traversal, recursion, loop-progress, and resource-limit failures & 
-External-reference/path-opening behavior is a policy boundary, not necessarily a parser memory-safety defect.\\
+File-controlled graphs, dimensions, and metadata can drive recursion, repeated
+work, or allocation without a structural progress rule or explicit budget.\\
 legacy tool attack surface &
 \code{gif2h5}, HDF to GIF conversion, \code{h5dump}, and \code{h5repack} appear
 repeatedly. Removal of \code{gif2h5} was a structural mitigation, not just a patch. \\
@@ -105,11 +112,11 @@ as reviewed HDF5 fixes without qualification. \\
 
 \subsubsection{Introduction} 
 
-Privacy risks in the HDF5 core library and file format are not accidental; as discussed
-in the Introduction, they are systematic and arise from multiple factors. The design and
-implementation of the HDF5 file format and library present one important source of such risks.
-Additional risks emerge from scientific workflows, software ecosystems, interoperability
-mechanisms, and evolving data usage contexts.
+HDF5 design features create predictable privacy-exposure mechanisms, but
+realized harm, exposure, and any lifecycle trend are deployment-specific. The
+file format and library are one source of exposure surfaces; scientific
+workflows, software ecosystems, interoperability mechanisms, and changing data
+contexts can add others.
 
 Before describing the assets that require protection in HDF5 and the mechanisms through
 which privacy exposure may occur, it is important to emphasize several fundamental
@@ -131,9 +138,11 @@ characteristics of HDF5 and the audit approach adopted in this document.
     \item \emph{HDF5 does not manage authentication, authorization, or filesystem protection}. However, privacy
           risks extend beyond traditional security concerns. Sensitive information may be exposed during
           legitimate data use by authorized users, even within highly secure computing environments.
-    \item \emph{The risk of sensitive information exposure generally increases over the data lifecycle}.
-          Sensitive information stored in HDF5 may be exposed during any stage of the lifecycle,
-          including data creation, processing, storage, sharing, transfer, reuse, and archival.
+    \item \emph{Additional lifecycle stages can add privacy-exposure surfaces}.
+          Sensitive information stored in HDF5 may be exposed during data creation,
+          processing, storage, sharing, transfer, reuse, or archival; classification,
+          minimization, access restrictions, and lifecycle controls can increase or
+          reduce the realized deployment risk.
     \item \emph{HDF5 extensibility mechanisms and associated software ecosystems may alter the privacy characteristics of data}.
           Features such as filters, Virtual Object Layer (VOL) connectors, Virtual File Drivers (VFDs), and
           external applications, including conversion and analysis tools, may introduce new privacy
@@ -454,29 +463,56 @@ tools may transparently access data stored in remote services, external storage 
 or non-HDF5 data sources exposed through connectors. Consequently, privacy exposure 
 is not necessarily limited to the HDF5 file specified on the command line but may extend to 
 the broader HDF5 ecosystem.
-\subsection{Audit Findings and Mitigation Priorities}
+\subsection{Audit Findings and Mitigation Planning}
+
+Formal core and official-tool findings are registered as
+\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001},
+\code{CORE-PRIV-001}, and \code{CORE-SAFE-001} in
+Appendix~\ref{app:findings-register}. The two shared-event security findings
+are provisional historical parser-boundary scenarios; they do not assert that
+every current HDF5 release contains every represented defect.
+
+\paragraph{Priority reconciliation.}\mbox{}\\
+The response order comes from Table~\ref{tab:findings-response-routing}, not
+from the order of recommendations in this chapter. Confirmed affected scope for
+\code{CORE-SEC-001}, \code{CORE-TOOL-001}, and \code{CORE-PRIV-001} receives
+Near-term treatment; \code{CORE-SEC-002} receives Planned treatment; and
+\code{CORE-SAFE-001} requires the bounded evidence study in \code{RM-2D}
+before a tier or urgency can be assigned. Phase~1 patching, isolation, and
+privacy controls treat concrete populations. Phases~2--4 provide reusable
+guardrails, class prevention, and sustainment; that structural work may begin
+in parallel but does not extend an earlier response clock.
 
 \subsubsection{Security and Safety}
 
-The blunt conclusion: HDF5’s CVE history is mostly malformed-file
-parsing pressure against a complex binary metadata machine.
-The fix direction should not be “patch each crash.” It should be
-systematic metadata validation at decode boundaries, explicit
-invariants for each on-disk structure, fuzz corpora tied to invariants,
-and hard separation between parser acceptance and internal object
-construction.
+The selected CVE history shows repeated malformed-file parsing pressure
+against a complex binary metadata machine.
+Affected variants should be patched or contained promptly. Prevention must not
+stop at those local repairs: it should add systematic metadata validation at
+decode boundaries, explicit invariants for each on-disk structure, fuzz corpora
+tied to invariants, and hard separation between parser acceptance and internal
+object construction.
 
 \paragraph{Goal:} HDF5 should be able to parse any byte stream as hostile input
 and either reject it cleanly or produce a validated internal object graph.
 Anything else is security debt.
 
-\paragraph{Implementation program:} define parser invariants first, harden decode
-boundaries, then make fuzzing, CI gates, and release governance
-enforce them.
+\paragraph{Structural prevention program:} maintain current-scope fixes or
+containment while bootstrapping invariants, checked primitives, regression and
+fuzz harnesses, review gates, and metrics in parallel. Migrate each decode
+boundary in independently releasable tranches once its invariants and checked
+primitives exist, and make the gates enforce each accepted tranche. This
+program neither precedes nor delays Phase~1 treatment or Phase~2 release
+safeguards.
 
-The next priority is parser normalization: decode file bytes into a
-validated intermediate form before constructing internal objects,
-so malformed metadata cannot reach trusted C paths.
+The \code{CORE-S} identifiers below are stable identifiers for recommendations
+in the core-security track. Their numbers do not express risk, urgency, effort,
+dependency, or implementation order.
+
+Parser normalization is a central structural control: decode file bytes into a
+validated intermediate form before constructing internal objects so malformed
+metadata cannot reach trusted C paths. It is a recurrence-prevention control,
+not a substitute for patching or isolating a known affected release.
 
 Our goal should be: \textit{make malformed HDF5 files boring}.
 Every corrupted file should terminate in a controlled
@@ -496,12 +532,13 @@ B-tree nodes, object headers, global heaps, local heaps, and
 free-space metadata. That means the library is parsing a dense graph
 of mutually referential, \textit{attacker-controlled} metadata.
 
-\subsubsection*{Priority 0: Stop closing CVEs as “fixed” unless the class is killed}
+\subsubsection*{Recommendation CORE-S0: Separate defect closure from recurring-class closure}
 
-Make this rule immediate:
+Adopt the following rule:
 
-
-\textit{If the fix is not a structural change that eliminates the root cause, then it is not a fix.}
+\textit{A verified local repair may close the affected defect, but it must not
+be represented as elimination of the recurring class without structural
+evidence.}
 
 For every new CVE or crash:
 
@@ -511,14 +548,14 @@ For every new CVE or crash:
 \renewcommand{\arraystretch}{1.15}
 
 \begin{longtable}{@{}p{0.30\linewidth}p{0.66\linewidth}@{}}
-\caption{Required artifacts for closing HDF5 CVEs or crash reports}
+\caption{Required artifacts for defect closure and recurring-class tracking}
 \label{tab:cve-closure-artifacts}\\
 \hline
 \textbf{Required artifact} & \textbf{Purpose} \\
 \hline
 \endfirsthead
 
-\caption[]{Required artifacts for closing HDF5 CVEs or crash reports, continued}\\
+\caption[]{Required artifacts for defect closure and recurring-class tracking, continued}\\
 \hline
 \textbf{Required artifact} & \textbf{Purpose} \\
 \hline
@@ -533,16 +570,18 @@ For every new CVE or crash:
 crashing input & becomes a permanent corpus seed \\
 minimized input & used in quick PR regression \\
 root-cause category & maps to a known invariant class \\
-invariant update & prevents sibling bugs \\
+invariant update & records and advances prevention of sibling bugs \\
 sanitizer regression & proves no crash, no leak, no UAF \\
 negative test & checks controlled failure code \\
 reviewer checklist update & prevents reintroduction \\
 \end{longtable}
 \endgroup
 
-This is the first cultural shift. A patch that only adds a local \texttt{if}
-is tolerated for embargoed fixes, but the issue remains open as a
-\textbf{class bug} until the invariant framework catches sibling cases.
+Variant closure requires evidence that the affected path is repaired or
+contained and that its negative and sanitizer regressions pass. A local
+\texttt{if} may therefore be a valid treatment, including for an embargoed
+fix, while the corresponding \textbf{class-prevention record} remains open
+until the invariant framework and related gates cover sibling cases.
 
 Recent commits show the right direction, but too locally. One fix
 added a sanity check immediately after reading file-space page size
@@ -552,7 +591,7 @@ Another hardened \texttt{H5C\_\_reconstruct\_cache\_entry()} by adding
 buffer-size tracking, overflow checks, input validation, and safe cleanup.~\cite{commit_3914bb7}
 Those are exactly the moves to systematize.
 
-\subsubsection*{Priority 1: Build an invariant registry for the file format}
+\subsubsection*{Recommendation CORE-S1: Build an invariant registry for the file format}
 
 Create a versioned document and machine-readable metadata file, for example:
 
@@ -588,7 +627,9 @@ cves:
   - CVE-2025-6816
 \end{minted}
 
-Start with these invariant families.
+The following are candidate initial invariant-registry families. Tranche order
+must be recorded in the implementation plan from affected scope, coverage gaps,
+and concrete enabling dependencies; this list is not a risk rank.
 
 \begingroup
 \small
@@ -599,16 +640,16 @@ Start with these invariant families.
 \setlength{\LTright}{-0.7in}
 
 \begin{longtable}{@{}p{0.16\widetablewidth}p{0.80\widetablewidth}@{}}
-\caption{Invariant families to enforce first}
+\caption{Candidate initial invariant-registry families}
 \label{tab:invariant-families-first}\\
 \hline
-\textbf{Area} & \textbf{Invariants to enforce first} \\
+\textbf{Area} & \textbf{Candidate invariants} \\
 \hline
 \endfirsthead
 
-\caption[]{Invariant families to enforce first, continued}\\
+\caption[]{Candidate initial invariant-registry families, continued}\\
 \hline
-\textbf{Area} & \textbf{Invariants to enforce first} \\
+\textbf{Area} & \textbf{Candidate invariants} \\
 \hline
 \endhead
 
@@ -657,7 +698,7 @@ library \\
 
 This registry becomes the source of truth for code review, tests, fuzzing, and documentation.
 
-\subsubsection*{Priority 2: Introduce a two-phase parser boundary}
+\subsubsection*{Recommendation CORE-S2: Introduce a two-phase parser boundary}
 
 Right now, too many paths appear to do this:
 \begin{verbatim}
@@ -701,7 +742,7 @@ const uint8_t **pp
 unless there is also an explicit \texttt{p\_end} or remaining-size counter. The cache-image fix already moved in this direction
 by adding a buffer-size argument and bounds checks.~\cite{commit_3914bb7}
 
-\subsubsection*{Priority 3: Centralize checked arithmetic and allocation}
+\subsubsection*{Recommendation CORE-S3: Centralize checked arithmetic and allocation}
 
 Most parser bugs become exploitable when metadata reaches allocation, copy, or pointer arithmetic. Add a small, mandatory checked-arithmetic layer.
 
@@ -753,7 +794,7 @@ The 2024 security commit added multiplication-overflow checks for
 dataset storage size and checks against file bounds.~\cite{commit_ce53bc0}
 That pattern should become a library-wide rule, not a local repair.
 
-\subsubsection*{Priority 4: Create security profiles for file opening}
+\subsubsection*{Recommendation CORE-S4: Create security profiles for file opening}
 
 Add explicit modes. Do not rely on users to infer safe behavior.
 \begin{minted}{c}
@@ -815,28 +856,31 @@ that \texttt{HDF5\_PLUGIN\_PRELOAD=::} disables all dynamic plugins.
 Turn that capability into a first-class security policy, not an
 environment-variable trick.
 
-\subsubsection*{Priority 5: Fuzz by structure, not just by whole-file crashes}
+\subsubsection*{Recommendation CORE-S5: Fuzz by structure, not just by whole-file crashes}
 
 Whole-file fuzzing is necessary but insufficient. It finds symptoms. Structure-aware fuzzing finds families.
 
-Build fuzz targets in this order:
+Treat the following as an initial harness-investment portfolio, not a finding
+rank or response order. Known finding fixtures and changed paths enter
+regression immediately; new harnesses may proceed in parallel, with tranche
+order recorded from shared-enablement and coverage evidence.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.15}
 
-\begin{longtable}{@{}r p{0.40\linewidth}p{0.48\linewidth}@{}}
-\caption{Structure-aware fuzzing priorities}
-\label{tab:structure-aware-fuzzing-priorities}\\
+\begin{longtable}{@{}p{0.38\linewidth}p{0.58\linewidth}@{}}
+\caption{Candidate structure-aware fuzzing portfolio}
+\label{tab:structure-aware-fuzzing-sequence}\\
 \hline
-\textbf{Order} & \textbf{Fuzz target} & \textbf{Why first} \\
+\textbf{Candidate target} & \textbf{Coverage rationale} \\
 \hline
 \endfirsthead
 
-\caption[]{Structure-aware fuzzing priorities, continued}\\
+\caption[]{Candidate structure-aware fuzzing portfolio, continued}\\
 \hline
-\textbf{Order} & \textbf{Fuzz target} & \textbf{Why first} \\
+\textbf{Candidate target} & \textbf{Coverage rationale} \\
 \hline
 \endhead
 
@@ -846,14 +890,14 @@ Build fuzz targets in this order:
 \hline
 \endlastfoot
 
-1 & object-header message decoder & many paths flow through it \\
-2 & datatype decoder and converter & high exploitability and complex nested metadata \\
-3 & dataspace and selection decoder & rank, count, hyperslab, and point math \\
-4 & layout and chunk index decoder & storage-size, address, and chunk-product risks \\
-5 & free-space and local/global heap decoders & repeated historical overflow and list-corruption class \\
-6 & filter pipeline and scale-offset filter & compression/decompression boundary risk \\
-7 & metadata cache image reconstruction & high complexity and recent CVE pattern \\
-8 & \code{h5dump}/\code{h5repack} rendering paths & tool paths often bypass library assumptions \\
+object-header message decoder & shared decode paths and continuation structures \\
+datatype decoder and converter & complex nested metadata and conversion operations \\
+dataspace and selection decoder & rank, count, hyperslab, and point arithmetic \\
+layout and chunk index decoder & storage-size, address, and chunk-product checks \\
+free-space and local/global heap decoders & historical overflow and list-corruption variants \\
+filter pipeline and scale-offset filter & compression and decompression boundaries \\
+metadata cache image reconstruction & complex bounds, lifecycle, and cleanup paths \\
+\code{h5dump}/\code{h5repack} rendering paths & tool paths that add handling and rendering behavior \\
 \end{longtable}
 \endgroup
 
@@ -927,7 +971,7 @@ CVE closure & crashing input added to corpus and mapped to invariant \\
 \end{longtable}
 \endgroup
 
-\subsubsection*{Priority 6: Make malformed-input regression cheap}
+\subsubsection*{Recommendation CORE-S6: Make malformed-input regression cheap}
 
 Create this repository layout:
 \begin{verbatim}
@@ -973,7 +1017,7 @@ invariant:
 
 This gives maintainers a fast way to prove that old crashes remain dead.
 
-\subsubsection*{Priority 7: Add a security-review checklist that blocks risky parser changes}
+\subsubsection*{Recommendation CORE-S7: Add a security-review checklist that blocks risky parser changes}
 
 Every PR touching decode, encode, object lifecycle, filters, tools, or plugin
 loading should answer:
@@ -1026,7 +1070,7 @@ fail PR if new object traversal lacks max-depth or visited-set logic
 
 This will annoy contributors at first. Good. That friction is cheaper than post-release CVEs.
 
-\subsubsection*{Priority 8: Separate compatibility from safety}
+\subsubsection*{Recommendation CORE-S8: Separate compatibility from safety}
 
 HDF5’s backward compatibility is valuable, but it creates a security trap: old,
 permissive parsing keeps malformed legacy structures alive.
@@ -1069,7 +1113,7 @@ unknown message with unsafe flags & rejected unless profile explicitly allows pr
 The point is not to break legitimate archives. The point is to stop treating
 corrupted metadata as compatibility.
 
-\subsubsection*{Priority 9: Harden tools as separate attack surfaces}
+\subsubsection*{Recommendation CORE-S9: Harden tools as separate attack surfaces}
 
 Do not assume \code{h5dump}, \code{h5repack}, converters, and test utilities are
 less important. They are often the first thing users run on untrusted files.
@@ -1112,9 +1156,10 @@ plugin-dependent tools & warn or require allowlist \\
 A dangerous file should not become more dangerous because the user tried to
 inspect it.
 
-\subsubsection*{Priority 10: Plugin policy and signed extensions}
+\subsubsection*{Recommendation CORE-S10: Plugin policy and signed extensions}
 
-Plugins are a different risk class. They are executable code loaded at runtime.
+Plugins are executable extension code requiring a distinct control domain; this
+statement is not a risk rating. They are loaded at runtime.
 HDF5’s plugin system supports dynamically loaded filter plugins and lets users
 implement custom filters. That is useful, but it must not be invisible in
 untrusted mode.
@@ -1144,13 +1189,18 @@ limits:
   max_alloc_bytes: 1073741824
 \end{minted}
 
-Do not start with a perfect PKI. Start with allowlisted hashes and paths.
-Then add signatures. The signed-plugin work matters, but without resource limits
-a signed buggy plugin can still crash the process.
+For affected deployments, disable plugins or restrict loading to protected,
+explicitly approved paths and artifacts within the applicable response clock.
+Hash allowlists may be an interim control; supported signature verification and
+resource budgets should be configured and tested independently when applicable.
+Neither waits for a complete PKI nor extends a finding's response horizon, and
+a valid signature does not make a buggy plugin resource-safe.
 
-\subsubsection*{Priority 11: Supply-chain controls after parser controls}
+\subsubsection*{Recommendation CORE-S11: Coordinate supply-chain controls with parser hardening}
 
-Supply-chain work matters, but it is second-order relative to malformed-file parsing. Do it in parallel only after the parser program has owners.
+Supply-chain work can proceed in parallel with parser hardening. Assign it an
+owner and scope independently, and record any concrete cross-track dependency
+rather than inferring order from an unscored comparison of the risk areas.
 
 Minimum controls:
 
@@ -1193,7 +1243,7 @@ it without cost. The SLSA GitHub generator provides tooling for SLSA provenance
 on GitHub Actions, including provenance that users can verify to understand how
 an artifact was built.
 
-\subsubsection*{Priority 12: Metrics that force the right behavior}
+\subsubsection*{Recommendation CORE-S12: Metrics that force the right behavior}
 
 Use metrics that measure class elimination, not activity.
 
@@ -1226,8 +1276,8 @@ CVE corpus pass rate under ASan/UBSan/LSan & 100\% \\
 parser decode functions with explicit buffer size or cursor & 100\% \\
 parser allocations through checked wrappers & 100\% \\
 parser memcpy/memmove through checked wrappers or reviewed exemption & 100\% \\
-high-risk structures with invariant files & 100\% \\
-high-risk structures with fuzz target & 100\% \\
+structures in the versioned declared tranche with invariant files & 100\% \\
+structures in the versioned declared tranche with registered fuzz targets & 100\% \\
 new CVEs that add invariant updates & 100\% \\
 time from new crash to minimized corpus seed & under 48 hours \\
 time from minimized seed to invariant classification & under 5 business days \\
@@ -1236,46 +1286,46 @@ untrusted profile test coverage & every release \\
 \end{longtable}
 \endgroup
 
-Track this in a public dashboard. Not because dashboards fix bugs. They stop the
-team from pretending that “more tests” is a plan.
+Track the versioned tranche denominator and results in a public dashboard. The
+dashboard does not fix defects; it makes declared coverage and gaps auditable.
 
 \subsubsection{Privacy}
 
-In this section we summarize privacy threats in HDF5 based on the audit findings and 
-describe mitigation strategies and their priorities.
+This section summarizes the Privacy Exposure Model's mechanisms and the bounded
+\code{CORE-PRIV-001} finding; the other mechanisms are not separately rated.
+It then describes corresponding mitigation strategies.
 
 \paragraph{Overview of Privacy Threat Categories}\mbox{}\\
 
 The HDF5 Privacy Exposure Model ~\cite{PVEM} identifies 
-seven categories of privacy threats that describe the principal mechanisms through which 
-sensitive information may be unintentionally exposed in HDF5. Privacy threats primarily 
-arise during normal scientific data creation, processing, sharing, and preservation. 
-They are a consequence of HDF5's self-describing data model, rich metadata capabilities, 
-extensible software architecture, broad interoperability across scientific applications, 
-and prolonged data life cycle.
+seven exposure families that describe mechanisms through which sensitive
+information may be unintentionally exposed in HDF5. These mechanisms can arise
+during normal scientific data creation, processing, sharing, and preservation;
+their frequency, affected population, and consequence remain
+deployment-specific.
 
 Several threat categories involve direct disclosure of information stored within HDF5 files. 
-Metadata Exposure (P1) occurs when descriptive information, such as object names, attributes, 
+Semantic Metadata Exposure (P1) occurs when descriptive information, such as object names, attributes,
 datatype member names, or other user-defined metadata, reveals sensitive contextual 
-information even when the underlying scientific data are protected. Structural Metadata 
-Exposure (P2) arises from examination of HDF5's internal storage structures, 
+information even when the underlying scientific data are protected. Structural or On-disk
+Leakage (P2) arises from examination of HDF5's internal storage structures,
 including file layout, storage organization, and implementation metadata, which may 
 disclose characteristics of the stored data without requiring HDF5 software. 
-Raw Data Exposure (P3) addresses situations in which information about scientific data 
+Raw-data Pattern Leakage (P3) addresses situations in which information about scientific data
 becomes observable through storage patterns, embedded textual descriptions, or 
 other implementation artifacts rather than through intended data access.
 
-Another group of threats results from routine scientific data processing. Unintended 
-Data Alteration or Inclusion (P4) occurs when software automatically generates, expands, 
-or preserves additional information during data conversion or processing. 
-Data Aggregation and Correlation (P5) recognizes that individually non-sensitive 
+Another group of threats results from routine scientific data processing. Unintended
+Inclusion During Processing (P4) occurs when software automatically generates, expands,
+or preserves additional information during data conversion or processing.
+Aggregation, Correlation, or Inference (P5) recognizes that individually non-sensitive
 datasets may collectively reveal sensitive information when combined or interpreted 
-together. Persistent Data Beyond Intended Usage (P6) addresses privacy risks 
+together. Persistence Beyond Intended Lifetime (P6) addresses privacy risks
 associated with temporary files, metadata snapshots, cached datasets, 
 archived copies, and other artifacts that remain accessible after their 
 intended purpose has ended.
 
-The remaining threat category Misplaced Trust in Privacy by format (P7) reflects broader 
+The remaining threat category Misplaced Trust in Privacy by Format (P7) reflects broader
 characteristics of modern HDF5 ecosystems. Examples include: 
 
 \begin{itemize}
@@ -1293,14 +1343,14 @@ original privacy protections and governance mechanisms applied to the data.
 
 \end{itemize}
 
-Although presented as distinct categories, these threats frequently occur together. 
+Although presented as distinct categories, these mechanisms can occur together.
 A single scientific workflow may enrich metadata during format conversion, aggregate 
 datasets from multiple sources, generate temporary processing artifacts, and 
 replicate results across multiple storage systems. Consequently, privacy risks should 
 be evaluated across the complete scientific data lifecycle rather than 
 by considering individual HDF5 files in isolation.
 
-\paragraph{Mitigation Priorities}\mbox{}\\
+\paragraph{Recommendations}\mbox{}\\
 
 Because HDF5 was designed to maximize scientific data sharing, portability, 
 interoperability, and long-term usability rather than enforce privacy, 
@@ -1310,10 +1360,19 @@ lifecycle, including data creation, processing, storage, sharing, transfer,
 and archival. Privacy should be treated as a property of the complete HDF5 ecosystem 
 including applications, plugins, workflows, storage systems, and organizational 
 practices rather than solely of the HDF5 file format. 
-Here we list mitigation strategies and their priorities.
+The following \code{CORE-PRIV-S} identifiers identify recommendations in this
+track. Their numbers do not express risk, urgency, effort, dependency, or
+implementation order.
 
-\paragraph{Priority 1: \emph{Privacy exposure awareness}}\mbox{}\\
+For a confirmed \code{CORE-PRIV-001} sharing boundary, the Near-term route
+applies: \code{RM-1D} first bounds the population and recipients and tests
+minimization and recipient controls; \code{RM-2G} is conditional when policy
+still requires whole-file or equivalent all-metadata protection.
+\code{CORE-PRIV-S2} and extension controls support the unrated
+\code{EXT-PRIV-001} evidence and assurance track and inherit no urgency from
+\code{CORE-PRIV-001}.
 
+\paragraph{Recommendation CORE-PRIV-S1: \emph{Privacy exposure awareness}}\mbox{}\\*
 Scientists, software developers, data stewards, and infrastructure providers should 
 recognize that HDF5's self-describing nature inherently exposes contextual 
 information in many ways. Privacy reviews should therefore evaluate not only 
@@ -1322,11 +1381,11 @@ derived products, and information that may be inferred through aggregation or
 correlation. Reviews should also take into consideration possible privacy 
 exposure during data lifecycle. 
 
-\paragraph{Priority 2: \emph{Privacy exposure through HDF5 tools and plugins awareness}}\mbox{}\\
+\paragraph{Recommendation CORE-PRIV-S2: \emph{Privacy exposure through HDF5 tools and plugins awareness}}\mbox{}\\*
 The HDF5 ecosystem extends beyond the core HDF5 software (i.e., file format and the library), 
 and includes a diverse collection of command-line utilities, visualization tools, 
 analysis libraries, VOL connectors, VFDs, filters, and third-party applications. 
-These components frequently generate additional outputs such as logs, diagnostic 
+These components can generate additional outputs such as logs, diagnostic
 messages, temporary files, metadata snapshots, converted datasets, and cached 
 intermediate results that may expose sensitive information beyond the contents of the 
 original HDF5 file. Furthermore, plugins may introduce new metadata, or transform 
@@ -1337,8 +1396,7 @@ implications of their tools, minimize unnecessary generation of sensitive artifa
 and provide users with mechanisms to control logging, metadata generation, and 
 retention of intermediate products.
 
-\paragraph{Priority 3: \emph{Privacy-aware system design}}\mbox{}\\
-
+\paragraph{Recommendation CORE-PRIV-S3: \emph{Privacy-aware system design}}\mbox{}\\*
 HDF5 software systems should be built with data privacy in mind. Applications should 
 minimize collection and retention of unnecessary metadata, avoid embedding sensitive 
 information in object names or descriptive attributes, remove temporary processing 
@@ -1347,8 +1405,7 @@ generated metadata introduced during data conversion or interoperability.
 Workflow designers should review intermediate products, logs, cached datasets, and 
 derived files before publication or long-term archival. 
 
-\paragraph{Priority 4: \emph{Data encryption as privacy control}}\mbox{}\\
-
+\paragraph{Recommendation CORE-PRIV-S4: \emph{Data encryption as privacy control}}\mbox{}\\*
 Encryption represents an important but limited privacy control. 
 
 Currently, HDF5 doesn’t support data encryption that allows I/O on encrypted 

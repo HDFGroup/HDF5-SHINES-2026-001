@@ -1,0 +1,597 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section{Findings Register}
+\label{app:findings-register}
+
+This appendix is the authoritative register of formal findings for this
+revision and maintains a separate evidence-and-scoping backlog. It applies the
+method in Section~\ref{sec:risk-rubric} to public evidence available through
+August 27, 2026. A formal finding is a concrete adverse-event scenario at a
+stated boundary; it is not a score assigned to a technology, feature, CVE
+count, recommendation, or project. Broad mechanisms that do not yet define an
+adverse consequence and affected population appear only in
+Table~\ref{tab:findings-evidence-backlog}; they are not formal findings. Unless
+a record expressly says otherwise, the assessment did not independently
+reproduce the reported condition and did not assess the current installed
+population.
+
+Table~\ref{tab:findings-register-summary} records inherent-risk axes and tiers
+where evaluated, together with every finding's rating status. It does not imply
+that every version or deployment is affected today. A public fix, issue
+closure, or reporter statement is noted where relevant, but it is not credited
+as current residual-risk reduction without sufficient evidence of the
+implemented control and its coverage. An \emph{NE} entry is an evidence or
+scoping gap, not a Low-risk conclusion.
+
+Linked recommendation identifiers show intended control coverage only.
+Response routing is shown separately in
+Table~\ref{tab:findings-response-routing}. Implementation dependencies, effort,
+delivery sequence, ownership, acceptance evidence, and residual-risk decisions
+do not alter the inherent ratings below and are not populated in this findings
+register. The proposed work packages, dependencies, accountable roles, effort,
+and acceptance gates are maintained separately in
+Appendix~\ref{app:phased-roadmap}; the linked identifiers must not be read as
+completed planning records.
+
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.7in}
+\setlength{\LTright}{-0.7in}
+\begin{longtable}{@{}p{0.14\widetablewidth}p{0.33\widetablewidth}p{0.075\widetablewidth}p{0.075\widetablewidth}p{0.10\widetablewidth}p{0.13\widetablewidth}p{0.09\widetablewidth}@{}}
+\caption{Formal findings and report-wide rating status}
+\label{tab:findings-register-summary}\\
+\hline
+\textbf{ID} & \textbf{Scenario shorthand} & \textbf{Dim.} & \textbf{I/E} &
+\textbf{Tier} & \textbf{Status} & \textbf{Conf.} \\
+\hline
+\endfirsthead
+
+\caption[]{Formal findings and report-wide rating status, continued}\\
+\hline
+\textbf{ID} & \textbf{Scenario shorthand} & \textbf{Dim.} & \textbf{I/E} &
+\textbf{Tier} & \textbf{Status} & \textbf{Conf.} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\code{CORE-SEC-001} &
+Malformed on-disk metadata reaches memory-unsafe core-library paths in
+historically affected releases. & Security & I3/E2--E3 & High & Provisional & Moderate \\
+
+\code{CORE-SEC-002} &
+File-controlled work, allocation, traversal, or error paths terminate or
+exhaust an affected reader. & Security & I2/E2--E3 & Moderate & Provisional & Moderate \\
+
+\code{CORE-TOOL-001} &
+A malicious file triggers the reported \code{h5dump} use-after-free in HDF5
+1.14.1-2 and earlier. & Security & I2--I3/E2 & Moderate--High & Provisional & Moderate \\
+
+\code{CORE-PRIV-001} &
+Sensitive plaintext metadata is disclosed when a file is shared under
+payload-only protection. & Privacy & I2--I3/E2 & Moderate--High & Provisional & Moderate \\
+
+\code{CORE-SAFE-001} &
+Storage exhaustion during write or close may leave an incomplete or corrupted
+file and may cause data loss. & Safety & I2--I4/E? & Not assigned & NE & Low \\
+
+\code{APP-SEC-001} &
+The affected Hugging Face dataset service followed attacker-selected external
+raw-storage paths with worker authority and returned local files. & Security & I3/E4 & Critical & Rated & High \\
+
+\code{APP-SEC-002} &
+Affected Keras legacy-HDF5 model loading executes embedded code despite
+\code{safe_mode=True}. & Security & I3/E2 & High & Rated & High \\
+
+\code{APP-SEC-003} &
+Affected Keras model loading follows attacker-controlled HDF5 external dataset
+references and discloses local files. & Security & I3/E3 & High & Rated & High \\
+
+\code{APP-SEC-004} &
+Affected Keras weight loading allocates from an extreme file-declared shape and
+exhausts memory. & Security & I2/E3 & Moderate & Rated & High \\
+
+\code{APP-SEC-005} &
+TensorFlow 2.17.0 loads HDF5 plugins from an uncontrolled search location,
+enabling local privilege escalation. & Security & I3/E2 & High & Rated & Moderate \\
+
+\code{IND-SAF-001} &
+HDF5 2.0/2.1 exact-width validation rejects a sufficient but nonminimal chunk
+encoding permitted by the specification. & Safety & I2/E2 & Moderate & Rated & High \\
+
+\code{IND-SAF-002} &
+Older permissive readers accept contradictory PureHDF 2.1.2 chunk metadata
+that HDF5 2.0 rejects after upgrade. & Safety & I2/E2 & Moderate & Rated & High \\
+
+\end{longtable}
+\endgroup
+
+\subsection{Evidence and Scoping Backlog}
+
+The observations below identify work needed to determine whether additional
+formal findings exist. They have no impact or exposure axes, risk tier,
+response urgency, or implied Low-risk status.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}p{0.21\linewidth}p{0.29\linewidth}p{0.44\linewidth}@{}}
+\caption{Observations requiring a concrete adverse-event scenario}
+\label{tab:findings-evidence-backlog}\\
+\hline
+\textbf{ID} & \textbf{Observation} & \textbf{Evidence needed for a finding} \\
+\hline
+\endfirsthead
+
+\caption[]{Observations requiring a concrete adverse-event scenario, continued}\\
+\hline
+\textbf{ID} & \textbf{Observation} & \textbf{Evidence needed for a finding} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\code{EXT-PRIV-001} &
+Extensions can move data and metadata across storage, cache, logging, network,
+and executable-plugin boundaries. &
+Identify a deployment, sensitive-data population, unauthorized recipient or
+retention event, affected scope, and resulting harm. \\
+
+\code{SUP-SAFE-001} &
+Downstream builds and workflows can disagree about ABI, linkage, filters,
+plugins, VFDs, parallel features, or file locking. &
+Identify a concrete producer/consumer profile pair, affected population,
+failure mode, recoverability, and recurrence evidence. \\
+
+\end{longtable}
+\endgroup
+
+\subsection{Response Routing}
+
+The routing below follows the default rule in
+Section~\ref{sec:risk-rubric}. Where current residual risk was not evaluated,
+it uses inherent risk as the conservative provisional baseline; a tier range is
+routed at its upper bound. Routing is conditional on confirming the stated
+affected scope and is not a claim that every present deployment needs the same
+action. The target horizons begin when an affected deployment or equivalent
+exposure is identified. They are assessment recommendations, not
+stakeholder-approved delivery commitments, and do not incorporate effort or
+dependencies. In particular, Hugging Face reports that it stopped wrongly
+processing HDF5 external references, but this assessment did not validate the
+implemented control or assign a current residual tier.
+Phases~0--2 of Appendix~\ref{app:phased-roadmap} operationalize these clocks;
+later structural work neither replaces nor extends them.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}p{0.22\linewidth}p{0.29\linewidth}p{0.42\linewidth}@{}}
+\caption{Provisional response urgency and target horizons}
+\label{tab:findings-response-routing}\\
+\hline
+\textbf{Urgency and horizon} & \textbf{Findings} & \textbf{Decision rule for this register} \\
+\hline
+\endfirsthead
+
+\caption[]{Provisional response urgency and target horizons, continued}\\
+\hline
+\textbf{Urgency and horizon} & \textbf{Findings} & \textbf{Decision rule for this register} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+Immediate---before the next untrusted processing job and no later than 24 hours
+after identification & \code{APP-SEC-001} &
+Immediately contain any equivalent service that still automatically follows
+file-selected external resources with access to sensitive local files. The
+historical incident rating is not a current rating of Hugging Face. \\
+
+Near-term---within 30 days & \code{CORE-SEC-001}, \code{CORE-TOOL-001},
+\code{CORE-PRIV-001}, \code{APP-SEC-002}, \code{APP-SEC-003},
+\code{APP-SEC-005} &
+Identify affected releases and exposed deployments, apply available fixes or
+containment, minimize disclosed metadata, and verify the trust boundary. \\
+
+Planned---within 90 days or the next supported release or migration window,
+whichever is sooner & \code{CORE-SEC-002},
+\code{APP-SEC-004}, \code{IND-SAF-001}, \code{IND-SAF-002} &
+Plan treatment and acceptance testing; expedite where an affected production
+pipeline, archive, sensitive-data population, or service is identified. \\
+
+\end{longtable}
+\endgroup
+
+\subsection{Evidence Actions Without Assigned Urgency}
+
+\code{CORE-SAFE-001} requires a bounded API/filesystem scenario and
+recoverability evidence before a tier or urgency can be assigned.
+Items \code{EXT-PRIV-001} and \code{SUP-SAFE-001} require the scenario evidence
+listed in Table~\ref{tab:findings-evidence-backlog}. These are evidence actions,
+not a fifth response-urgency category.
+
+\subsection{Core Library, Tool, and Format Findings}
+
+\subsubsection*{CORE-SEC-001 --- Memory-unsafe processing of malformed metadata}
+
+\noindent\textbf{Scenario.}
+An untrusted originator supplies a crafted HDF5 file to a process using a
+historically affected HDF5 C library. Insufficiently validated file-derived
+sizes, counts, offsets, message state, layout state, filter parameters, or
+datatype state reach allocation, copy, object-construction, or cleanup paths
+and cause memory corruption, including credible process compromise for the
+variants whose primary records support that consequence.
+
+\noindent\textbf{Scope and evidence.}
+The assessed population consists only of deployments matching an affected
+version-and-path pair represented in Appendix~\ref{app:cve-history-summary} and
+processing untrusted files. The H5FS, H5C, H5O, H5T, H5Z, heap,
+dataspace/layout, and vector-copy variants are evidence for the shared adverse
+event, not separately scored objects. A detailed primary report for HDF5 1.8.16
+traces file-controlled array rank to an out-of-bounds heap write and possible
+code execution in the consuming application~\cite{talos-hdf5-2016-0176}; the
+cited later fixes demonstrate early sanity checks, bounds and overflow
+tracking, and controlled rejection replacing unsafe behavior
+\cite{cve_hdf5,commit_804f3ba,commit_3914bb7,commit_ce53bc0}. This record
+excludes termination-only and resource-consumption variants assigned to
+\code{CORE-SEC-002} and the tool-specific UAF assigned to
+\code{CORE-TOOL-001}. It does not assert that every CVE had code-execution
+impact or that a current HDF5 2.x release contains every historical condition.
+
+\noindent\textbf{Rating basis.}
+I3 reflects credible process compromise or major loss of process integrity in
+the evidenced variants. E2 applies to interactive or otherwise constrained
+file processing; E3 applies where an affected deployment automatically ingests
+untrusted files through a common workflow. Both produce a High tier, while
+exact version and deployment prevalence remain incomplete. The rating is
+therefore \textbf{I3/E2--E3, High, Provisional, Moderate confidence}. Current
+release and installed-population residual risk were not evaluated.
+
+\noindent\textbf{Linked recommendations.}
+\code{CORE-S0}--\code{CORE-S7} and \code{CORE-S12}; the primary structural
+controls are \code{CORE-S1}--\code{CORE-S3}.
+
+\subsubsection*{CORE-SEC-002 --- Uncontrolled work and resource consumption}
+
+\noindent\textbf{Scenario.}
+A crafted, truncated, or inconsistent file reaches affected decode, traversal,
+arithmetic, allocation, recursion, or lifecycle paths and causes an assertion,
+null dereference, divide-by-zero, leak, stack exhaustion, or uncontrolled
+resource consumption, interrupting the consuming process or workflow.
+
+\noindent\textbf{Scope and evidence.}
+The assessed population consists only of deployments matching an affected
+version-and-path pair in Appendix~\ref{app:cve-history-summary} and processing
+the triggering file. This record includes termination and resource-consumption
+outcomes without evidenced memory corruption; it excludes the memory-unsafe
+variants assigned to \code{CORE-SEC-001} and the tool-specific UAF assigned to
+\code{CORE-TOOL-001}. Exact fixed versions across the represented paths and the
+present installed population are not established. The file-space repair is one
+direct example of converting an assertion reached from corrupted metadata into
+a controlled error~\cite{commit_804f3ba,cve_hdf5}.
+
+\noindent\textbf{Rating basis.}
+I2 reflects a meaningful but ordinarily recoverable process or workflow
+interruption; a mission-level outage requires a separate deployment-specific
+record. E2 applies to interactive or otherwise constrained file processing;
+E3 applies where an affected deployment automatically ingests untrusted files
+through a common workflow. Both produce a Moderate tier, while incomplete
+version prevalence makes the assessment provisional. The rating is
+\textbf{I2/E2--E3, Moderate, Provisional, Moderate confidence}. Current release
+and installed-population residual risk were not evaluated.
+
+\noindent\textbf{Linked recommendations.}
+\code{CORE-S0}--\code{CORE-S8}, \code{CORE-S12}, \code{APP-S1}, and
+\code{APP-S2}.
+
+\subsubsection*{CORE-TOOL-001 --- h5dump use-after-free}
+
+\noindent\textbf{Scenario.}
+An attacker supplies a malicious HDF5 file to a user or automated workflow that
+invokes an affected \code{h5dump}; the file triggers the reported
+\code{H5T__conv_struct} heap use-after-free and may compromise or terminate the
+inspection process.
+
+\noindent\textbf{Scope and evidence.}
+The HDF Group advisory identifies HDF5 1.14.1-2 and earlier as affected and
+reproduces AddressSanitizer-detected termination when the supplied file is
+processed by the utility~\cite{cve-2026-34734,hdf5-ghsa-w7v2-9cmr-pwwj}. It
+states that practical code-execution exploitability is unknown. This is a tool
+finding, not evidence that every libhdf5 consumer reaches the same path.
+
+\noindent\textbf{Rating basis.}
+The demonstrated termination supports I2; credible but unverified process
+compromise from the UAF supports I3 as the upper bound. E2 reflects the
+affected-version, crafted-file, and explicit inspection preconditions. The
+rating is \textbf{I2--I3/E2, Moderate--High, Provisional, Moderate confidence}.
+Current installed-population residual risk was not evaluated.
+
+\noindent\textbf{Linked recommendations.}
+\code{CORE-S6}, \code{CORE-S9}, \code{CORE-S12}, and \code{APP-S2}.
+
+\subsubsection*{CORE-PRIV-001 --- Plaintext metadata disclosure}
+
+\noindent\textbf{Scenario.}
+An HDF5 file containing sensitive object names, attributes, member labels,
+comments, user-block content, provenance, or structural relationships is shared
+with a recipient who is authorized for a protected payload but not for that
+context. Direct HDF5 or byte-level inspection reveals the unintended metadata.
+
+\noindent\textbf{Scope and evidence.}
+This finding is limited to files that actually contain sensitive plaintext
+metadata and a sharing boundary that protects only the nominal payload. The
+format's self-describing structure establishes the mechanism; the Privacy
+Exposure Model identifies metadata and structural exposure as privacy threat
+classes~\cite{hdf5-data-model,PVEM}.
+
+\noindent\textbf{Rating basis.}
+I2 reflects bounded sensitive-context disclosure; I3 is plausible where the
+same mechanism reveals high-sensitivity context or substantially affects a
+defined population. E2 reflects the need for both sensitive metadata and a
+mis-scoped disclosure boundary. Data sensitivity, affected population, and
+workflow prevalence were not measured, so the rating is
+\textbf{I2--I3/E2, Moderate--High, Provisional, Moderate confidence}.
+Deployment-specific findings should replace this range when those facts are
+known. Current installed-population residual risk was not evaluated.
+
+\noindent\textbf{Linked recommendations.}
+\par\noindent
+\code{CORE-PRIV-S1} and \code{CORE-PRIV-S3}--\code{CORE-PRIV-S4}.
+
+\subsubsection*{CORE-SAFE-001 --- Storage-exhaustion write failure}
+
+\noindent\textbf{Scenario and evidence gap.}
+Storage exhaustion during file write or close may leave an incomplete or
+corrupted file and cause data loss, as raised in community reports cited by the
+core chapter~\cite{forum-11714,forum-file-corruption}. The report has not bounded
+the API sequence, version, filesystem and buffering behavior, recovery path,
+uniqueness of the affected data, or frequency.
+
+\noindent\textbf{Rating.}
+The credible impact spans I2 through I4 depending on recoverability and the
+value of the data; exposure is not established. The finding is therefore
+\textbf{NE, Low confidence}, not Low risk. No existing recommendation fully
+addresses the evidence and treatment gap.
+
+\noindent\textbf{Linked recommendations.}
+None; treatment gap.
+
+\subsection{Application-Boundary Findings}
+
+\subsubsection*{APP-SEC-001 --- External raw storage confused deputy}
+
+\noindent\textbf{Scenario.}
+In the affected July 2026 Hugging Face deployment, a remote party supplied a
+valid HDF5 file whose dataset declared local files as external raw storage. The
+dataset-processing worker opened those paths with its own filesystem authority
+and returned their bytes to the requester, disclosing its environment,
+credentials, and source code.
+
+\noindent\textbf{Scope and evidence.}
+Hugging Face reports that this vector performed file disclosure without
+executing code; the separate Jinja2 injection supplied code execution. The HDF
+Group identifies external raw storage as an intentional documented capability
+and the service as the authority-bearing confused deputy, not an HDF5 parser
+failure~\cite{huggingface-agent-intrusion-2026,hdfgroup-mechanism-not-vulnerability-2026}.
+The rating is confined to the affected service at incident time and to
+equivalent deployments with the stated preconditions; it is not an
+ecosystem-prevalence claim.
+
+\noindent\textbf{Rating basis.}
+I3 reflects actual unauthorized resource access and substantial disclosure of
+secrets, credentials, and implementation details. E4 reflects normal automatic
+processing of an ordinary attacker upload, transparent reference following,
+and a direct, repeatable disclosure path within that deployment. The inherent
+rating is \textbf{Critical, Rated, High confidence}.
+
+\noindent\textbf{Current residual and response.}
+Hugging Face states that its renderer no longer wrongly processes HDF5 external
+references. Public evidence is insufficient to validate control design and
+coverage, so current residual risk for that service was not evaluated and no
+residual tier is assigned. The h5py discussion records laborious application-
+level detection, a sandbox recommendation, and the decision to seek upstream
+control; HDF5 issue \#6618 records the resulting request for unified controls
+over external data, external links, and virtual sources. Proposals discussed
+there are not treated as shipped controls
+\cite{h5py-gh-issue-2891,hdf5-gh-issue-6618}. Equivalent still-exposed
+deployments require Immediate containment.
+
+\noindent\textbf{Linked recommendations.}
+\code{APP-S1}, \code{APP-S2}, \code{APP-S4}, and \code{CORE-S4}.
+
+\subsubsection*{APP-SEC-002 --- Keras legacy-HDF5 code deserialization}
+
+\noindent\textbf{Scenario and scope.}
+An attacker supplies a crafted legacy \code{.h5}/\code{.hdf5} model to Keras
+3.0.0 through 3.11.2. A victim loads it expecting
+\code{safe_mode=True} to prevent unsafe reconstruction, but a Lambda layer's
+serialized code executes in the loader process
+\cite{cve-2025-9905,keras-ghsa-36rr-ww3j-vrjv}.
+
+\noindent\textbf{Rating basis.}
+I3 reflects arbitrary code execution in the loader's authority. E2 reflects the
+legacy format, crafted Lambda content, affected version, and passive load
+preconditions. The rating is \textbf{High, Rated, High confidence}.
+
+\noindent\textbf{Linked recommendations.}
+\code{APP-S3}. This is application deserialization layered on HDF5, not a core
+HDF5 parser finding.
+
+\subsubsection*{APP-SEC-003 --- Keras external-dataset local-file read}
+
+\noindent\textbf{Scenario and scope.}
+A remote attacker supplies a crafted \code{.keras} model to Keras
+\code{>=3.0.0,<3.12.1} or \code{>=3.13.0,<3.13.2}. During model loading, an
+embedded HDF5 external dataset reference selects a local path and discloses a
+file readable by the loader process
+\cite{cve-2026-1669,keras-ghsa-3m4q-jmj6-r34q}.
+
+\noindent\textbf{Rating basis.}
+I3 reflects unauthorized local-resource access and potentially substantial
+sensitive-information disclosure. E3 reflects a remotely supplied artifact,
+few technical preconditions, and a normal model-load action, while remaining
+bounded to the affected versions and model-loading surface. The rating is
+\textbf{High, Rated, High confidence}.
+
+\noindent\textbf{Linked recommendations.}
+\code{APP-S1}--\code{APP-S4} and \code{CORE-S4}.
+
+\subsubsection*{APP-SEC-004 --- Keras shape-driven memory exhaustion}
+
+\noindent\textbf{Scenario and scope.}
+A remote attacker supplies a crafted \code{.keras} archive to Keras
+\code{>=3.0.0,<=3.12.0} or \code{>=3.13.0,<3.13.2}. Its valid
+\code{model.weights.h5} declares an extremely large dataset shape; weight
+loading allocates without an adequate budget, exhausts memory, and crashes the
+Python interpreter~\cite{cve-2026-0897,keras-ghsa-mgx6-5cf9-rr43}.
+
+\noindent\textbf{Rating basis.}
+I2 reflects the evidenced process and workflow interruption; no broader outage
+or durable data loss is assumed. E3 reflects low-complexity, remotely supplied
+content crossing a normal model-loading boundary, subject to the victim or
+service loading the artifact. The rating is \textbf{Moderate, Rated, High
+confidence}.
+
+\noindent\textbf{Linked recommendations.}
+\code{APP-S1}--\code{APP-S3}, \code{CORE-S3}, and \code{CORE-S4}.
+
+\subsubsection*{APP-SEC-005 --- TensorFlow plugin search-path escalation}
+
+\noindent\textbf{Scenario and scope.}
+A low-privileged local attacker on a TensorFlow 2.17.0 installation places a
+plugin in an unsecured location searched by the HDF5 integration. TensorFlow
+loads the plugin and executes its code with the target user's authority
+\cite{cve-2026-2492,zdi-26-116,tensorflow-commit-46e7f7f}.
+
+\noindent\textbf{Rating basis.}
+I3 reflects privilege escalation and arbitrary code execution. E2 reflects the
+required local foothold, affected version, writable searched location, and
+plugin-load path. The condition is supported by the coordinated advisory and
+vendor fix, but the report did not reproduce it. The rating is
+\textbf{High, Rated, Moderate confidence}.
+
+\noindent\textbf{Linked recommendations.}
+\code{APP-S5} and \code{CORE-S10}.
+
+\subsection{Independent-Implementation and Interoperability Findings}
+
+\subsubsection*{IND-SAF-001 --- Sufficient nonminimal chunk encoding rejected}
+
+\noindent\textbf{Scenario.}
+A workflow upgrades its reader to an HDF5 2.0/2.1 release containing the
+exact-width check---confirmed in 2.0.0, 2.1.0, and 2.1.1---and opens a
+version-4 chunk layout whose encoded dimension width is sufficient but
+nonminimal. Validation rejects the file even though the format did not require
+the smallest possible width, interrupting access to data that earlier readers
+accepted.
+
+\noindent\textbf{Scope and evidence.}
+HDF5 issue \#6409 distinguishes the specification-permitted encoding from an
+undersized invalid encoding and records effects on independent writers. The
+merged reader-side change accepts any sufficient width and was tracked against
+the HDF5 2.2.0 milestone; this report does not claim that a specific release
+artifact or backport contains it without release-level verification
+\cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432,purehdf-gh-issue-168,purehdf-pr-160}.
+
+\noindent\textbf{Rating basis.}
+I2 reflects a meaningful, bounded interoperability and data-access failure. E2
+reflects the specific layout version, nonminimal encoding, and reader-upgrade
+preconditions. The rating is \textbf{Moderate, Rated, High confidence} for the
+historical affected scope. Current residual risk was not evaluated, and no
+residual tier is assigned.
+
+\noindent\textbf{Linked recommendations.}
+\code{CORE-S1}, \code{CORE-S6}, \code{CORE-S8}, and \code{IND-S1}.
+
+\subsubsection*{IND-SAF-002 --- Contradictory PureHDF chunk metadata}
+
+\noindent\textbf{Scenario.}
+A production or archival workflow upgrades from a tolerant HDF5 1.x reader to
+HDF5 2.0 and reads an affected compressed file produced by PureHDF 2.1.2. The
+file's version-4 chunk layout contradicts its datatype metadata; the stricter
+reader correctly rejects the affected datasets, interrupting processing and
+stranding existing data until the reader is pinned or the files are repaired or
+regenerated.
+
+\noindent\textbf{Scope and evidence.}
+In the supplied production-derived file, the HDF5 maintainer analysis found
+float64 datatype element size 8 while the chunk layout recorded stored element
+size 4. Older HDF5 1.10.10 and 1.14.6 readers accepted the bytes; HDF5 2.0
+rejected them. The issue was closed as malformed writer output, and the PureHDF
+discussion records the writer-side response~\cite{hdf5-gh-issue-6534,purehdf-gh-issue-164}.
+This condition is distinct from the sufficient nonminimal width in
+\code{IND-SAF-001}; permissive acceptance is not evidence of conformance.
+
+\noindent\textbf{Rating basis.}
+I2 reflects actual production workflow interruption and a persistent but
+repairable compatibility problem; no irreversible data loss is evidenced. E2
+reflects the confirmed writer version, affected layout, compressed dataset, and
+reader-upgrade preconditions. The rating is \textbf{Moderate, Rated, High
+confidence}. A technical metadata-repair path was proposed and older readers
+remained a workaround, although the reporter said rewriting affected production
+files was not operationally feasible in that pipeline. Later PureHDF output
+restored production operation, but the inventory and repair status of existing
+files are unknown. Current residual risk for the legacy corpus was not
+evaluated, and no residual tier is assigned.
+
+\noindent\textbf{Linked recommendations.}
+\code{CORE-S1}, \code{CORE-S6}, \code{CORE-S8}, and \code{IND-S1}.
+
+\subsection{Evidence-Backlog Record Details}
+
+\subsubsection*{EXT-PRIV-001 --- Extension-mediated privacy boundary observation}
+
+\noindent\textbf{Observation and evidence gap.}
+VOL connectors, filters, and VFDs can move data or metadata into remote stores,
+caches, temporary artifacts, logs, networks, or dynamically loaded code and
+thereby change the privacy boundary described in
+Section~\ref{sec:extensions}. The report does not define a concrete deployment,
+sensitive-data population, unauthorized recipient, retention period, or harm
+magnitude for this general scenario~\cite{PVEM}.
+
+\noindent\textbf{Register treatment.}
+This mechanism is not a formal finding. Impact, exposure, tier, confidence, and
+response urgency are not assigned; this does not dispute the documented
+mechanism.
+
+\noindent\textbf{Linked recommendations.}
+\code{CORE-PRIV-S2}, \code{CORE-PRIV-S3}, \code{VOL-S1}--\code{VOL-S4},
+\code{FILTER-S1}--\code{FILTER-S5}, and \code{VFD-S1}--\code{VFD-S4}.
+
+\subsubsection*{SUP-SAFE-001 --- Downstream build and feature mismatch observation}
+
+\noindent\textbf{Observation and evidence gap.}
+A downstream environment loads an HDF5 build whose ABI, linkage, filters,
+plugins, VFDs, parallel features, or file-locking behavior differs from the
+profile assumed by a file or workflow, causing a read failure or operational
+interruption. Section~\ref{sec:supply-chain} establishes the breadth and
+configuration mechanisms but does not establish an affected population,
+frequency, bounded version set, or realized impact.
+
+\noindent\textbf{Register treatment.}
+This theme is not a formal finding. Impact, exposure, tier, confidence, and
+response urgency are not assigned; a material workflow interruption remains a
+plausible hypothesis, not a report-wide rating.
+
+\noindent\textbf{Linked recommendations.}
+\code{CORE-S11}, \code{APP-S6}, and \code{SUP-S1}.
+
+\end{document}
