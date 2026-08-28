@@ -11,12 +11,12 @@ an assessment recommendation, not evidence that an organization has accepted
 the dates, assigned the work, or implemented the controls. The response clocks
 in Phases~0--2 begin when an affected deployment or equivalent exposure is
 identified, as specified in Table~\ref{tab:findings-response-routing}; the
-scope census in \code{RM-1A} and the Phase~3 program horizon begin when the
-roadmap is adopted. The assessment sponsor should record a dated decision to
-adopt, modify, or reject the proposal; adoption must set a due date for that
-census so the response clock cannot remain latent through unbounded
-non-discovery. A pre-adoption exposure still enters the response route and is
-not held for the program decision.
+scope census in \code{RM-1A}, assert-site catalog in \code{RM-1E}, and the
+Phase~3 program horizon begin when the roadmap is adopted. The assessment
+sponsor should record a dated decision to adopt, modify, or reject the
+proposal; adoption must set due dates for both inventories so a response clock
+cannot remain latent through unbounded non-discovery. A pre-adoption exposure
+still enters the response route and is not held for the program decision.
 
 The roadmap does not revise inherent risk. Phase, dependency, owner, effort,
 and implementation order are treatment-planning fields under
@@ -163,12 +163,16 @@ No confirmed Critical-equivalent path remains in service without tested
 containment; an accountable owner, affected scope, and decision record exist. \\
 
 1---Verify and remediate known scope &
-Initial census completes within 30 days of adoption; Near-term treatment
-completes within 30 days of identifying an affected deployment &
-Establish the current population and apply supported fixes or tested
-compensating controls for known High and upper-bound-High scenarios. &
+Initial deployment census and assert-site catalog complete within 30 days of
+adoption; Near-term treatment completes within 30 days of identifying an
+affected deployment &
+Establish the current population, apply supported fixes or tested compensating
+controls for known High and upper-bound-High scenarios, and triage
+release-disabled file-derived checks. &
 Every applicable Phase~1 finding has version and exposure evidence, a negative
-test, an implementation record, and a current residual-risk disposition. \\
+test, an implementation record, and a current residual-risk disposition; the
+assert-site perimeter is cataloged and each confirmed adverse path is routed
+without waiting for completion of structural migration. \\
 
 2---Establish release safeguards &
 For Planned findings, within 90 days of identification or the next supported
@@ -266,17 +270,22 @@ where a library control is unavailable, isolate or stop the affected job. & Medi
 evidence records &
 Create a deployment, supported-version, feature, provenance, and authority
 census; assign the applicable HDF5/downstream scope tag; identify applicability,
-a named owner, and current control evidence for each record. Supports
+a named owner, production build mode and assertion state, and current control
+evidence for each record. Supports
 \code{APP-S6}, \code{APP-S7}, and \code{CORE-S11}. & None; affected
 projects and deployment owners must supply evidence. & Medium \\
 
 \code{RM-1B} & 1 / \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001} &
+\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001}; confirmed
+cases promoted from \code{CORE-SEC-003} &
 Move affected core and tool populations to a supported fixed version or isolate
-them; add minimized negative tests and tool-specific sanitizer regression.
-Covers the near-term portions of \code{CORE-S0}, \code{CORE-S6},
-\code{CORE-S9}, and \code{CORE-S12}. & \code{RM-1A}; external supported fix
-or a documented containment. & Medium \\
+them; replace any confirmed sole assertion guard on an adverse path with an
+always-active check; add minimized negative tests in assertion-enabled and
+\code{-DNDEBUG} builds and tool-specific sanitizer regression. Covers the
+near-term portions of \code{CORE-S0}, \code{CORE-S6}, \code{CORE-S9}, and
+\code{CORE-S12}. & \code{RM-1A}; \code{RM-1E} supplies promoted cases, but
+catalog completion is not a prerequisite to an urgent local repair; external
+supported fix or a documented containment. & Medium \\
 
 \code{RM-1C} & 1 / \code{APP} &
 \code{APP-SEC-001}--\code{APP-SEC-005} &
@@ -294,6 +303,17 @@ tokenize metadata, restrict recipients, and determine whether those controls
 meet the disclosure policy. Covers \code{CORE-PRIV-S1} and
 \code{CORE-PRIV-S3}. & \code{RM-1A}; a data owner must classify the affected
 population and intended recipients. & Medium \\
+
+\code{RM-1E} & 1 / \code{CORE} & \code{CORE-SEC-003} &
+Within 30 days of roadmap adoption, catalog file-byte-dependent assertions in
+supported deserializer source lines, beginning with the seven component
+families in issue~\#87. For each site, record whether an always-active check
+dominates it, release reachability, first post-assert sink, paired debug and
+\code{-DNDEBUG} fixture behavior, affected versions, and consequence. Replace
+a confirmed sole guard or create and route a formal finding and SLA child
+without waiting for the catalog or Phase~3 migration to finish. Seeds
+\code{CORE-S1}, \code{CORE-S7}, and \code{CORE-S12}. & None; supported-branch
+owners and reproducible release configurations must bound the catalog. & Medium \\
 
 \code{RM-2A} & 2 / \code{CORE} &
 \code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001},
@@ -359,26 +379,31 @@ backup, and tested recovery procedure. & Large \\
 
 \code{RM-3A} & 3 / \code{CORE} &
 \code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{APP-SEC-004},
-\code{IND-SAF-001}, \code{IND-SAF-002} &
+\code{IND-SAF-001}, \code{IND-SAF-002}; \code{CORE-SEC-003} evidence &
 Create the versioned machine-readable invariant registry and mandatory checked
-arithmetic, bounds, allocation, and traversal primitives. Covers
-\code{CORE-S1} and \code{CORE-S3}. & \code{RM-1B}; \code{RM-2C} is a
-coordination input only for compatibility-sensitive tranches, and work can
-begin with the existing CVE corpus. & Large \\
+arithmetic, bounds, allocation, and traversal primitives; import the
+\code{RM-1E} catalog and map every declared invariant to an always-active
+enforcement point. Covers \code{CORE-S1} and \code{CORE-S3}. & \code{RM-1B};
+\code{RM-1E} and \code{RM-2C} are coordination inputs for their applicable
+tranches, and work can begin before either catalog is complete. & Large \\
 
 \code{RM-3B} & 3 / \code{CORE} &
 \code{CORE-SEC-001}, \code{CORE-SEC-002} &
 Migrate prioritized structures from direct object construction to bounded raw
-decode, semantic validation, and construction. Covers \code{CORE-S2}. &
-\code{RM-3A}; migrate in independently releasable component tranches. & Large \\
+decode, semantic validation, and construction. Start the assert-masking
+perimeter with release-reachable sole guards ordered by post-assert consequence,
+not by raw candidate count. Covers \code{CORE-S2}. & \code{RM-3A}; migrate in
+independently releasable component tranches. & Large \\
 
 \code{RM-3C} & 3 / \code{CORE} &
 \code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001} &
 Make class closure auditable through structure-aware fuzzing, permanent
 malformed-input regression, parser-review gates, tool coverage, and public
-metrics. Covers \code{CORE-S0}, \code{CORE-S5}--\code{CORE-S7},
-\code{CORE-S9}, and \code{CORE-S12}. & \code{RM-3A} for invariant identifiers;
-harness and corpus work may begin in Phase~1. & Large \\
+metrics. Run the corpus in assertion-enabled and \code{-DNDEBUG} builds and
+block any file-derived invariant enforced solely by an assertion. Covers
+\code{CORE-S0}, \code{CORE-S5}--\code{CORE-S7}, \code{CORE-S9}, and
+\code{CORE-S12}. & \code{RM-3A} for invariant identifiers; harness and corpus
+work may begin in Phase~1. & Large \\
 
 \code{RM-3D} & 3 / \code{EXT} &
 \code{APP-SEC-005}; \code{EXT-PRIV-001} conditionally &
@@ -464,15 +489,16 @@ secret-rotation record where indicated. & \code{APP} confirms containment;
 \code{GOV} records whether incident handling remains open. \\
 
 \code{RM-1A} & Machine-readable inventory recording version, linkage, enabled
-features, scope tag, trust boundary, authority, exposure, owner, census boundary
-and completeness attestation, and evidence date for each applicable scope. &
+features, production build mode, assertion state, scope tag, trust boundary,
+authority, exposure, owner, census boundary and completeness attestation, and
+evidence date for each applicable scope. &
 \code{GOV} accepts applicability and creates dated treatment
 or non-applicability records. \\
 
 \code{RM-1B} & Supported-version matrix; patch or isolation record; minimized
-fixtures; ASan/UBSan/LSan and controlled-error results for affected core and
-tool paths. & \code{CORE} accepts technical evidence; \code{GOV} records current
-residual risk. \\
+fixtures; assertion-enabled and \code{-DNDEBUG} ASan/UBSan/LSan and
+controlled-error results for affected core and tool paths. & \code{CORE}
+accepts technical evidence; \code{GOV} records current residual risk. \\
 
 \code{RM-1C} & Application version and rollout evidence; tests proving safe-mode
 code rejection, external-path rejection, allocation-budget enforcement, and
@@ -487,6 +513,15 @@ matrix, and before/after inspection through both HDF5 APIs and raw-byte search
 showing the effect of minimization and recipient controls. & \code{PRIV} signs
 the disclosure-boundary decision and whether \code{RM-2G} is required;
 \code{GOV} records current residual risk. \\
+
+\code{RM-1E} & Versioned source-site inventory recording branch, function,
+predicate, file-byte provenance, dominating always-active guard, first
+post-assert sink, release reachability, fixture, assertion-enabled and
+\code{-DNDEBUG} result, supported-version scope, consequence, and disposition;
+paired negative tests for every confirmed site; promoted finding and SLA child
+records where an adverse path is supported. & \code{CORE} accepts the bounded
+catalog and local repairs; \code{GOV} confirms that supported scenarios are
+rated and routed and that inconclusive sites remain open. \\
 
 \code{RM-2A} & API and policy documentation; default-state tests; hostile-file
 integration corpus; allocation, traversal, metadata, filter-expansion, external-
@@ -536,18 +571,23 @@ and current residual risk. \\
 
 \code{RM-3A} & Versioned invariant files; code-to-invariant mapping; checked
 primitive APIs; migration inventory; tests showing the prioritized structures
-reject single-invariant violations predictably. & \code{CORE} accepts each
-declared tranche; missing structures remain open. \\
+reject single-invariant violations predictably in assertion-enabled and
+\code{-DNDEBUG} builds; proof that no declared invariant relies solely on an
+assertion. & \code{CORE} accepts each declared tranche; missing structures or
+enforcement mappings remain open. \\
 
 \code{RM-3B} & Per-component raw-decode/validate/construct boundary; no native
 object before validation; malformed and valid compatibility corpus results;
-sanitizer and fuzz evidence. & \code{CORE} closes only named migrated
-components, not the parser class globally. \\
+assertion-enabled and \code{-DNDEBUG} sanitizer and fuzz evidence. &
+\code{CORE} closes only named migrated components, not the parser class
+globally. \\
 
 \code{RM-3C} & PR, nightly, weekly, release-candidate, and CVE-closure jobs;
 retained minimized seeds; coverage by structure; review-checklist records; metric
-dashboard and failure-blocking proof. & \code{CORE} and \code{GOV} approve the
-release gate; every bypass is named and expiring. \\
+dashboard; assertion-enabled/\code{-DNDEBUG} parity; and proof that a new or
+declared file-derived invariant enforced only by an assertion fails the release
+gate. & \code{CORE} and \code{GOV} approve the release gate; every bypass is
+named and expiring. \\
 
 \code{RM-3D} & Plugin manifest and policy; protected allowlist or keystore;
 tests rejecting unsigned, untrusted, writable-path, over-budget, and
@@ -570,10 +610,11 @@ and, where required, ciphertext inspection plus key-loss/recovery testing for
 filter metadata. & \code{PRIV} accepts the bounded lifecycle claims after
 \code{ASSURE} verification; unsupported claims remain open. \\
 
-\code{RM-4A} & Cadenced gate results, trend metrics, updated finding mappings,
-expired-exception report, and signed residual-risk decisions for the release or
-review period. & \code{GOV} accepts, further reduces, avoids, transfers, or
-escalates each verified residual risk. \\
+\code{RM-4A} & Cadenced gate results in production-equivalent build modes,
+trend metrics, updated finding mappings, expired-exception report, and signed
+residual-risk decisions for the release or review period. & \code{GOV}
+accepts, further reduces, avoids, transfers, or escalates each verified
+residual risk. \\
 
 \end{longtable}
 \endgroup
@@ -634,6 +675,15 @@ unimplemented components are not claimed as covered. \\
 \code{RM-3A}--\code{RM-3C}, \code{RM-4A}. & Affected populations are patched,
 contained, or shown to reject or bound file-controlled work; the residual
 decision states whether compatibility-policy work is credited or remains open. \\
+
+\code{CORE-SEC-003} & \textbf{Evidence:} \code{RM-1A}, \code{RM-1E}.
+\textbf{Conditional treatment:} \code{RM-1B}.
+\textbf{Prevention:} \code{RM-3A}--\code{RM-3C}, \code{RM-4A}. & The supported
+source and build perimeter is bounded and each candidate has a verified guard,
+reachability, build-mode result, consequence, and disposition. Every supported
+adverse path is promoted and routed without waiting for global migration; an
+inconclusive site remains open, and the staged prevention program closes only
+its named tranches. \\
 
 \code{CORE-TOOL-001} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1B}.
 \textbf{Prevention:} \code{RM-2A}, \code{RM-3C}, \code{RM-4A}. & Affected tools

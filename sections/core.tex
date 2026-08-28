@@ -48,6 +48,31 @@ the self-referential continuation-message fix checks expected versus actual
 deserialized object-header chunks; and the cache-image fix added buffer-size
 arguments, overflow checks, input validation, and cleanup.)
 
+An August 2026 source-review observation exposes a related but distinct control
+gap. HDF5 Pickles issue~\#87 records candidate deserializer invariants whose
+truth depends on in-file bytes but whose checks are masked inside
+\code{assert(...)} expressions; those expressions provide no runtime validation
+when assertions are disabled with \code{-DNDEBUG}. The open catalog task names
+version-2 B-trees, dataset chunk records, extensible arrays, fractal heaps,
+free-space managers, shared object-header messages, and metadata-cache images,
+with a cursory estimate of 50--100 instances
+~\cite{hdf5-pickles-issue-87}. A fixed August 25 develop snapshot corroborates
+the mechanism: its build configuration notes that CMake adds \code{NDEBUG} for
+Release builds, while representative source sites assert a decoded filtered-
+chunk address and byte count before returning success, assert extensible-array
+parameters before geometry and allocation calculations, and assert a
+reverse-filter output size before copying the expected fractal-heap block size
+~\cite{hdf5-assert-build-config-2026,hdf5-assert-chunk-record-2026,
+hdf5-assert-extensible-array-2026,hdf5-assert-fractal-heap-2026}. This static
+sample confirms a source-level assurance gap, but the 50--100 estimate is not a
+verified site count, and the available evidence does not establish that every
+candidate is a sole guard, release-reachable in a supported version, or capable
+of a particular adverse outcome. This report therefore tracks the condition as
+evidence record \code{CORE-SEC-003}, not as a separately rated formal finding.
+Regardless of the final count, a predicate whose validity depends on file bytes
+must have an always-active runtime check; an assertion may duplicate that check
+for diagnostics but must not enforce it alone.
+
 The observed root-cause categories are more compact than a CVE-by-CVE list and
 are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}.
 
@@ -471,6 +496,9 @@ Formal core and official-tool findings are registered as
 Appendix~\ref{app:findings-register}. The two shared-event security findings
 are provisional historical parser-boundary scenarios; they do not assert that
 every current HDF5 release contains every represented defect.
+The assert-masking observation is separately registered as evidence record
+\code{CORE-SEC-003} until exact source sites, supported release paths, and
+consequences are established.
 
 \paragraph{Priority reconciliation.}\mbox{}\\
 The response order comes from Table~\ref{tab:findings-response-routing}, not
@@ -478,10 +506,15 @@ from the order of recommendations in this chapter. Confirmed affected scope for
 \code{CORE-SEC-001}, \code{CORE-TOOL-001}, and \code{CORE-PRIV-001} receives
 Near-term treatment; \code{CORE-SEC-002} receives Planned treatment; and
 \code{CORE-SAFE-001} requires the bounded evidence study in \code{RM-2D}
-before a tier or urgency can be assigned. Phase~1 patching, isolation, and
-privacy controls treat concrete populations. Phases~2--4 provide reusable
-guardrails, class prevention, and sustainment; that structural work may begin
-in parallel but does not extend an earlier response clock.
+before a tier or urgency can be assigned. The \code{CORE-SEC-003} catalog and
+release-build differential study has a 30-day Phase~1 assurance target under
+\code{RM-1E}; this scheduling choice does not assign it a risk tier. A
+confirmed case is routed by its supported consequence and affected scope,
+including under \code{CORE-SEC-001} for a memory-unsafe path or
+\code{CORE-SEC-002} for termination or resource exhaustion. Phase~1 patching,
+isolation, and privacy controls treat concrete populations. Phases~2--4 provide
+reusable guardrails, class prevention, and sustainment; that structural work
+may begin in parallel but does not extend an earlier response clock.
 
 \subsubsection{Security and Safety}
 
@@ -572,7 +605,8 @@ minimized input & used in quick PR regression \\
 root-cause category & maps to a known invariant class \\
 invariant update & records and advances prevention of sibling bugs \\
 sanitizer regression & proves no crash, no leak, no UAF \\
-negative test & checks controlled failure code \\
+negative test & checks the same controlled failure in assertion-enabled and
+\code{-DNDEBUG} builds \\
 reviewer checklist update & prevents reintroduction \\
 \end{longtable}
 \endgroup
@@ -598,14 +632,19 @@ Create a versioned document and machine-readable metadata file, for example:
 \begin{verbatim}
 security/invariants/
   superblock.yml
+  btree_v2.yml
+  chunk_records.yml
+  extensible_array.yml
   object_header.yml
   dataspace.yml
   datatype.yml
   layout.yml
   filters.yml
   heaps.yml
+  fractal_heap.yml
   free_space.yml
   links.yml
+  shared_object_header_messages.yml
   cache_image.yml
 \end{verbatim}
 
@@ -620,6 +659,8 @@ failure: H5E_CORRUPT
 checked_at:
   - H5O__cont_decode
   - H5O__chunk_deserialize
+release_enforced: true
+diagnostic_assert_sites: []
 fuzz_targets:
   - fuzz_object_header
 cves:
@@ -695,6 +736,14 @@ dimensions; tool-only parsers use the same checked arithmetic wrappers as the
 library \\
 \end{longtable}
 \endgroup
+
+The seven component families named in issue~\#87 are the mandatory first
+audit perimeter for assert-masked checks. That perimeter is not itself a risk
+rank. Within it, first migrate a candidate that is a sole release-reachable
+guard for memory bounds, pointer arithmetic, allocation, copy, or traversal;
+then address termination-only paths and redundant diagnostics. Record the
+reachability and consequence evidence so a raw candidate count cannot
+substitute for prioritization.
 
 This registry becomes the source of truth for code review, tests, fuzzing, and documentation.
 
@@ -1064,6 +1113,8 @@ Does this allocate using file-derived values? & show checked multiplication \\
 Does this copy memory using file-derived sizes? & show source and destination bounds \\
 Does this traverse links, chunks, heaps, B-trees, or continuations? & show cycle and depth bounds \\
 Does this construct native objects before validation? & explain why or refactor \\
+Does any file-derived validity predicate appear only in an assertion? & show
+the always-active check and matching \code{-DNDEBUG} negative test \\
 Does this add or change cleanup paths? & show partial-init safety \\
 Does this invoke plugins or filters? & show policy interaction \\
 Does this alter error handling? & show malformed-input test \\
@@ -1078,6 +1129,9 @@ fail PR if malloc(count * size) appears outside checked wrapper
 fail PR if memcpy appears in parser code without checked wrapper annotation
 fail PR if new parser file lacks fuzz target registration
 fail PR if new object traversal lacks max-depth or visited-set logic
+fail PR if file-derived validity is assert-only
+run malformed corpus in debug and -DNDEBUG builds
+require the same controlled rejection in both
 \end{verbatim}
 
 This will annoy contributors at first. Good. That friction is cheaper than post-release CVEs.
@@ -1293,6 +1347,8 @@ parser allocations through checked wrappers & 100\% \\
 parser memcpy/memmove through checked wrappers or reviewed exemption & 100\% \\
 structures in the versioned declared tranche with invariant files & 100\% \\
 structures in the versioned declared tranche with registered fuzz targets & 100\% \\
+cataloged file-derived assertions classified for dominance, reachability, and consequence & 100\% \\
+declared file-derived invariants enforced in \code{-DNDEBUG} builds & 100\% \\
 new CVEs that add invariant updates & 100\% \\
 time from new crash to minimized corpus seed & under 48 hours \\
 time from minimized seed to invariant classification & under 5 business days \\

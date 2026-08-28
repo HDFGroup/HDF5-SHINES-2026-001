@@ -148,6 +148,24 @@ response urgency, or implied Low-risk status.
 \hline
 \endlastfoot
 
+\code{CORE-SEC-003} &
+Candidate deserializer invariants derived from in-file bytes are masked inside
+\code{assert(...)} expressions and therefore may not be enforced in
+\code{-DNDEBUG} release builds. Issue~\#87 identifies seven component families
+and estimates 50--100 candidates, but does not provide a verified site catalog
+or consequence analysis; a fixed develop-source sample corroborates the build
+mechanism and representative sites, not their runtime consequences
+~\cite{hdf5-pickles-issue-87,hdf5-assert-build-config-2026,
+hdf5-assert-chunk-record-2026,hdf5-assert-extensible-array-2026,
+hdf5-assert-fractal-heap-2026}. &
+For each supported source line and build profile, record the source site,
+file-byte provenance, non-asserting dominating guard if any, release
+reachability, first security-relevant sink, paired debug and \code{-DNDEBUG}
+fixture result, affected versions, and consequence. Promote each supported
+adverse-event scenario into \code{CORE-SEC-001}, \code{CORE-SEC-002}, or a new
+formal finding as the evidence requires; a redundant or unreachable assertion
+needs a documented negative disposition. \\
+
 \code{EXT-PRIV-001} &
 Extensions can move data and metadata across storage, cache, logging, network,
 and executable-plugin boundaries. &

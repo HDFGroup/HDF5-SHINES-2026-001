@@ -43,7 +43,7 @@ an unassessed release or deployment.
 The authoritative register contains twelve formal findings: seven Rated, four
 Provisional, and one NE. Their tiers comprise one Critical, four High, two
 Moderate--High ranges, four Moderate, and one finding without an assigned tier.
-Two additional observations remain in the evidence-and-scoping backlog. These
+Three additional observations remain in the evidence-and-scoping backlog. These
 counts describe the bounded scenarios in Appendix~\ref{app:findings-register};
 they are not prevalence estimates and must not be aggregated into a score for
 HDF5 as a technology.
@@ -51,11 +51,11 @@ HDF5 as a technology.
 \subsection{Reconciled Mitigation Priorities}
 
 Table~\ref{tab:conclusion-priority-reconciliation} summarizes the only
-report-wide ordering. The program census is due within 30 days of roadmap
-adoption; a finding-response clock starts when an affected deployment or
-equivalent exposure is identified. Treatment removes or controls the concrete
-scenario; prevention addresses recurrence and may continue after the scoped
-finding is reassessed.
+report-wide ordering. The deployment census and assert-site source catalog are
+due within 30 days of roadmap adoption; a finding-response clock starts when an
+affected deployment or equivalent exposure is identified. Treatment removes or
+controls the concrete scenario; prevention addresses recurrence and may
+continue after the scoped finding is reassessed.
 
 \begingroup
 \small
@@ -117,17 +117,22 @@ Expedite a scoped item when an affected production pipeline, archive, or
 service is identified. \\
 
 Evidence action---no assigned risk urgency &
-\code{CORE-SAFE-001}, \code{EXT-PRIV-001}, \code{SUP-SAFE-001} &
+\code{CORE-SAFE-001}, \code{CORE-SEC-003}, \code{EXT-PRIV-001},
+\code{SUP-SAFE-001} &
 Perform bounded, reproducible studies sufficient to rate and route a supported
-scenario or to document a negative result over the tested scope. &
-NE and backlog status do not mean Low risk. The Phase~2 administrative target
-is not a risk-response category. \\
+scenario or to document a negative result over the tested scope; catalog and
+compare assertion-enabled and \code{-DNDEBUG} behavior for file-derived
+assertions. &
+NE and backlog status do not mean Low risk. The 30-day Phase~1 source-catalog
+target and Phase~2 administrative targets are assurance schedules, not
+risk-response categories. \\
 
 Continuing prevention and sustainment &
 Relevant formal findings and conditional evidence records &
 Deliver strict processing and preflight controls, invariant-driven parsing,
-checked arithmetic, differential conformance tests, governed extension loading,
-privacy-lifecycle controls, provenance, release gates, and reassessment. &
+always-active release-build checks, checked arithmetic, differential
+conformance tests, governed extension loading, privacy-lifecycle controls,
+provenance, release gates, and reassessment. &
 Phases~2--4 may run in parallel. Structural work does not defer earlier
 treatment or acquire an inherent-risk tier of its own. \\
 
@@ -137,13 +142,15 @@ treatment or acquire an inherent-risk tier of its own. \\
 This ordering also reconciles the chapters. The application chapter owns the
 only Immediate route. The core and tool chapter combines Near-term treatment of
 confirmed affected High and upper-bound-High scope with Planned resource controls and
-longer-term class prevention. The independent-implementation chapter owns two
-Planned interoperability treatments. Extension privacy and supply-chain
-mismatch themes remain evidence actions until a concrete affected population
-and harm are established. The wrappers and long-term-access chapters create no
-additional formal priority in this revision. Appendix~\ref{app:phased-roadmap}
-then translates these lanes into accountable work packages without changing
-their inherent risk.
+longer-term class prevention; the assert-masking observation adds a 30-day
+source-catalog action but no risk tier until a reachable consequence and scope
+are verified. The independent-implementation chapter owns two Planned
+interoperability treatments. Extension privacy and supply-chain mismatch themes
+remain evidence actions until a concrete affected population and harm are
+established. The wrappers and long-term-access chapters create no additional
+formal priority in this revision. Appendix~\ref{app:phased-roadmap} then
+translates these lanes into accountable work packages without changing their
+inherent risk.
 
 \subsection{Significance of the 2026 Developments}
 
@@ -171,12 +178,24 @@ permissiveness by default nor strictness without compatibility evidence
 \cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432,hdf5-gh-issue-6534,
 purehdf-gh-issue-164}.
 
+HDF5 Pickles issue~\#87 sharpens the core-parser conclusion. A validity
+predicate derived from in-file bytes but enforced only inside
+\code{assert(...)} is not a release control when \code{-DNDEBUG} removes it.
+The issue's seven component families and cursory 50--100 estimate define an
+urgent audit perimeter, not 50--100 proven vulnerabilities. This changes
+sequence without manufacturing a rating: complete the catalog and paired
+release/debug tests within 30 days of roadmap adoption, route and locally
+repair a supported adverse path as soon as it is confirmed, and use the
+results to order independently releasable Phase~3 migration tranches
+~\cite{hdf5-pickles-issue-87}.
+
 The developments therefore reinforce the rubric rather than reorder it by
 recency or publicity. The Hugging Face evidence supports a Critical
 application-boundary scenario with an Immediate conditional response; the two
 independent-implementation cases support Moderate safety scenarios with Planned
-treatment. Both show why the enforcing actor, affected scope, consequence, and
-acceptance evidence must be explicit.
+treatment; and the assert-masking observation remains an evidence action until
+exact paths and consequences are verified. Together they show why the enforcing
+actor, affected scope, consequence, and acceptance evidence must be explicit.
 
 \subsection{Assurance, Closure, and Residual Risk}
 
