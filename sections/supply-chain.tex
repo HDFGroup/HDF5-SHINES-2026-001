@@ -9,10 +9,21 @@
 \label{sec:supply-chain}
 
 
-\begin{itemize}
-    \item HDF5 2.0.0 source-artifact integrity check~\cite{prisupp-2204}
-    \item SBOM
-\end{itemize}
+This chapter examines HDF5's position in the software supply chain from two
+directions: what an HDF5 build itself depends on, and what depends on HDF5.
+Both matter to the assessment for the same reason --- a defect, a
+configuration difference, or a compromise at either end reaches far beyond the
+project that introduced it.
+
+Two release-integrity mechanisms frame the discussion. Source-artifact
+integrity checking, applied to the HDF5 2.0.0 release
+artifacts~\cite{prisupp-2204}, allows a consumer to establish that the source
+it builds is the source that was published. A software bill of materials
+extends the same idea to what a binary contains, and is the input the
+\code{RM-1A} census needs in order to answer whether a given deployment is
+affected by a given finding. Neither is currently a routine, verifiable
+property of every HDF5 release artifact; \code{CORE-S11} and \code{SUP-S1}
+propose making them so.
 
 \subsection{Upstream Dependencies}
 

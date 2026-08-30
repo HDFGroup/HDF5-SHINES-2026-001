@@ -19,12 +19,43 @@ framework is caused by the binding through which HDF5 was reached.
 
 \subsection{Python}
 
-\begin{itemize}
-    \item CVE-2025-9905 \cite{cve-2025-9905}
-    \item CVE-2026-0897 \cite{cve-2026-0897}
-    \item CVE-2026-1669 \cite{cve-2026-1669}
-    \item CVE-2026-2492 \cite{cve-2026-2492}
-\end{itemize}
+Four advisories in the assessment window reached users through a Python-facing
+workflow, and all four are useful precisely because none of them is a
+binding defect. In each case h5py or an equivalent layer performed as
+specified, and the failure occurred above it:
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+    \item[CVE-2025-9905~\cite{cve-2025-9905}.]
+    Keras legacy \code{.h5} loading executed a \code{Lambda} layer's
+    serialized code despite \code{safe_mode=True}. The unsafe step is
+    application-level deserialization of a framework object, not HDF5 decode.
+    Rated as \code{APP-SEC-002}.
+
+    \item[CVE-2026-1669~\cite{cve-2026-1669}.]
+    Model loading followed an HDF5 external dataset reference to a local path
+    and disclosed its contents. External raw storage is a documented HDF5
+    capability; the missing control is a policy on whether the loader may
+    follow it. Rated as \code{APP-SEC-003}.
+
+    \item[CVE-2026-0897~\cite{cve-2026-0897}.]
+    Weight loading allocated from a file-declared shape without a budget. HDF5
+    metadata may legitimately declare a logical shape far larger than the
+    useful payload, so the budget must exist in the consumer. Rated as
+    \code{APP-SEC-004}.
+
+    \item[CVE-2026-2492~\cite{cve-2026-2492}.]
+    TensorFlow's HDF5 integration searched an unsecured location for plugins.
+    The mechanism is HDF5 dynamic plugin loading; the defect is the
+    search-path policy of the embedding application. Rated as
+    \code{APP-SEC-005}.
+\end{description}
+
+The pattern is the chapter's substantive point: a binding faithfully exposes
+HDF5 capability, and the security decision --- whether this process, holding
+this authority, should honor that capability for this file --- belongs to the
+layer above. That is also why the recommendation in \code{APP-S1} asks
+bindings to surface these controls in the binding API rather than leaving
+them reachable only through environment variables.
 
 \subsection{Java}
 

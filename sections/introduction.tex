@@ -537,7 +537,10 @@ further reduce, avoid, or transfer it. \\
 Unless a stricter stated risk tolerance applies, the default response-urgency
 rule maps Critical current residual risk to \emph{Immediate}, High to
 \emph{Near-term}, Moderate to \emph{Planned}, and Low to
-\emph{Monitor}. Active exploitation or recurrence, imminent harm, or a
+\emph{Monitor}. A finding whose rating is expressed as a tier range is routed
+at the upper bound of that range; the report refers to such a case as
+\emph{upper-bound-High} when the range is Moderate--High. Routing at the upper
+bound does not collapse the range, which remains the stated rating. Active exploitation or recurrence, imminent harm, or a
 credible irreversible consequence can raise urgency. When current residual risk
 has not been assessed, inherent risk is the conservative provisional baseline.
 Dependencies and effort may shape the delivery plan or require an interim
@@ -570,6 +573,213 @@ proposed work packages with accountable roles, dependencies, effort, phase
 gates, acceptance evidence, and residual-risk decision requirements. Those
 planning fields do not revise the register's inherent ratings or represent
 stakeholder-approved commitments until adopted and assigned.
+
+\subsection{Identifier Scheme and Relationship to SSP SIG Artifacts}
+\label{sec:identifier-scheme}
+
+This report and the HDF5 Safety, Security \& Privacy (SSP) Special Interest
+Group repositories are separate artifacts of the same programme, and both use
+the word \emph{SHINES}. They do not share an identifier namespace. A reader who
+assumes otherwise will misread both.
+
+\begin{description}
+    \item[This report's finding identifiers.]
+    \code{CORE-SEC-nnn}, \code{CORE-TOOL-nnn},
+    \code{CORE-PRIV-nnn}, \code{CORE-SAFE-nnn},
+    \code{APP-SEC-nnn}, \code{IND-SAF-nnn},
+    \code{EXT-PRIV-nnn}, and \code{SUP-SAFE-nnn}. These name
+    the adverse-event scenarios registered in
+    Appendix~\ref{app:findings-register} and exist only in this report.
+
+    \item[This report's recommendation identifiers.]
+    \code{CORE-Sn}, \code{CORE-PRIV-Sn},
+    \code{APP-Sn}, \code{VOL-Sn}, \code{FILTER-Sn},
+    \code{VFD-Sn}, \code{IND-Sn}, and \code{SUP-Sn},
+    registered in Appendix~\ref{app:recommendation-register}. Work-package
+    identifiers \code{RM-nX} in
+    Appendix~\ref{app:phased-roadmap} are likewise report-local.
+
+    \item[SSP SIG policy controls.]
+    \code{HDF5-SHINES-FAMILY-nn}, in families including
+    \code{SDLC}, \code{BUILD}, \code{REL}, \code{DEP}, \code{TEST},
+    \code{TM}, \code{VULN}, \code{CRYPTO}, \code{COMP}, \code{HARD},
+    \code{PLUG}, \code{IR}, and \code{GOV}. These are \emph{policy controls}
+    maintained in the SSP SIG governance repository~\cite{hdf5-ssp-controls}.
+    They are not recommendations of this report, and no identifier in this
+    report is one of them.
+
+    \item[SSP SIG registry entries.]
+    \code{ATK-nnn} (security threats), \code{HAZ-nnn}
+    (safety hazards), and \code{EXP-nnn} (privacy exposures)
+    \cite{hdf5-ssp-atk,hdf5-ssp-haz,hdf5-ssp-exp}. These are threat- and
+    hazard-model entries, rated under a different method
+    (Section~\ref{sec:rubric-reconciliation}). They are not findings of this
+    report.
+\end{description}
+
+\paragraph{Citing an identifier outside this report.}
+Prefix the report-local short form with this revision's identifier when
+quoting it elsewhere: the canonical global form of \code{CORE-S1} is
+\code{SHINES-2026-001:CORE-S1}, and of \code{CORE-SEC-001} is
+\code{SHINES-2026-001:CORE-SEC-001}. The short forms are used throughout this
+document for readability. They must not be abbreviated to ``SHINES control''
+in any context that also refers to \code{HDF5-SHINES-*} policy controls.
+
+\paragraph{A specific hazard for readers.}
+The SSP SIG maintains a coverage matrix from the OpenSSF Open Source Project
+Security Baseline to ``SHINES controls''~\cite{hdf5-ssp-osps-matrix}. That
+matrix scores the \code{HDF5-SHINES-*} \emph{policy controls}. It does not
+score the recommendations in this report, and its COVERED, PARTIAL, and GAP
+counts say nothing about the coverage of any finding registered here.
+
+\paragraph{Crosswalk.}
+Appendix~\ref{app:recommendation-register} records, for each recommendation,
+the SSP SIG policy control it supports where one exists, and
+Appendix~\ref{app:findings-register} records the corresponding \code{ATK},
+\code{HAZ}, or \code{EXP} registry entry for each finding. Those mappings are
+editorial correspondences established by this report; neither repository has
+adopted them, and a correspondence is not a claim that the control is
+satisfied or that the ratings agree.
+
+\subsection{Reconciliation with the SSP SIG Risk Registries}
+\label{sec:rubric-reconciliation}
+
+The SSP SIG registries rate their entries with a method that is
+\textbf{incompatible with Section~\ref{sec:risk-rubric}}, and the two must not
+be compared numerically or merged into a single ordering.
+
+\begin{description}
+    \item[SSP SIG method.] Severity $(1$--$5)$ \emph{multiplied by} Likelihood
+    $(1$--$5)$ yields a score of $1$--$25$, banded as $1$--$5$ Low, $6$--$10$
+    Moderate, $11$--$15$ High, $16$--$20$ Very High, $21$--$25$ Critical.
+
+    \item[This report's method.] Ordinal impact (I1--I4) and exposure
+    (E1--E4) resolved through Table~\ref{tab:inherent-risk-matrix} to Low,
+    Moderate, High, or Critical. The axes are not numeric scores, are not
+    multiplied, and decision rule 6 of Section~\ref{sec:risk-rubric}
+    expressly forbids translating an external score into this rating.
+\end{description}
+
+Three consequences follow. First, the band vocabularies differ: \emph{Very
+High} has no counterpart in Table~\ref{tab:inherent-risk-matrix}, and the two
+\emph{Critical} bands are not the same threshold. Second, an SSP SIG score
+cannot be converted into a tier here, and a tier here cannot be converted into
+a score there; a crosswalk may state that two records describe the same
+mechanism, never that they agree on magnitude. Third, and most important, the
+registries and this report answer different questions. An \code{ATK} or
+\code{HAZ} entry rates a \emph{mechanism} across the ecosystem as a threat- or
+hazard-model artifact. A finding here rates a \emph{bounded adverse-event
+scenario} in a stated population, and withholds a rating when exposure is not
+evidenced for that population.
+
+That difference, not disagreement about the underlying facts, explains most of
+the divergence in Table~\ref{tab:ssp-divergence}. The registries are
+deliberately inclusive; this report is deliberately conservative about
+exposure. Neither posture is an error, but a reader comparing the two documents
+must know which question each is answering.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.15\widetablewidth}>{\raggedright\arraybackslash}p{0.17\widetablewidth}>{\raggedright\arraybackslash}p{0.17\widetablewidth}>{\raggedright\arraybackslash}p{0.47\widetablewidth}@{}}
+\caption{Known rating divergences between the SSP SIG registries and this
+report}
+\label{tab:ssp-divergence}\\
+\hline
+\textbf{SSP SIG entry} & \textbf{Their rating} & \textbf{This report} &
+\textbf{Why they differ} \\
+\hline
+\endfirsthead
+
+\caption[]{Known rating divergences between the SSP SIG registries and this
+report, continued}\\
+\hline
+\textbf{SSP SIG entry} & \textbf{Their rating} & \textbf{This report} &
+\textbf{Why they differ} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\code{ATK-001} metadata size and address fields corrupt parser memory &
+25, Critical (likelihood ``almost certain'') &
+\code{CORE-SEC-001}, High, Provisional &
+The registry rates the mechanism's recurrence across the CVE history. This
+report rates a bounded population --- deployments on an affected
+version-and-path pair processing untrusted files --- and holds exposure at
+E2--E3 because installed-population prevalence is not established. Closing the
+version-and-path gap in Appendix~\ref{app:cve-history-summary} is what would
+let the exposure axis move. \\
+
+\code{ATK-009} malformed files exhaust memory or CPU &
+16, Very High &
+\code{CORE-SEC-002}, Moderate &
+Impact, not exposure. This report assigns I2 because the evidenced consequence
+is a recoverable process or workflow interruption; a mission-level outage
+requires a separate deployment-specific record. The registry's severity
+reflects service-denial in a hostile deployment. \\
+
+\code{ATK-011} malicious plugin resolution executes untrusted extension code &
+20, Very High &
+no core finding; \code{APP-SEC-005} High at the application boundary &
+A genuine methodological disagreement, not an evidence gap. Decision rule 3 of
+Section~\ref{sec:risk-rubric} rates a scenario at the boundary where authority
+resides, and the evidenced instance is a downstream search-path policy failure.
+The registry rates the library capability itself. Both agree the capability
+requires a distinct control domain (\code{CORE-S10}). \\
+
+\code{ATK-013} trojanized packages or binaries &
+15, High &
+no finding; \code{SUP-SAFE-001} unrated &
+Scope. This report registers a build-and-feature \emph{mismatch} observation
+and never developed a distribution-compromise scenario. The registry entry is
+the better starting point, and \code{RM-2F} should adopt it rather than
+re-derive one. \\
+
+\code{HAZ-005} out-of-space during write or close &
+15, High, with a full accident chain and three safety constraints &
+\code{CORE-SAFE-001}, NE, no tier &
+The most consequential divergence. This report declined to rate for want of a
+bounded API sequence, version, and recoverability evidence. The registry
+supplies the hazard analysis but not those measurements, so both records are
+waiting on the same \code{RM-2D} study; the entry's safety constraints SC-1 to
+SC-3 should be adopted as that study's hypotheses. \\
+
+\code{EXP-001} no standard whole-file encryption by default &
+20, Very High &
+no finding; \code{CORE-PRIV-S4}, conditional \code{RM-2G} &
+A framing difference. This report does not rate the absence of a feature as a
+scenario, and treats encryption as one partial control whose credit depends on
+tested recovery. The registry rates the resulting exposure directly. \\
+
+\code{EXP-002} metadata leakage despite encrypted payload &
+12, High &
+\code{CORE-PRIV-001}, Moderate--High &
+\textbf{Consistent.} The two records describe the same mechanism and land in
+comparable bands. \\
+
+\code{EXP-004}, \code{EXP-005}, \code{EXP-006}, \code{EXP-007} extension and
+storage-boundary exposures &
+12, 12, 10, 9 &
+\code{EXT-PRIV-001}, unrated backlog &
+This report requires a named deployment, sensitive-data population, recipient,
+and harm before rating, and has none. The registry rates the mechanisms.
+\code{RM-2E} should take these four entries as its enumeration rather than
+starting from a blank scenario. \\
+
+\end{longtable}
+\endgroup
+
+Where this report is silent and a registry entry exists, the registry entry
+stands as the SSP SIG's own assessment. Silence here is not disagreement, and
+Section~\ref{sec:assessment-limitations} applies.
 
 \subsection{Limitations and Assurance}
 \label{sec:assessment-limitations}

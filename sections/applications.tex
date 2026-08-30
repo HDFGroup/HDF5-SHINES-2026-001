@@ -215,6 +215,10 @@ But this needs to become a cohesive security profile, not a set of hidden knobs.
 
 \subsubsection*{Recommendation APP-S2: Ship a preflight validator}
 
+\noindent\emph{Prior art:} a working preflight validator already exists; see
+Table~\ref{tab:core-prior-art-rescope}. The open work is the enforcement
+coupling described below, not the validator itself.
+
 Create a validator that reads metadata before the application allocates large
 arrays or deserializes model objects. Preflight is not a stand-alone
 authorization: its result must be bound to the same open handle or verified

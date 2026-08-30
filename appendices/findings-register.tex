@@ -114,6 +114,133 @@ that HDF5 2.0 rejects after upgrade. & Safety & I2/E2 & Moderate & Rated & High 
 \end{longtable}
 \endgroup
 
+\subsection{Correspondence with the SSP SIG Registries}
+\label{sec:findings-ssp-crosswalk}
+
+Table~\ref{tab:findings-ssp-crosswalk} relates each record above to the SSP SIG
+threat, hazard, and privacy registries. Three cautions govern its use, and all
+three are load-bearing.
+
+First, this is an \textbf{editorial correspondence established by this report}.
+Neither project has adopted it, and a row asserts only that the two records
+describe a related mechanism. Second, \textbf{it is not a rating comparison}:
+the registries score Severity $\times$ Likelihood on a $1$--$25$ scale with five
+bands, which Section~\ref{sec:rubric-reconciliation} establishes is not
+convertible to or from the tiers used here. Third, \textbf{``no direct
+counterpart'' runs in both directions and means neither project is wrong}. The
+registries model the library and format; this report additionally rates
+application, service, and independent-implementation boundaries that the
+registries do not cover, and the registries enumerate operational safety
+hazards this report did not examine.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.16\widetablewidth}>{\raggedright\arraybackslash}p{0.26\widetablewidth}>{\raggedright\arraybackslash}p{0.54\widetablewidth}@{}}
+\caption{Editorial correspondence between this register and the SSP SIG
+registries}
+\label{tab:findings-ssp-crosswalk}\\
+\hline
+\textbf{This report} & \textbf{SSP SIG entry} & \textbf{Note} \\
+\hline
+\endfirsthead
+
+\caption[]{Editorial correspondence between this register and the SSP SIG
+registries, continued}\\
+\hline
+\textbf{This report} & \textbf{SSP SIG entry} & \textbf{Note} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\code{CORE-SEC-001} &
+\code{ATK-001}--\code{ATK-008} &
+The registry decomposes the memory-unsafe parser class into eight mechanism
+entries; this report treats them as one shared adverse event with a common
+scope and evidence base. The decomposition is the better basis for the
+\code{CORE-S1} invariant tranches. \\
+
+\code{CORE-SEC-002} &
+\code{ATK-009}, \code{ATK-010}, \code{ATK-012} &
+Resource exhaustion, null and uninitialized dereference, and I/O amplification
+from pathological chunk layouts. The promoted assert-only instance sits under
+\code{ATK-010}. \\
+
+\code{CORE-TOOL-001} &
+\code{ATK-007} (mechanism only) &
+The registry rates lifetime defects as a library class and does not separate
+official-tool exposure. This report rates the tool boundary distinctly. \\
+
+\code{CORE-PRIV-001} &
+\code{EXP-002}; also \code{HAZ-004} &
+The one pairing where both projects rate the same mechanism and land in
+comparable bands. \\
+
+\code{CORE-SAFE-001} &
+\code{HAZ-005} &
+Same scenario. The registry supplies a hazard analysis and rating; this report
+declines to rate pending \code{RM-2D} measurement. See
+Table~\ref{tab:haz-crosswalk}. \\
+
+\code{CORE-SEC-003} &
+\code{ATK-010} (partial) &
+No registry entry addresses build-mode-dependent enforcement directly. \\
+
+\code{APP-SEC-001} &
+No direct counterpart &
+The registries contain no confused-deputy or authority-boundary entry.
+\code{EXP-008} and \code{EXP-009} cover external-link disclosure as a privacy
+mechanism, which is related but not the same scenario. \\
+
+\code{APP-SEC-002} &
+No direct counterpart &
+Application-level deserialization layered on HDF5 is outside the registries'
+scope. \\
+
+\code{APP-SEC-003} &
+\code{EXP-009} (partial) &
+External references revealing or reaching unintended targets; the registry
+frames it as disclosure, this report as an authority-boundary failure. \\
+
+\code{APP-SEC-004} &
+\code{ATK-009} &
+Same mechanism, rated here at the application boundary that performs the
+allocation. \\
+
+\code{APP-SEC-005} &
+\code{ATK-011} &
+The clearest methodological disagreement in the pair of documents; see
+Table~\ref{tab:ssp-divergence}. \\
+
+\code{IND-SAF-001}, \code{IND-SAF-002} &
+No direct counterpart &
+The registries have a parser-ambiguity hazard family but no
+independent-implementation or reader/writer-conformance entries. This is
+material this report contributes. \\
+
+\code{EXT-PRIV-001} &
+\code{EXP-004}--\code{EXP-007}; also \code{HAZ-003} &
+The registry has already enumerated four bounded extension exposures where this
+report has one unrated theme. \code{RM-2E} should adopt them as its
+enumeration. \\
+
+\code{SUP-SAFE-001} &
+\code{ATK-013}, \code{HAZ-014} &
+Distribution compromise and missing-filter portability. \code{ATK-013} is a
+security scenario this report never developed; \code{RM-2F} should adopt it
+rather than re-derive one. \\
+
+\end{longtable}
+\endgroup
+
 \subsection{Evidence and Scoping Backlog}
 
 The observations below identify work needed to determine whether additional
@@ -157,14 +284,22 @@ or consequence analysis; a fixed develop-source sample corroborates the build
 mechanism and representative sites, not their runtime consequences
 ~\cite{hdf5-pickles-issue-87,hdf5-assert-build-config-2026,
 hdf5-assert-chunk-record-2026,hdf5-assert-extensible-array-2026,
-hdf5-assert-fractal-heap-2026}. &
+hdf5-assert-fractal-heap-2026}.
+\textbf{One instance has been promoted} into \code{CORE-SEC-002} on reported
+reproduction: a v2 B-tree \code{record\_size} of zero reaching an integer
+division, \code{SIGFPE} on a release build~\cite{h5policy-case-v2btree-recordsize}.
+A second candidate is reported for the cache-image LRU rank relation without a
+measured release-build consequence~\cite{h5policy-case-mdci-lru}. The remaining
+population is unquantified, and this record stays open. &
 For each supported source line and build profile, record the source site,
 file-byte provenance, non-asserting dominating guard if any, release
 reachability, first security-relevant sink, paired debug and \code{-DNDEBUG}
 fixture result, affected versions, and consequence. Promote each supported
 adverse-event scenario into \code{CORE-SEC-001}, \code{CORE-SEC-002}, or a new
 formal finding as the evidence requires; a redundant or unreachable assertion
-needs a documented negative disposition. \\
+needs a documented negative disposition. Begin from the promoted instance's own
+sibling audit, which names further unaudited assertions in the same B-tree
+header initializer and in fractal-heap initialization. \\
 
 \code{EXT-PRIV-001} &
 Extensions can move data and metadata across storage, cache, logging, network,
@@ -314,6 +449,38 @@ present installed population are not established. The file-space repair is one
 direct example of converting an assertion reached from corrupted metadata into
 a controlled error~\cite{commit_804f3ba,cve_hdf5}.
 
+\noindent\textbf{Confirmed instance promoted from \code{CORE-SEC-003}.}
+One assert-masked deserializer invariant has been carried to the standard that
+Section~\ref{sec:risk-rubric} requires for a rated scenario, and is recorded
+here rather than left in the evidence backlog. A version-2 B-tree header
+declaring \code{record\_size == 0} reaches an integer division while the leaf
+record capacity is derived; the only guard is
+\code{assert(cparam->rrec\_size > 0)} in \code{H5B2hdr.c}, which is absent from
+release builds compiled with \code{-DNDEBUG}. The reported measurement records
+\code{SIGFPE} on a shipped \code{h5dump -H} against HDF5 2.3.0, on the public
+API path \code{H5Fopen} $\rightarrow$ \code{H5Gopen2} $\rightarrow$
+\code{H5Gget\_info}, on both x86-64 and i386 builds, with the condition
+re-checked against a later source state~\cite{h5policy-case-v2btree-recordsize}.
+
+This satisfies the three conditions \code{CORE-SEC-003} had left open for its
+population: the assertion is the sole guard, it is release-reachable in a
+supported version, and the adverse outcome is observed rather than inferred.
+Under \code{RM-1E}, a confirmed adverse path is routed by its consequence
+without waiting for the catalog; the consequence here is controlled-process
+termination, which is this record's scenario rather than
+\code{CORE-SEC-001}'s. The instance is therefore promoted into
+\code{CORE-SEC-002}.
+
+Two qualifications are part of the record. The measurement is
+\emph{source-reported}: this assessment did not independently reproduce it, and
+the reporting project states the affected version range as \emph{not
+established}, having measured one release without version archaeology. Second,
+a related variant --- a leaf capacity of exactly zero rather than a division by
+zero --- is reported to produce intermittent heap corruption under an older
+h5py-linked library, which if characterized would belong to
+\code{CORE-SEC-001} instead. That variant is expressly recorded by its
+reporters as observed but not characterized, and this report does not rate it.
+
 \noindent\textbf{Rating basis.}
 I2 reflects a meaningful but ordinarily recoverable process or workflow
 interruption; a mission-level outage requires a separate deployment-specific
@@ -324,9 +491,22 @@ version prevalence makes the assessment provisional. The rating is
 \textbf{I2/E2--E3, Moderate, Provisional, Moderate confidence}. Current release
 and installed-population residual risk were not evaluated.
 
+The promoted instance does not change the tier: a confirmed termination path is
+the I2 consequence already assigned. It does not raise confidence to High
+either, because the affected version boundary --- a material rating assumption
+under Section~\ref{sec:risk-rubric} --- remains unestablished. What it does
+change is the \emph{status of the mechanism}: release-build absence of a
+file-derived check is no longer a hypothesis for this record, and the
+\code{RM-1B} negative test for it is a concrete, available deliverable rather
+than one contingent on the \code{RM-1E} catalog.
+
 \noindent\textbf{Linked recommendations.}
 \code{CORE-S0}--\code{CORE-S8}, \code{CORE-S12}, \code{APP-S1}, and
 \code{APP-S2}.
+
+\noindent\textbf{SSP SIG correspondence.}
+\code{ATK-009}; the promoted instance also corresponds to \code{ATK-010}.
+See Section~\ref{sec:rubric-reconciliation} for why the ratings differ.
 
 \subsubsection*{CORE-TOOL-001 --- h5dump use-after-free}
 

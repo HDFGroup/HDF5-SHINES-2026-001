@@ -217,6 +217,69 @@ date, performed date, status, and evidence. A 24-hour containment can close its
 SLA child without falsely marking a shared architectural package complete; a
 large shared package cannot hide an overdue child behind its later program date.
 
+\subsection{Licensing Constraint on Reuse of Existing Work}
+\label{sec:roadmap-licensing}
+
+Several packages below --- \code{RM-1E}, \code{RM-2A}, \code{RM-2C},
+\code{RM-3A}, \code{RM-3B}, and \code{RM-3C} --- can draw on work that already
+exists in the H5Lens / \code{hdf5-pickles} project, which supplies a bounded
+decoder, a machine-readable invariant registry, an untrusted-input preflight
+oracle, a malformed-input corpus, and differential measurements against a
+selected libhdf5 build~\cite{hdf5-pickles,h5policy,h5policy-invariant-registry}.
+Section~\ref{sec:core-prior-art} describes what exists and how each
+recommendation is re-scoped as a result.
+
+That reuse has a hard boundary that must be planned for rather than discovered
+during implementation. \textbf{H5Lens is distributed under the GNU General
+Public License, version 3 or later; the HDF5 library is distributed under a
+permissive BSD-style license.} Source cannot move from the former into the
+latter without changing HDF5's licensing terms, which is a governance decision
+far outside this report's scope and is not proposed here.
+
+The reuse that \emph{is} available is the data and the evidence, and the
+producing project has been designed for exactly that separation: invariant
+identifiers, structural boundaries, finding codes, expected outcomes, fixture
+specimens, and measurement results are data, and a differently-licensed native
+implementation may consume them without importing implementation source.
+Accordingly:
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+    \item[Consume as data, re-implement independently.]
+    \code{RM-3A} may adopt the existing invariant identifiers, record-family
+    decomposition, and structural boundaries as its registry vocabulary, and
+    must write its own enforcement code in the library. The registry is the
+    specification; it is not a source of patches.
+
+    \item[Consume as an oracle, not as a component.]
+    \code{RM-2A} and \code{RM-3C} may run the existing preflight oracle as an
+    external differential reference in CI --- comparing what libhdf5 does
+    against what the oracle decides --- without linking or vendoring it.
+    Running a GPL tool alongside a BSD library in a test harness does not
+    affect the library's terms; embedding it would.
+
+    \item[Fixtures and expectations are freely usable evidence, subject to
+    their own provenance.] \code{RM-1B}, \code{RM-2C}, and \code{RM-3C} may
+    adopt malformed specimens and expected-outcome records as corpus inputs.
+    Each specimen still needs its own provenance check: some are
+    generator-produced and reproducible, and others are supplied corpus finds
+    whose redistribution terms must be confirmed before they enter a public
+    test suite.
+
+    \item[Case records are triage input, not findings.]
+    \code{RM-1E} may take the existing case records as its starting inventory.
+    They are third-party analyses; each still requires this programme's own
+    reachability, version-boundary, and consequence determination before it
+    is promoted and routed.
+\end{description}
+
+The accountable \code{GOV} role should record a dated decision on this boundary
+at adoption, because it changes effort estimates in both directions: it removes
+design and enumeration work from \code{RM-3A}, and it adds independent
+re-implementation work that a naive ``reuse the existing code'' plan would have
+assumed away. Any proposal to relicense, dual-license, or upstream any part of
+the existing work is a governance action requiring its own decision record and
+is not assumed by this roadmap.
+
 \subsection{Work-Package Register}
 
 Dependencies below are concrete enabling relationships, not reasons to defer
@@ -444,6 +507,187 @@ each accepted package; it does not wait for all Phase~3 work to finish. & Medium
 
 \end{longtable}
 \endgroup
+
+\subsection{Minimum Viable Subset Under Constrained Capacity}
+\label{sec:roadmap-minimum-viable}
+
+The register above is scoped to risk, not to budget. It proposes nine
+\emph{Large} packages, several of which are multi-release architectural
+programs. A plan that cannot be started is not a control, so this subsection
+identifies what to fund first if the full program cannot be resourced.
+
+\paragraph{What this subsection is and is not.}
+This is a funding and sequencing aid. It is \textbf{not} a risk rank, and it
+does not revise any inherent rating, response route, or maximum horizon.
+Section~\ref{sec:risk-rubric} forbids effort from lowering urgency, and
+nothing here does so: Tier~A below is precisely the work whose omission would
+breach a response clock, and it is therefore not discretionary at any funding
+level. Tiers~B and C order the \emph{prevention} program, which has program
+commitments rather than finding-response clocks. Deferring a Tier~C item is
+permissible only with the recorded, expiring exception required by
+Section~\ref{sec:roadmap-change-control}, and each deferral carries the
+consequence stated in Table~\ref{tab:roadmap-minimum-viable}.
+
+\paragraph{Tier A --- not discretionary.}
+\code{RM-0A} (when triggered), \code{RM-1A}, \code{RM-1B}, \code{RM-1C},
+\code{RM-1D}, and \code{RM-1E}. Every one is \emph{Medium} effort. Together
+they are the entire Phase~0--1 response obligation: contain a confirmed
+Critical-equivalent path, establish the population, treat the known affected
+scope, and bound the assert-masking perimeter. \code{RM-1A} is first among
+equals --- without a census, no other package can demonstrate that it treated
+anything, and the version-and-path gap recorded in
+Appendix~\ref{app:cve-history-summary} cannot be closed.
+
+\paragraph{Tier B --- highest prevention coverage per unit of effort.}
+Five items return the most durable control per engineer-week, and each is
+independently useful if the rest of Phase~3 never ships. This ordering reflects
+the effort revised in Table~\ref{tab:core-prior-art-rescope}: because the
+invariant registry, the profile semantics, the corpus, and the fuzz-harness
+design already exist and can be consumed as data, four of the five are now
+Small or Medium rather than Large. \code{CORE-S1} in particular moves up ---
+adopting an existing invariant vocabulary and mapping it to enforcement points
+is a materially smaller job than designing the vocabulary from nothing, and it
+is the prerequisite the rest of the registry-driven work builds on.
+
+\paragraph{Tier C --- defer explicitly, with the consequence recorded.}
+The remaining Large programs. Deferring them is a legitimate capacity
+decision; representing them as unnecessary is not.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.13\widetablewidth}>{\raggedright\arraybackslash}p{0.36\widetablewidth}>{\raggedright\arraybackslash}p{0.47\widetablewidth}@{}}
+\caption{Capacity-constrained ordering of the prevention program}
+\label{tab:roadmap-minimum-viable}\\
+\hline
+\textbf{Item} & \textbf{Why it is high leverage} &
+\textbf{Consequence if deferred} \\
+\hline
+\endfirsthead
+
+\caption[]{Capacity-constrained ordering of the prevention program,
+continued}\\
+\hline
+\textbf{Item} & \textbf{Why it is high leverage} &
+\textbf{Consequence if deferred} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\multicolumn{3}{@{}l}{\textbf{Tier B --- fund these five before any other
+Phase~2--3 work}}\\
+\hline
+
+\code{CORE-S6} via \code{RM-1B}, \code{RM-3C}\newline (Small, re-scoped) &
+The malformed-input corpus is the cheapest durable control in the program and
+a prerequisite for verifying every other one. It also carries the
+debug/\code{-DNDEBUG} parity harness that \code{CORE-SEC-003} needs, so it is
+already required by Tier~A. &
+Every subsequent fix becomes unverifiable and every closed defect can silently
+regress. Nothing else in Phase~3 can produce acceptance evidence. \\
+
+\code{CORE-S7} via \code{RM-1E}, \code{RM-3C}\newline (Medium) &
+The review checklist and its automated rules are configuration, not
+architecture. They stop reintroduction of the recurring class at the point of
+change, including the assert-only-guard pattern, at a fraction of the cost of
+migrating existing code. &
+The class keeps being reintroduced at the same rate it is repaired, and the
+invariant work in \code{RM-3A} is continually eroded by new code. \\
+
+\code{CORE-S3} via \code{RM-2A}, \code{RM-3A}\newline (Large; tranche it) &
+Checked arithmetic and allocation address the step at which a validation
+failure becomes memory corruption. It is the highest defect-class coverage per
+line changed, and it can be delivered structure-by-structure rather than as a
+single migration. &
+The dominant root-cause category in
+Table~\ref{tab:hdf5-cve-root-cause-categories} remains untreated even where
+decode-side checks are added. \\
+
+\code{CORE-S4} via \code{RM-2A}\newline (Medium, re-scoped) &
+Security profiles are the only item that removes work from every downstream
+simultaneously, and they are the control the ecosystem has explicitly asked
+for. Shipping the profile and the external-resource policy first, with
+resource budgets following, delivers most of the value early. &
+Each downstream continues to reimplement partial, divergent policy;
+\code{APP-S1} and \code{APP-S2} stay unimplementable as shared controls;
+\code{RM-0A} containment remains the only available answer. \\
+
+\code{CORE-S1} via \code{RM-3A}\newline (Medium, re-scoped) &
+An invariant vocabulary, record-family decomposition, and per-family coverage
+map already exist and are consumable as data. Adopting them converts the
+registry from a design problem into an enforcement-mapping problem, and every
+other registry-driven control --- review gates, fuzz targeting, metrics
+denominators --- keys off the identifiers it establishes. &
+\code{CORE-S7} and \code{CORE-S12} lose their denominator: there is nothing
+to check a change against and nothing to measure coverage over. Deferring this
+while funding the others makes the others unmeasurable. \\
+
+\hline
+\multicolumn{3}{@{}l}{\textbf{Tier C --- defer with a recorded, expiring
+exception}}\\
+\hline
+
+\code{CORE-S2}\newline (\code{RM-3B}) &
+The parser migration is the actual class-elimination control, and it is the one
+item the existing design work does \emph{not} make cheaper: a design reduces
+uncertainty, not migration cost. With \code{CORE-S1} funded in Tier~B, the
+registry can still be seeded opportunistically from \code{RM-1E} and
+\code{RM-1B} findings while migration waits. &
+Class elimination cannot be claimed. Local repairs remain local; the
+\code{CORE-S0} class-prevention records stay open indefinitely and must be
+reported as such. \\
+
+\code{CORE-S5}\newline (\code{RM-3C}, Medium, re-scoped) &
+Structure-aware fuzzing finds families rather than instances, and a harness
+design with per-family recipes already exists. The two named gaps are OSS-Fuzz
+integration and per-family targets; close those rather than rebuilding the
+portfolio. Borderline Tier~B if capacity allows. &
+New variants of known families continue to arrive as individually reported
+defects. \\
+
+\code{CORE-S10}, \code{CORE-S11}\newline (\code{RM-3D}, \code{RM-3E}) &
+Plugin signing and full provenance are valuable but have low marginal effect
+while \code{CORE-S4} plugin policy is absent. Hash allowlists and protected
+paths are the interim control. &
+\code{APP-SEC-005}-class exposure is treated per deployment rather than
+structurally; release provenance stays unverifiable. \\
+
+\code{CORE-PRIV-S4}\newline (\code{RM-2G}) &
+Conditional by construction: reached only where \code{RM-1D} minimization and
+recipient controls cannot meet policy. Requires key custody and tested
+recovery before it may be credited. &
+Affected sharing boundaries are avoided or access-restricted instead, within
+the \code{CORE-PRIV-001} Near-term clock. This is an acceptable interim
+posture. \\
+
+\code{IND-S1}, \code{SUP-S1}\newline (\code{RM-2C}, \code{RM-3E}) &
+Both are Large and both are genuinely needed, but their findings are Moderate
+and their populations are bounded and known. Preserve the \#6409 and \#6534
+fixtures now; build the full matrix later. &
+The two Planned interoperability findings still require their bounded
+treatment on the 90-day clock; only the general corpus and profile matrix are
+deferred. \\
+
+\end{longtable}
+\endgroup
+
+\paragraph{Reading the subset honestly.}
+Funding Tier~A and Tier~B is a coherent program: it treats every known
+affected population, bounds the assert perimeter, and installs the three
+controls that make future work verifiable and the one control that helps the
+whole downstream ecosystem. It does \textbf{not} eliminate the recurring
+class, and a report of progress should not say that it does. Under
+\code{CORE-S0}, the class-prevention record remains open, and under
+\code{CORE-S12} the tranche denominator must show the untreated remainder
+rather than reporting only on the delivered subset.
 
 \subsection{Acceptance and Closure Evidence}
 
@@ -756,6 +1000,7 @@ profile population; an inconclusive result remains open and re-planned. \\
 \endgroup
 
 \subsection{Change Control and Residual Risk}
+\label{sec:roadmap-change-control}
 
 Each implementation record should contain the package identifier, named
 accountable person, responsible implementer, independent verifier, release or

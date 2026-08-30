@@ -143,8 +143,8 @@ This ordering also reconciles the chapters. The application chapter owns the
 only Immediate route. The core and tool chapter combines Near-term treatment of
 confirmed affected High and upper-bound-High scope with Planned resource controls and
 longer-term class prevention; the assert-masking observation adds a 30-day
-source-catalog action but no risk tier until a reachable consequence and scope
-are verified. The independent-implementation chapter owns two Planned
+source-catalog action but no risk tier of its own; its one reproduced instance
+is routed under \code{CORE-SEC-002} by that instance's consequence. The independent-implementation chapter owns two Planned
 interoperability treatments. Extension privacy and supply-chain mismatch themes
 remain evidence actions until a concrete affected population and harm are
 established. The wrappers and long-term-access chapters create no additional
@@ -188,6 +188,21 @@ release/debug tests within 30 days of roadmap adoption, route and locally
 repair a supported adverse path as soon as it is confirmed, and use the
 results to order independently releasable Phase~3 migration tranches
 ~\cite{hdf5-pickles-issue-87}.
+
+The perimeter is no longer entirely hypothetical. One instance has been
+carried to reproduction and is promoted into \code{CORE-SEC-002}: a version-2
+B-tree header declaring a zero record size reaches an integer division whose
+only guard is an assertion, producing \code{SIGFPE} on a shipped tool in a
+release build, at both 32- and 64-bit
+widths~\cite{h5policy-case-v2btree-recordsize}. That single case settles the
+question of kind while leaving the question of extent open, and it does so in
+the direction the rubric anticipated: the mechanism is real, the consequence
+for this instance is termination rather than corruption, and the affected
+version range is still unestablished. It is evidence that the 30-day catalog is
+warranted, not evidence of its result. The promotion also demonstrates the
+routing rule working as designed --- a confirmed path leaves the backlog and
+acquires its consequence's tier, without the backlog record itself ever having
+been assigned one.
 
 The developments therefore reinforce the rubric rather than reorder it by
 recency or publicity. The Hugging Face evidence supports a Critical
