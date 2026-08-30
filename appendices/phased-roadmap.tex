@@ -402,21 +402,32 @@ dependency, and an interim application policy wrapper is acceptable. & Medium \\
 
 \code{RM-2C} & 2 / \code{INTEROP} &
 compatibility policy for \code{CORE-SEC-002}; \code{IND-SAF-001},
-\code{IND-SAF-002} &
-Maintain positive and intentionally invalid fixtures across supported readers
-and writers; inventory affected legacy files and provide deterministic repair,
-migration, or documented compatibility handling. Covers \code{CORE-S6},
+\code{IND-SAF-002}; Near-term adjudication for \code{FMT-SAF-001} &
+Maintain positive, intentionally invalid, and \emph{contested-reading}
+fixtures across supported readers and writers; inventory affected legacy files
+and provide deterministic repair, migration, or documented compatibility
+handling. Separately and on the Near-term clock, rule on each identified
+specification-versus-library dispute, record the ruling, and change the losing
+artifact --- this is a bounded action and is not contingent on \code{RM-3I}. Covers \code{CORE-S6},
 \code{CORE-S8}, and \code{IND-S1}; per-case normative decisions feed, but do
 not duplicate, the \code{CORE-S1} registry in \code{RM-3A}. & \code{RM-1A};
 external writer, reader, and production-derived fixtures. & Large \\
 
-\code{RM-2D} & 2 / \code{CORE} & \code{CORE-SAFE-001} &
-Reproduce storage exhaustion across bounded write, flush, and close sequences,
-HDF5 versions, VFD/filesystem/buffering profiles, and recovery paths; record the
-last durable state, diagnostics, repairability, and data uniqueness. This is
-evidence acquisition, not assigned urgency. & Storage fault injection,
-representative workloads, and archival/data-owner input. & Medium evidence;
-treatment Not estimated \\
+\code{RM-2D} & 2 / \code{CORE} & \code{CORE-SAFE-001},
+\code{CORE-SAFE-002} &
+\textbf{Write-path fault injection (widened).} One harness, two triggers:
+storage exhaustion \emph{and} abrupt process or host termination, injected
+across bounded write, flush, and close sequences, HDF5 versions, and
+VFD/filesystem/buffering profiles. For each injection point record the error
+surfaced to the caller, the last durable state, whether a later open succeeds,
+succeeds after repair, or fails, whether data read back differs from what was
+acknowledged written, repairability, and data uniqueness. Also covers the
+\code{HAZ-006}, \code{HAZ-012}, and \code{HAZ-015} durability cluster, which
+shares this apparatus. Supports \code{CORE-SAFE-S1} and \code{CORE-SAFE-S2}.
+Unlike the other Phase~2 studies this is \emph{not} evidence acquisition for an
+unrated record: both findings are rated, and this package produces their
+acceptance evidence. & Storage and process fault injection, representative
+workloads, and archival/data-owner input. & Large \\
 
 \code{RM-2E} & 2 / \code{PRIV} & \code{EXT-PRIV-001} &
 Select a representative extension deployment and trace classified data,
@@ -495,6 +506,39 @@ handling, and retention/deletion controls. Covers \code{CORE-PRIV-S3},
 \code{VOL-S4}, \code{FILTER-S3}, \code{FILTER-S4}, and \code{VFD-S2}. &
 \code{RM-1D}, \code{RM-2E}; encryption work also requires the key-management
 and recovery controls in \code{RM-2G}. & Large \\
+
+\code{RM-3G} & 3 / \code{CORE} & \code{CORE-SAFE-001},
+\code{CORE-SAFE-002} &
+Deliver the durability controls: an \code{ENOSPC} notification path at the VFD
+boundary with caller-selected response, a durable suspect-file state, and
+optional capacity reservation and pre-flush checks; publish the
+crash-consistency guarantee per layout and driver; then implement the selected
+crash-proofing mechanism. Covers \code{CORE-SAFE-S1} and \code{CORE-SAFE-S2}.
+Sequence the small, independently useful items first --- callback and pre-flush
+check --- ahead of the format-visible and architectural ones. & \code{RM-2D}
+supplies the harness and the baseline measurements; a pass-through VFD wrapper
+is an acceptable proving ground before any public API commitment. & Large \\
+
+\code{RM-3H} & 3 / \code{INTEROP} & \code{LONG-SAF-001} &
+Provide per-file non-core dependency reporting; define and document an archival
+profile that removes removable dependencies; archive codec specifications and
+test vectors for those retained; require deposit records to state whether an
+artifact is self-contained or a view onto an external system. Covers
+\code{LONG-S1}. & \code{RM-2C} for the fixture and reader-matrix machinery;
+\code{RM-3E} for provenance reporting; an archive or data-repository partner to
+define the corpus. & Medium \\
+
+\code{RM-3I} & 3 / \code{INTEROP} & \code{FMT-SAF-001} &
+Maintain a declared subset of the file format as a machine-readable normative
+description from which validators and fixtures are generated, and adopt a
+standing adjudication procedure for specification-versus-implementation
+disputes covering ruler, timeline, dispositions, and where rulings are
+recorded. Covers \code{FMT-S1}. Declaring the description normative is a
+governance act, not a technical one, and requires an explicit \code{GOV}
+decision --- otherwise it becomes a fourth artifact to disagree with. &
+\code{RM-2C} for fixtures and adjudicated cases; existing machine-readable
+format work is consumable as data only, under
+Section~\ref{sec:roadmap-licensing}. & Large \\
 
 \code{RM-4A} & 4 / \code{GOV} & All records &
 Operate the release gates and metrics, re-run applicability and residual-risk
@@ -788,11 +832,41 @@ checksums, provenance, and supported-reader acceptance. &
 \code{INTEROP} accepts conformance results and documents unresolved
 compatibility exceptions. \\
 
-\code{RM-2D} & Fault-injection matrix and logs recording API sequence, version,
-VFD/filesystem/buffering profile, error, durable file state, recovery result,
-data uniqueness, and affected workload boundary. & \code{CORE} and the data
-owner submit the bounded result to \code{GOV}; an inconclusive study remains
-open and is re-planned. \\
+\code{RM-2D} & Fault-injection matrix and logs covering \emph{both} the
+storage-exhaustion and abrupt-termination triggers, recording API sequence,
+version, VFD/filesystem/buffering profile, error surfaced, durable file state,
+reopen and repair result, any divergence between acknowledged and read-back
+data, data uniqueness, and affected workload boundary. & \code{CORE} and the
+data owner submit the result to \code{GOV}, which records current residual risk
+for \code{CORE-SAFE-001} and \code{CORE-SAFE-002}; an inconclusive study
+remains open and is re-planned. \\
+
+\code{RM-3G} & Fault-injection results showing a distinguishable
+\code{ENOSPC}-class error at every injected point for every supported VFD and
+buffering profile; suspect-state set and cleared under test; published
+per-layout crash-consistency guarantee; and a matrix of writer-kill points
+recording open/repair/fail outcomes and any divergence between acknowledged and
+read-back data. & \code{CORE} accepts the technical evidence; \code{GOV}
+records current residual risk for \code{CORE-SAFE-001} and
+\code{CORE-SAFE-002}. A run in which the library reported success and the file
+is later found inconsistent blocks acceptance. \\
+
+\code{RM-3I} & Machine-readable description of the declared subset; generated
+valid and invalid fixtures with reference-library results; a divergence log in
+which every entry is classified as a library defect or a description defect;
+the adopted adjudication procedure; and a dispute ledger recording disposition,
+authoritative artifact, change made, and elapsed time to ruling. &
+\code{INTEROP} accepts the technical evidence; \code{GOV} decides whether the
+description is declared normative and records that decision. An unruled dispute
+is reported open, never closed by concession. \\
+
+\code{RM-3H} & Generated dependency report per file in the defined corpus,
+confirmed complete by opening with each declared dependency absent;
+archival-profile files reading correctly in a reference build with all non-core
+plugins disabled; and at least one demonstrated independent reproduction of a
+retained codec from its archived specification and test vectors. &
+\code{INTEROP} accepts; \code{GOV} records residual risk for
+\code{LONG-SAF-001}. \\
 
 \code{RM-2E} & Reproducible extension data-flow test, classified population,
 recipients, storage and network endpoints, cache/log/artifact retention, control
@@ -940,10 +1014,26 @@ population and recipients are bounded; minimization and recipient controls pass
 API and raw-byte inspection; when policy requires encryption, key recovery also
 passes; remaining disclosure is accepted or further treated. \\
 
-\code{CORE-SAFE-001} & \textbf{Evidence:} \code{RM-2D}. & The bounded study is
-completed and supports a rating and routing decision or a documented negative
-result over the tested scope. An inconclusive result remains open and re-planned;
-NE is never converted to Low by schedule alone. \\
+\code{CORE-SAFE-001} & \textbf{Containment:} \code{RM-1A}.
+\textbf{Evidence and treatment:} \code{RM-2D}, \code{RM-3G}. & Affected
+deployments have tested operational containment recorded; the fault-injection
+study establishes the failure and recovery distribution; the notification path
+and suspect state pass their acceptance tests; residual risk is reassessed. An
+inconclusive study remains open and re-planned. \\
+
+\code{CORE-SAFE-002} & \textbf{Containment:} \code{RM-1A}.
+\textbf{Evidence and treatment:} \code{RM-2D}, \code{RM-3G}. & Containment
+recorded; the crash-consistency guarantee is published per layout and driver;
+the writer-kill matrix runs and its results are published per supported
+release; any acknowledged-versus-read-back divergence is tracked as a defect.
+Structural crash-proofing closes only its named, delivered mechanism. \\
+
+\code{LONG-SAF-001} & \textbf{Treatment:} \code{RM-3H}.
+\textbf{Prevention:} \code{RM-2C}, \code{RM-3E}, \code{RM-4A}. & The defined
+corpus has complete dependency reports; archival-profile files open with all
+non-core plugins disabled; retained dependencies have reproducible
+specifications. Closure applies to the defined corpus only and never to
+``archived HDF5 data'' generally. \\
 
 \code{APP-SEC-001} & \textbf{Treatment:} \code{RM-0A}, \code{RM-1A},
 \code{RM-1C}. \textbf{Prevention:} \code{RM-2A}, \code{RM-2B},
@@ -973,6 +1063,14 @@ allocation; later reusable APIs remain independent program work. \\
 \textbf{Prevention:} \code{RM-3D}, \code{RM-4A}. & Affected versions are fixed
 or contained; startup state and planted CWD, environment-path, and writable-path
 canaries prove that untrusted plugins do not load or execute. \\
+
+\code{FMT-SAF-001} & \textbf{Adjudication:} \code{RM-2C}.
+\textbf{Prevention:} \code{RM-3I}, \code{RM-4A}. & Every identified dispute has
+a recorded ruling naming the authoritative artifact and the change made; the
+declared subset is machine-readable and its divergences are classified without
+a residual category; the adjudication procedure is adopted and its ledger is
+current. Closure applies to the declared subset only, never to the format as a
+whole. \\
 
 \code{IND-SAF-001} & \textbf{Treatment:} \code{RM-1A}, \code{RM-2C}.
 \textbf{Prevention:} \code{RM-3A}, \code{RM-4A}. & Exact supported

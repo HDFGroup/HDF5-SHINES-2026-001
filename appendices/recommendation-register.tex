@@ -9,7 +9,7 @@ Section~\ref{sec:risk-rubric} requires every recommendation record to identify
 the findings addressed, the enforcing actor or owner, response urgency,
 dependencies, effort, sequence and target horizon, acceptance evidence,
 status, and residual-risk decision. This appendix is that register. It
-consolidates the thirty-nine recommendations issued across
+consolidates the forty-three recommendations issued across
 Sections~\ref{sec:core-lib-format}--\ref{sec:supply-chain} into a single
 reverse index from recommendation to finding, owner, work package, and
 observable acceptance evidence.
@@ -200,6 +200,26 @@ A public dashboard publishes every metric in
 Table~\ref{tab:security-program-metrics} against a versioned tranche
 denominator; each target is met or carries a named, expiring exception. The
 dashboard is coverage evidence, not defect closure. \\
+
+\code{CORE-SAFE-S1} & Give HDF5 an \code{ENOSPC} story. \code{CORE} &
+\code{CORE-SAFE-001} (Near-term containment; structural treatment Planned) &
+\code{RM-2D}, \code{RM-3G} / Medium &
+Fault injection returns \code{ENOSPC} at write, flush, and close for each
+supported VFD and buffering profile; the application receives a
+distinguishable error at every injected point; last durable state and recovery
+result are recorded; a later open never silently returns wrong data. Reported
+success followed by a file later found inconsistent is a failure. \\
+
+\code{CORE-SAFE-S2} & State, then improve, the crash-consistency guarantee.
+\code{CORE} &
+\code{CORE-SAFE-002} (Near-term containment; structural treatment Phase~3) &
+\code{RM-2D}, \code{RM-3G} / Large &
+Published per-layout and per-driver guarantee including its limits; a
+fault-injection harness kills the writer across metadata update, flush, and
+close and records for each point whether the file opens, opens after repair, or
+does not, and whether data read back differs from what was acknowledged
+written. The last case is reported separately and treated as a defect. Results
+published per supported release. \\
 
 \hline
 \multicolumn{5}{@{}l}{\textbf{Core library and ecosystem --- privacy track}}\\
@@ -404,6 +424,19 @@ enabling the control. \\
 \multicolumn{5}{@{}l}{\textbf{Interoperability and supply chain}}\\
 \hline
 
+\code{FMT-S1} & Make the specification machine-readable and adjudicable.
+\code{INTEROP} &
+\code{FMT-SAF-001} (Near-term adjudication; Phase~3 artifact) &
+\code{RM-2C}, \code{RM-3I} / Large &
+For a declared subset, the machine-readable description generates fixtures the
+reference library accepts and rejects as predicted, with every divergence
+classified as either a library defect or a description defect and no third
+category. Every dispute raised in the tracking period has a recorded
+disposition naming the authoritative artifact and the change made, with elapsed
+time from report to ruling published. A dispute closed by an implementation
+changing to match the reference library, without a ruling, is recorded
+\emph{unresolved}. \\
+
 \code{IND-S1} & Maintain a differential conformance and compatibility corpus.
 \code{INTEROP} &
 \code{IND-SAF-001}, \code{IND-SAF-002} (Planned) &
@@ -413,6 +446,18 @@ intentionally invalid fixture with a controlled, documented diagnostic; the
 \#6409 and \#6534 cases are preserved as separate regressions; the defined
 legacy population has a reproducible repair, regeneration, migration, or
 accountable compatibility disposition preserving checksums and provenance. \\
+
+\code{LONG-S1} & Make extension dependencies discoverable, then removable.
+\code{INTEROP}, \code{EXT} &
+\code{LONG-SAF-001} (Planned, recorded departure) &
+\code{RM-2C}, \code{RM-3E} / Medium &
+Every file in a defined corpus has a generated non-core dependency report,
+confirmed complete by opening the file with each declared dependency
+deliberately absent and finding no undeclared one. Archival-profile files read
+correctly in a reference build with \emph{all} non-core plugins disabled. For
+each retained dependency, archived specification and test vectors are
+demonstrated sufficient for an independent party to reproduce the codec
+output. \\
 
 \code{SUP-S1} & Maintain a producer/consumer profile compatibility and
 migration matrix. \code{REL} &
@@ -495,9 +540,18 @@ contribution this report makes to that family. \\
 \code{HDF5-SHINES-TEST-*} &
 Security testing and fuzzing. \\
 
-\code{CORE-S8}, \code{SUP-S1} &
+\code{CORE-S8}, \code{SUP-S1}, \code{LONG-S1}, \code{FMT-S1} &
 \code{HDF5-SHINES-COMP-*} &
-Compatibility and lifecycle support. \\
+Compatibility and lifecycle support. \code{LONG-S1} extends this family to a
+decadal archival horizon that the control catalog does not currently
+address. \\
+
+\code{CORE-SAFE-S1}, \code{CORE-SAFE-S2} &
+No control family &
+\textbf{A gap in the control catalog, not in this report.} Neither project's
+policy controls cover write-side durability, crash consistency, or recovery
+tooling. The SSP SIG hazard registry rates these conditions but no
+\code{HDF5-SHINES-*} control governs them. \\
 
 \code{CORE-S10}, \code{APP-S5}, \code{VOL-S1}--\code{VOL-S4},
 \code{FILTER-S1}--\code{FILTER-S5}, \code{VFD-S1}--\code{VFD-S4} &
@@ -527,7 +581,8 @@ requirements this report makes non-optional. \\
 \end{longtable}
 \endgroup
 
-Two families in the control catalog have no recommendation in this report:
+Conversely, two families in the control catalog have no recommendation in this
+report:
 \code{HDF5-SHINES-IR-*} (incident response and evidence retention) and the
 CI/CD least-privilege and input-sanitization controls that the OpenSSF matrix
 flags as GAP. This report's \code{RM-0A} touches evidence preservation in
@@ -557,9 +612,11 @@ recorded rather than hidden:
           treatment.
 \end{description}
 
-Conversely, one finding has no recommendation. \code{CORE-SAFE-001} is
-recorded in Appendix~\ref{app:findings-register} as a treatment gap: no
-recommendation in this revision addresses storage-exhaustion write failure,
-and the \code{RM-2D} study must precede one.
+In an earlier revision one finding had no recommendation at all:
+\code{CORE-SAFE-001} was recorded as a treatment gap. That gap is closed ---
+\code{CORE-SAFE-S1} now addresses it, drawing on treatment options that had
+already been proposed publicly by maintainers but had not been carried into
+this report. \textbf{Every registered finding now has at least one linked
+recommendation.}
 
 \end{document}

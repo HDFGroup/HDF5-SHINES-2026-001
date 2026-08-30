@@ -10,6 +10,19 @@
 
 \subsection{Overview}
 
+\paragraph{Vocabulary.}
+This chapter uses the issue families defined by the SSP SIG's HDF5 Python
+Wrapper (H5PW) model~\cite{hdf5-python-wrapper-model}. Although the model is
+written for Python, its families generalise to any binding that mediates
+between file content and a managed runtime: \textbf{W1} native parser or codec
+compromise, \textbf{W2} code in data, \textbf{W3} dynamic loader boundary
+failure, \textbf{W4} concurrency and lifecycle mismatch, \textbf{W5} resource
+exhaustion and amplification, \textbf{W6} ABI, dependency, or packaging drift,
+\textbf{W7} metadata, log, and artifact exposure, \textbf{W8} trust-boundary
+confusion, \textbf{W9} misleading safety or security signal, and \textbf{W10}
+external reference traversal. These labels classify mechanisms and carry no
+risk rating.
+
 Bindings for C\#, Java, Python, JavaScript, Rust, and other languages mediate
 between HDF5's C interfaces and language-specific object, memory, exception,
 packaging, and deployment models. This chapter uses the Python-facing cases
@@ -29,39 +42,51 @@ specified, and the failure occurred above it:
     Keras legacy \code{.h5} loading executed a \code{Lambda} layer's
     serialized code despite \code{safe_mode=True}. The unsafe step is
     application-level deserialization of a framework object, not HDF5 decode.
-    Rated as \code{APP-SEC-002}.
+    Rated as \code{APP-SEC-002}. H5PW \textbf{W2} (code in data) compounded by
+    \textbf{W9} (misleading safety signal): the model describes W9 as a
+    \code{safe\_mode} or scanner label that ``implies a boundary that is not
+    enforced for the active format or loader path,'' which is this CVE stated
+    as a family.
 
     \item[CVE-2026-1669~\cite{cve-2026-1669}.]
     Model loading followed an HDF5 external dataset reference to a local path
     and disclosed its contents. External raw storage is a documented HDF5
     capability; the missing control is a policy on whether the loader may
-    follow it. Rated as \code{APP-SEC-003}.
+    follow it. Rated as \code{APP-SEC-003}. H5PW \textbf{W10}, external
+    reference traversal.
 
     \item[CVE-2026-0897~\cite{cve-2026-0897}.]
     Weight loading allocated from a file-declared shape without a budget. HDF5
     metadata may legitimately declare a logical shape far larger than the
     useful payload, so the budget must exist in the consumer. Rated as
-    \code{APP-SEC-004}.
+    \code{APP-SEC-004}. H5PW \textbf{W5}, resource exhaustion and
+    amplification.
 
     \item[CVE-2026-2492~\cite{cve-2026-2492}.]
     TensorFlow's HDF5 integration searched an unsecured location for plugins.
     The mechanism is HDF5 dynamic plugin loading; the defect is the
     search-path policy of the embedding application. Rated as
-    \code{APP-SEC-005}.
+    \code{APP-SEC-005}. H5PW \textbf{W3}, dynamic loader boundary failure.
 \end{description}
 
-The pattern is the chapter's substantive point: a binding faithfully exposes
-HDF5 capability, and the security decision --- whether this process, holding
-this authority, should honor that capability for this file --- belongs to the
-layer above. That is also why the recommendation in \code{APP-S1} asks
-bindings to surface these controls in the binding API rather than leaving
-them reachable only through environment variables.
+The pattern is the chapter's substantive point, and it is H5PW \textbf{W8},
+trust-boundary confusion: a binding faithfully exposes HDF5 capability, and the
+security decision --- whether this process, holding this authority, should
+honor that capability for this file --- belongs to the layer above. That all
+five application-boundary findings in this report land on named W-families is
+worth noting in itself: the vocabulary anticipated them, and this report
+arrived at the same boundary independently rather than by applying it. It is
+also why \code{APP-S1} asks bindings to surface these controls in the binding
+API rather than leaving them reachable only through environment variables.
 
 \subsection{Java}
 
 No Java-specific adverse-event scenario was sufficiently developed for a
 formal finding in this revision. Java remains within the ecosystem census and
-control-exposure scope described below.
+control-exposure scope described below. The H5PW families apply to the JNI
+boundary as directly as to the CPython one --- \textbf{W1}, \textbf{W3},
+\textbf{W4}, and \textbf{W6} in particular --- and a Java-facing review using
+that vocabulary is the obvious next increment for this chapter.
 
 \subsection{Audit Findings and Mitigation Planning}
 

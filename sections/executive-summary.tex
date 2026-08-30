@@ -120,6 +120,21 @@ Sensitive plaintext metadata is disclosed when a file is shared under
 payload-only protection. & Priv. & Mod.--High & Provisional &
 Near-term (30 d) & \code{PRIV} \\
 
+\code{CORE-SAFE-001} &
+Storage exhaustion during write or close leaves an incomplete or corrupted
+file; no library mechanism detects or recovers from it. & Safety & Mod.--High &
+Provisional & Near-term (containment) & \code{CORE} \\
+
+\code{CORE-SAFE-002} &
+Abrupt process or host termination during write leaves a file corrupted or not
+reopenable. & Safety & Mod.--High & Provisional & Near-term (containment) &
+\code{CORE} \\
+
+\code{LONG-SAF-001} &
+An archived file becomes unreadable because a required filter, VFD, or VOL
+connector is gone. Decadal horizon. & Safety & Mod.--High & Provisional &
+Planned (recorded departure) & \code{INTEROP} \\
+
 \code{CORE-SEC-002} &
 File-controlled work, allocation, traversal, or error paths terminate or
 exhaust an affected reader. & Sec. & Moderate & Provisional &
@@ -128,6 +143,11 @@ Planned (90 d) & \code{CORE} \\
 \code{APP-SEC-004} &
 Affected Keras weight loading allocates from an extreme file-declared shape
 and exhausts memory. & Sec. & Moderate & Rated & Planned (90 d) & \code{APP} \\
+
+\code{FMT-SAF-001} &
+The normative specification is incomplete, ambiguous, or contradicted by the
+reference library, so conformance is not determinable. & Safety & Mod.--High &
+Provisional & Near-term (adjudicate disputes) & \code{INTEROP} \\
 
 \code{IND-SAF-001} &
 HDF5 2.0/2.1 exact-width validation rejects a sufficient but nonminimal chunk
@@ -139,10 +159,7 @@ Older permissive readers accept contradictory PureHDF 2.1.2 chunk metadata
 that HDF5 2.0 rejects after upgrade. & Safety & Moderate & Rated &
 Planned (90 d) & \code{INTEROP} \\
 
-\code{CORE-SAFE-001} &
-Storage exhaustion during write or close may leave an incomplete or corrupted
-file and may cause data loss. & Safety & \emph{None} & NE &
-Evidence action (\code{RM-2D}) & \code{CORE} \\
+
 
 \hline
 
@@ -166,12 +183,26 @@ Backlog & Evidence action (\code{RM-2F}) & \code{REL} \\
 \end{longtable}
 \endgroup
 
-Twelve formal findings are registered: seven Rated, four Provisional, and one
-NE. Their tiers comprise one Critical, four High, two Moderate--High ranges,
-four Moderate, and one finding without an assigned tier. Three further
-observations remain in the evidence-and-scoping backlog below the rule in the
-table. \textbf{An NE or backlog record is an evidence gap, not a
-determination of Low risk.}
+Fifteen formal findings are registered: seven Rated and eight Provisional.
+Their tiers comprise one Critical, four High, six Moderate--High ranges, and
+four Moderate. Three further observations remain in the evidence-and-scoping
+backlog below the rule in the table. \textbf{A backlog record is an evidence
+gap, not a determination of Low risk.}
+
+One finding, \code{FMT-SAF-001}, is about the normative artifact rather than
+any implementation: where the specification and the reference library disagree
+and no procedure exists to rule between them, conformance cannot be
+established. Its exposure rises with the number of independent
+implementations, because each unresolved ambiguity is resolved independently by
+every one of them.
+
+Three further findings --- \code{CORE-SAFE-001}, \code{CORE-SAFE-002}, and
+\code{LONG-SAF-001} --- are write-side and lifecycle safety risks that an
+earlier revision of this report either left unrated or did not register at all.
+They are called out here because they are the conditions HDF5 users encounter
+most often in ordinary operation, and because the rest of this report is
+organised around a different question: hostile input arriving from outside,
+rather than data failing to survive.
 
 \subsection*{Where the priority actually falls}
 

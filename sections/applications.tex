@@ -137,6 +137,15 @@ mechanism does not erase the differences in product, version, and deployment
 scope.
 
 \paragraph{The unifying root cause:} The repeated mistake is \textit{trust-boundary confusion}.
+The term is not coined here. It is already a named family in two SSP SIG
+models --- \textbf{I9} in the independent-implementation model and \textbf{W8}
+in the Python wrapper model --- each defined as users treating HDF5 as inert
+data when the layer they are using can in fact trigger complex parsing, codec
+execution, external access, or object reconstruction
+\cite{hdf5-indie-model,hdf5-python-wrapper-model}. This report reached the same
+conclusion from the incident evidence rather than by applying the models, which
+is worth recording as corroboration: two independent routes to the same root
+cause is a stronger result than either alone.
 HDF5 sits at the boundary between a file and the process.
 Downstream frameworks often add another boundary: model loading,
 dataset ingestion, scientific workflow execution, browser upload,

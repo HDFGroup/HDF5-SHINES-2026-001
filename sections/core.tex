@@ -15,29 +15,66 @@ malicious actor, as defined in Section~\ref{sec:assessment-dimensions}. Three
 conditions were examined, and none reached the evidence threshold for a rated
 finding in this revision.
 
+Four conditions are registered as formal findings in this revision. The first
+three are write-side and lifecycle risks and were the least developed part of
+an earlier revision of this report; the discussion below states each as a
+distinct trigger, because conflating them --- as an earlier draft did by
+merging storage exhaustion and abrupt termination into one observation ---
+obscures that they need different containment and different structural
+treatment.
+
 \begin{description}[leftmargin=1.5em,style=nextline]
     \item[Storage exhaustion during write or close.]
-    Community reports describe files left incomplete or corrupted when the
-    underlying storage fills during writing or on close, with data loss in
-    some accounts~\cite{forum-11714,forum-file-corruption}. The report has not
-    bounded the API sequence, version, filesystem and buffering behavior,
-    recovery path, uniqueness of the affected data, or frequency, so neither
-    axis of the rubric can be applied. This is registered as
-    \code{CORE-SAFE-001} with status NE.
+    Storage fills during a write, flush, or close; the write fails with
+    \code{ENOSPC}; and the library offers no notification, no recovery
+    procedure, and no way to mark the file suspect. The controlling evidence is
+    a maintainer statement that there is no HDF5 story for the condition and no
+    callback for it, together with four candidate treatments and a documented
+    cache workaround used in its place~\cite{forum-enospc-11714}. Registered as
+    \code{CORE-SAFE-001}, \textbf{Moderate--High}. An earlier revision recorded
+    this as NE for want of a bounded recovery path; the recovery path is in
+    fact bounded --- it does not exist --- and that fact constrains exposure
+    rather than leaving it open.
 
-    \item[Long-term accessibility and interpretability.]
-    Preservation depends on more than the primary bytes: format bounds,
-    required filters, external resources, application schema, and the
-    continued existence of a reader that implements the relevant
-    interpretation. Section~\ref{sec:long-haul} develops this; no archive was
-    inventoried and no preservation horizon was tested, so it produces no
-    formal finding here.
+    \item[Corruption from abrupt termination.]
+    A writer is killed, crashes, or loses power with metadata updates in
+    flight, and in-memory and durable state diverge with no journal or
+    write-ahead log to reconcile them. Community reports recur across sixteen
+    years, and The HDF Group's own 2024 discussion states that a crash ``can
+    lead to data loss or corruption of the file'' and describes restarting
+    crash-proofing work
+    \cite{forum-recover-1146,forum-crash-state-1598,forum-crash-prevent-2462,
+    forum-flush-crash-3481,forum-flush-corrupt-4958,forum-recover-5441,
+    forum-crash-corruption-7581,forum-crashproofing-12003}. Registered as
+    \code{CORE-SAFE-002}, \textbf{Moderate--High}. This condition had no record
+    of any kind in an earlier revision, which was the largest single omission
+    in this chapter.
 
-    \item[Reader/writer disagreement as a safety condition.]
-    The two 2026 chunk-layout cases in Section~\ref{sec:indie} are the one
-    place where safety evidence \emph{was} sufficient, and they are registered
-    as \code{IND-SAF-001} and \code{IND-SAF-002}.
+    \item[Extension-dependent loss of interpretability.]
+    An archived file requires a filter, VFD, or VOL connector that is later
+    unavailable. Registered as \code{LONG-SAF-001}, \textbf{Moderate--High} at
+    a stated ten-year-or-more horizon, and developed in
+    Section~\ref{sec:long-haul}. Because the horizon is material, decision
+    rule 7 forbids ordering this rating directly against ratings that state no
+    horizon.
+
+    \item[Reader/writer disagreement.]
+    The two 2026 chunk-layout cases in Section~\ref{sec:indie}, registered as
+    \code{IND-SAF-001} and \code{IND-SAF-002}. These are the short-horizon,
+    fully evidenced instance of the same family as \code{LONG-SAF-001}: a file
+    that a reader can no longer interpret.
 \end{description}
+
+\noindent\textbf{The shape of the gap this closes.}
+It is worth naming why safety was the thinnest dimension. The rest of this
+report is organised around \emph{read-side hostile input} --- the rubric's
+principal threat scenario, the CVE analysis, the invariant registry, the parser
+boundary, the fuzzing programme, and the security profiles all answer the
+question ``a malicious file has arrived.'' The three findings above answer a
+different question, ``my file did not survive,'' and no structural
+recommendation in the security track addresses it. That asymmetry, rather than
+any judgment that the write path is sound, is why these conditions were
+previously unregistered or unrated.
 
 \noindent\textbf{Coverage limitation, stated against an existing hazard
 analysis.}
@@ -50,8 +87,8 @@ ratings~\cite{hdf5-ssp-haz,hdf5-safety-hazard-model}.
 
 Table~\ref{tab:haz-crosswalk} maps that registry to this report.
 \textbf{Of sixteen hazards, this revision registers a corresponding formal
-finding for one, an unrated evidence record for two, and nothing at all for
-thirteen.} That is the honest measure of this chapter's safety coverage. The
+finding for four, an unrated evidence record for two, and nothing at all for
+ten.} An earlier revision covered one. That is the honest measure of this chapter's safety coverage. The
 registry entries are not reproduced or re-rated here --- their method is
 incompatible with Section~\ref{sec:risk-rubric}, as
 Section~\ref{sec:rubric-reconciliation} explains --- and where this report is
@@ -88,9 +125,9 @@ continued}\\
 \endlastfoot
 
 \code{HAZ-001} & Crash during metadata update & 20, Very High &
-\textbf{Not assessed.} The interrupted-metadata-update scenario is adjacent to
-\code{CORE-SAFE-001} but distinct from it: the trigger is process or host
-failure rather than storage exhaustion. \code{RM-2D} should widen to cover it. \\
+\textbf{Covered.} \code{CORE-SAFE-002}, Moderate--High, Near-term containment
+with structural treatment under \code{CORE-SAFE-S2}. Registered in this
+revision; absent from the previous one. \\
 
 \code{HAZ-002} & Concurrent access without safe coordination & 15, High &
 \textbf{Not assessed.} No concurrency scenario was developed. \\
@@ -105,13 +142,16 @@ invariant the core relies on --- has no counterpart here. \\
 one hazard with a corresponding rated finding. \\
 
 \code{HAZ-005} & Out-of-space during write or close & 15, High &
-\textbf{Registered but unrated.} \code{CORE-SAFE-001}, NE, pending
-\code{RM-2D}. The registry supplies the accident chain and three safety
-constraints; \code{RM-2D} should adopt those constraints as its hypotheses
-rather than starting from the forum reports. \\
+\textbf{Covered.} \code{CORE-SAFE-001}, Moderate--High, Near-term containment
+with structural treatment under \code{CORE-SAFE-S1}. The registry's accident
+chain and safety constraints SC-1 to SC-3 are adopted as the \code{RM-2D}
+hypotheses. \\
 
 \code{HAZ-006} & False sense of durability from flush & 12, High &
-\textbf{Not assessed.} Durability signaling was not examined. \\
+\textbf{Not separately assessed}, but within the evidence base for
+\code{CORE-SAFE-002}: the community record includes reports that flushing
+itself can leave a file corrupted. A distinct durability-signaling finding is
+still warranted. \\
 
 \code{HAZ-007} & SWMR deployment misfit & 12, High &
 \textbf{Not assessed.} \\
@@ -134,18 +174,19 @@ here only as an adversarial resource-consumption mechanism under
 rates data remanence after deletion as \code{EXP-003}. \\
 
 \code{HAZ-012} & Recovery tooling limits & 12, High &
-\textbf{Not assessed}, and this is a notable omission given that
-\code{IND-SAF-002} and \code{RM-2C} both require a deterministic repair path.
-The evidence-gated repair planner in H5Lens is relevant prior art
-(Section~\ref{sec:core-prior-art}). \\
+\textbf{Not separately assessed.} Recovery capability is a controlling
+assumption of the \code{CORE-SAFE-002} impact range --- whether the file
+reopens after \code{h5clear} is what separates I2 from I3 --- so the limits of
+that tooling bear directly on the rating. The evidence-gated repair planner in
+H5Lens is relevant prior art (Section~\ref{sec:core-prior-art}). \\
 
 \code{HAZ-013} & High-level API thread-safety gaps & 9, Moderate &
 \textbf{Not assessed.} \\
 
 \code{HAZ-014} & Portability hazard from missing filter plugins & 9, Moderate &
-\textbf{Partially covered as an unrated record.} Within the
-\code{SUP-SAFE-001} mismatch theme and the long-term-access discussion in
-Section~\ref{sec:long-haul}; no scenario developed. \\
+\textbf{Covered, and extended.} \code{LONG-SAF-001} rates the archival
+scenario at a stated decadal horizon and extends it to VFD and VOL dependency,
+which this registry does not cover. \\
 
 \code{HAZ-015} & Misuse of metadata-cache flush controls & 8, Moderate &
 \textbf{Not assessed.} \\
@@ -166,9 +207,10 @@ list. Third, \code{RM-2D} is currently scoped to storage exhaustion alone; the
 registry shows at least \code{HAZ-001}, \code{HAZ-006}, \code{HAZ-012}, and
 \code{HAZ-015} share its evidence apparatus --- fault injection at write,
 flush, and close boundaries, followed by durable-state and recovery inspection
---- and could be studied under one widened package at little additional cost.
-None of these observations establishes response urgency, and none converts an
-unrated record into a rated one.
+--- and it has accordingly been widened to cover the whole cluster, including
+the abrupt-termination trigger behind \code{CORE-SAFE-002}. Ten hazards remain
+with no record here; that number, not the four now covered, is the honest
+measure of what a safety-focused revision would still have to do.
 
 \subsection{Malformed Input as a Security Boundary}
 
@@ -242,7 +284,21 @@ must have an always-active runtime check; an assertion may duplicate that check
 for diagnostics but must not enforce it alone.
 
 The observed root-cause categories are more compact than a CVE-by-CVE list and
-are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}.
+are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}. They were
+derived independently in this assessment, and they are consistent with the SSP
+SIG security threat model, which decomposes the same evidence into thirteen
+mechanism entries~\cite{hdf5-security-threat-model,hdf5-ssp-atk}; that
+decomposition is the finer-grained one and is the better basis for the
+invariant tranches proposed in \code{CORE-S1}.
+
+Table~\ref{tab:root-cause-cwe} maps each category to the standard weakness
+vocabulary, using the SSP SIG's top-CWE list for HDF5
+contexts~\cite{hdf5-top-cwe}. The mapping is worth stating explicitly because
+it makes the report's central security claim checkable against an external
+taxonomy rather than only against its own categories: nearly every entry
+resolves to \code{CWE-20} and its children as the \emph{cause}, with the
+memory-safety CWEs appearing as \emph{consequences}. Per-CVE tags are in
+Appendix~\ref{app:cve-history-summary}.
 
 \begingroup
 \small
@@ -300,6 +356,90 @@ reproduce,'' ``not applicable,'' or tentative confidence. Those should not be co
 as reviewed HDF5 fixes without qualification. \\
 \end{longtable}
 \endgroup
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.28\widetablewidth}>{\raggedright\arraybackslash}p{0.24\widetablewidth}>{\raggedright\arraybackslash}p{0.44\widetablewidth}@{}}
+\caption{Observed root-cause categories mapped to standard weaknesses}
+\label{tab:root-cause-cwe}\\
+\hline
+\textbf{Root-cause category} & \textbf{Cause (CWE)} &
+\textbf{Consequence (CWE) and note} \\
+\hline
+\endfirsthead
+\caption[]{Observed root-cause categories mapped to standard weaknesses,
+continued}\\
+\hline
+\textbf{Root-cause category} & \textbf{Cause (CWE)} &
+\textbf{Consequence (CWE) and note} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+
+unchecked file-derived sizes, counts, offsets &
+\code{CWE-20}, \code{CWE-1284}, \code{CWE-1285} &
+\code{CWE-787}, \code{CWE-125}. The single largest group. A quantity or an
+offset taken from the file is used before it is validated. \\
+
+inconsistent internal bookkeeping &
+\code{CWE-20}, \code{CWE-1284} &
+\code{CWE-787}, \code{CWE-908}. Allocated capacity and actual count are
+conflated, so a validated bound does not describe the buffer actually held. \\
+
+decode/encode asymmetry &
+\code{CWE-20}, \code{CWE-1286} &
+\code{CWE-787}. Decode accepts a structure that encode or flush later assumes
+is well-formed; the syntactic check that was never made surfaces on the write
+path. \\
+
+arithmetic precondition failures &
+\code{CWE-20}, \code{CWE-1284} &
+\code{CWE-369}, \code{CWE-190}. Divisors and multiplications derived from file
+bytes without a zero or overflow precondition. \\
+
+unsafe cleanup and lifetime paths &
+\code{CWE-20} &
+\code{CWE-416}, \code{CWE-415}, \code{CWE-476}, \code{CWE-401}. Distinctive in
+that the unwinding path, not the decode path, is what malformed input breaks. \\
+
+unbounded traversal, recursion, and resource limits &
+\code{CWE-20}, \code{CWE-1284} &
+\code{CWE-400}, \code{CWE-674}. File-controlled graphs and counts drive work
+with no structural progress rule or explicit budget. \\
+
+legacy tool attack surface &
+\code{CWE-20} &
+\code{CWE-787}, \code{CWE-125}. Not a distinct weakness class; a distinct
+\emph{exposure} class, since these are the programs users run first on
+untrusted files. \\
+
+type-confusion on message and datatype flags &
+\code{CWE-20}, \code{CWE-1287} &
+\code{CWE-787}. A message or datatype is cast to a structure its declared type
+does not support --- validation of a specified \emph{type}, distinct from
+validating a quantity or an index. \\
+
+triage and fix-completeness metadata &
+\emph{n/a} &
+\emph{n/a}. A records-quality category, not a weakness. It affects what can be
+concluded from the history, not what the library does. \\
+
+\end{longtable}
+\endgroup
+
+Read together, the two tables state the report's core security claim in
+standard terms: the memory-safety weaknesses that dominate the CVE history are
+consequences, and the cause they share is \code{CWE-20}. That is why
+\code{CORE-S1} through \code{CORE-S3} target validation and checked arithmetic
+rather than the individual crash classes, and why closing a \code{CWE-787}
+instance does not close the class that produced it.
 
 \subsection{HDF5 Privacy: Assets and Exposure}
 
@@ -646,7 +786,7 @@ the broader HDF5 ecosystem.
 
 Formal core and official-tool findings are registered as
 \code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001},
-\code{CORE-PRIV-001}, and \code{CORE-SAFE-001} in
+\code{CORE-PRIV-001}, \code{CORE-SAFE-001}, and \code{CORE-SAFE-002} in
 Appendix~\ref{app:findings-register}. The two shared-event security findings
 are provisional historical parser-boundary scenarios; they do not assert that
 every current HDF5 release contains every represented defect.
@@ -658,9 +798,13 @@ consequences are established.
 The response order comes from Table~\ref{tab:findings-response-routing}, not
 from the order of recommendations in this chapter. Confirmed affected scope for
 \code{CORE-SEC-001}, \code{CORE-TOOL-001}, and \code{CORE-PRIV-001} receives
-Near-term treatment; \code{CORE-SEC-002} receives Planned treatment; and
-\code{CORE-SAFE-001} requires the bounded evidence study in \code{RM-2D}
-before a tier or urgency can be assigned. The \code{CORE-SEC-003} catalog and
+Near-term treatment; \code{CORE-SEC-002} receives Planned treatment. \code{CORE-SAFE-001} and
+\code{CORE-SAFE-002} receive Near-term \emph{containment} --- capacity
+headroom and monitoring, flush and checkpoint discipline, a rehearsed recovery
+procedure, and independent copies of unregenerable data --- with their
+structural treatment in \code{CORE-SAFE-S1} and \code{CORE-SAFE-S2} on the
+Planned and Phase~3 horizons; \code{RM-2D} produces their acceptance evidence
+rather than deciding whether they can be rated. The \code{CORE-SEC-003} catalog and
 release-build differential study has a 30-day Phase~1 assurance target under
 \code{RM-1E}; this scheduling choice does not assign it a risk tier. A
 confirmed case is routed by its supported consequence and affected scope,
@@ -1692,6 +1836,138 @@ untrusted profile test coverage & every release \\
 Track the versioned tranche denominator and results in a public dashboard. The
 dashboard does not fix defects; it makes declared coverage and gaps auditable.
 
+\subsubsection{Safety: Durability and Recovery}
+
+The security track above answers ``a hostile file arrived.'' The two
+recommendations here answer ``my file did not survive.'' They address
+\code{CORE-SAFE-001} and \code{CORE-SAFE-002}, and neither has a counterpart
+elsewhere in this report. The \code{CORE-SAFE-S} identifiers name
+recommendations only; their numbers express no risk, urgency, effort,
+dependency, or implementation order.
+
+Both findings are routed Near-term for \emph{containment} and Planned or later
+for \emph{structural treatment}. The containment obligations are operational
+and available today: capacity headroom with free-space monitoring, flush and
+checkpoint discipline, a rehearsed recovery procedure, and an independent copy
+of anything that cannot be regenerated. Nothing below is a prerequisite for
+those.
+
+\subsubsection*{Recommendation CORE-SAFE-S1: Give HDF5 an \code{ENOSPC} story}
+
+Today an application cannot learn that the virtual file driver hit
+\code{ENOSPC}, cannot choose how to respond, and cannot mark the resulting file
+as untrustworthy. Four candidate mechanisms have already been proposed in the
+public design discussion; they are complementary rather than alternatives, and
+they differ sharply in cost~\cite{forum-enospc-11714}.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.26\linewidth}>{\raggedright\arraybackslash}p{0.44\linewidth}>{\raggedright\arraybackslash}p{0.24\linewidth}@{}}
+\caption{Candidate \code{ENOSPC} mechanisms}
+\label{tab:enospc-mechanisms}\\
+\hline
+\textbf{Mechanism} & \textbf{What it provides} & \textbf{Cost and caveat} \\
+\hline
+\endfirsthead
+\caption[]{Candidate \code{ENOSPC} mechanisms, continued}\\
+\hline
+\textbf{Mechanism} & \textbf{What it provides} & \textbf{Cost and caveat} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+
+VFD-level error callback &
+The caller is told the driver hit \code{ENOSPC} and chooses retry, fail fast,
+or panic. This is the load-bearing item: it converts a silent unsafe state into
+an application decision. &
+Small to medium. Deliverable as a pass-through VFD wrapper first, without a
+public API commitment. \\
+
+Poisoned-file state &
+A file that suffered a write failure is durably marked suspect, so a later open
+cannot silently treat it as sound. &
+Medium; needs a format-visible flag and a defined clearing procedure. Pairs
+with \code{h5clear}. \\
+
+Space reservation (\code{posix\_fallocate}) &
+Capacity is claimed before the write, converting a mid-write failure into an
+up-front one. &
+Medium; filesystem-dependent, and not available or meaningful on every backing
+store. \\
+
+Pre-flush capacity check (\code{statvfs}) &
+A watchdog refuses to begin a flush that plainly cannot complete. &
+Small, but advisory only --- it narrows the window and does not close it. A
+check that passes does not guarantee the flush succeeds. \\
+
+\end{longtable}
+\endgroup
+
+Sequence them by that cost profile: the callback and the pre-flush check first,
+because they are small and independently useful; reservation and the poisoned
+state after, because they touch the format and the VFD contract. The public
+design discussion proposes a pass-through VFD wrapper as a low-friction proving
+ground before any public API change, and this report endorses that route.
+
+\noindent\textbf{Acceptance evidence.}
+Fault injection returns \code{ENOSPC} at each of write, flush, and close, for
+each supported VFD and buffering profile. For every injected point: the
+application receives a distinguishable \code{ENOSPC}-class error rather than a
+generic failure or a success; the last durable state is recorded; a subsequent
+open either succeeds, fails with a diagnostic naming the condition, or reports
+the file as suspect --- never silently returns wrong data; and the documented
+recovery procedure is executed and its result recorded. A run in which the
+library reports success and the file is later found inconsistent is a failure
+of this recommendation regardless of the error codes returned.
+
+\subsubsection*{Recommendation CORE-SAFE-S2: State, then improve, the crash-consistency guarantee}
+
+The immediate deliverable is not a mechanism. It is a written statement of what
+HDF5 guarantees today when a writer dies mid-update --- for each of the default
+single-file layout, SWMR, and the split and multi drivers --- and, explicitly,
+what it does not. Practitioners currently infer this from forum threads and
+folklore, which is why the same questions recur across sixteen
+years~\cite{forum-crash-state-1598,forum-flush-crash-3481,
+forum-crash-corruption-7581}. A documented weak guarantee is more useful than
+an undocumented one, because it lets an application decide whether it needs
+checkpointing, an external journal, or a different store.
+
+The structural work is a multi-release programme and is already under
+investigation: metadata journaling, write-ahead logging, mechanisms derived
+from SWMR, and checkpointing~\cite{forum-crashproofing-12003}. This report does
+not select among them. It records three constraints on whichever is chosen.
+
+\begin{enumerate}
+    \item \textbf{Recovery tooling is part of the guarantee, not an
+          afterthought.} Whether a file reopens after \code{h5clear} is the
+          difference between I2 and I3 in \code{CORE-SAFE-002}. Improving
+          crash consistency without improving diagnosis and repair moves files
+          from one failure class to another rather than reducing harm.
+    \item \textbf{Silent wrong data is the outcome to design against.} A file
+          that fails to open is a bounded operational problem. A file that
+          opens and returns data from an inconsistent state is a scientific
+          integrity problem, and it is the one that will not be noticed.
+    \item \textbf{The guarantee must be testable by fault injection,} and its
+          test must run in the release build configuration, not only under
+          assertions --- the same discipline \code{CORE-S7} applies to parser
+          invariants.
+\end{enumerate}
+
+\noindent\textbf{Acceptance evidence.}
+Published documentation states the crash-consistency guarantee per layout and
+driver, including its limits. A fault-injection harness kills the writer at a
+matrix of points across metadata update, flush, and close, and for every point
+records whether the file opens, opens after repair, or does not open, and
+whether any data read back differs from what was acknowledged as written. The
+last case is reported separately and treated as a defect, never as expected
+behaviour. Results are published per supported release so that the guarantee
+can be seen to hold or to change.
+
 \subsubsection{Privacy}
 
 This section summarizes the Privacy Exposure Model's mechanisms and the bounded
@@ -1700,7 +1976,7 @@ It then describes corresponding mitigation strategies.
 
 \paragraph{Overview of Privacy Threat Categories}\mbox{}\\
 
-The HDF5 Privacy Exposure Model ~\cite{PVEM} identifies 
+The HDF5 Privacy Exposure Model ~\cite{hdf5-privacy-exposure-model} identifies 
 seven exposure families that describe mechanisms through which sensitive
 information may be unintentionally exposed in HDF5. These mechanisms can arise
 during normal scientific data creation, processing, sharing, and preservation;

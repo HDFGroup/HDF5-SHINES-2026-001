@@ -11,24 +11,125 @@
 Long-term accessibility depends on more than preservation of the primary file
 bytes. It can also depend on format bounds, required filters and extensions,
 external resources, application schema and provenance, and the continued
-availability of readers that implement the relevant interpretation. Community
-discussion illustrates the operational importance of preserving plugin and
-reader knowledge with archived data~\cite{forum-plugin}. This assessment did
-not inventory an archive or test a representative preservation horizon.
+availability of readers that implement the relevant interpretation. A file
+whose bytes are perfectly preserved and whose required filter no longer exists
+has been archived in the same sense that a sealed envelope with no known
+language inside has been archived.
+
+\subsection{Why Extensions Are the Sharp Edge}
+
+HDF5's extension mechanisms are the part of the format that most readily
+converts a self-describing file into a dependent one, and the three classes
+degrade differently. The distinction matters because it changes both the
+severity and what a curator can do about it.
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+    \item[Filter plugins.]
+    The best case, and the only one with short-horizon evidence. A filtered
+    dataset records its filter by numeric identifier, so the dependency is at
+    least \emph{discoverable} from the file, and a determined reader can in
+    principle re-implement the codec. It is nonetheless a real and current
+    failure mode: users already report being unable to read data because a
+    required filter was missing from their build or unavailable on their
+    platform, across a fifteen-year span and several filter families
+    \cite{forum-filter-compressed-2756,forum-filter-h5dump-3396,
+    forum-filter-dynamic-4047,forum-filter-lzo-4102}. Registered filter
+    identifiers help; an unregistered or private identifier removes even
+    discoverability.
+
+    \item[Virtual file drivers.]
+    A VFD determines whether the bytes can be reached at all. If a file was
+    written through a driver with a non-trivial storage mapping, preserving
+    ``the file'' may not preserve a readable object, and the dependency is less
+    visible in the file than a filter identifier is.
+
+    \item[VOL connectors.]
+    The most severe and the least evidenced. A VOL connector can service the
+    HDF5 API from a store that is not an HDF5 file at all. In that case there
+    may be no HDF5 file to archive, and an institution that believes it has
+    preserved HDF5 data may have preserved a client library pointed at a
+    system that no longer exists. This report identifies the exposure and does
+    not quantify it.
+\end{description}
+
+Community discussion has long recorded the operational importance of preserving
+plugin and reader knowledge alongside archived data~\cite{forum-plugin}. This
+assessment did not inventory an archive or test a representative preservation
+horizon, and the archival extrapolation --- that extension availability
+decreases over a decade rather than increasing --- is reasoned inference rather
+than measurement.
 
 \subsection{Audit Findings and Mitigation Planning}
 
-The present chapter does not yet define an affected archive, time horizon,
-failure condition, impact, or exposure sufficient for a separate formal
-finding. The bounded reader/writer compatibility cases that bear on long-term
-access are registered as \code{IND-SAF-001} and \code{IND-SAF-002} in
-Appendix~\ref{app:findings-register}.
+The scenario is registered as \code{LONG-SAF-001} in
+Appendix~\ref{app:findings-register}, rated \textbf{I2--I3/E2,
+Moderate--High, Provisional, Low confidence} at a stated assessment horizon of
+ten years or more. Because that horizon is material, decision rule 7 of
+Section~\ref{sec:risk-rubric} forbids ordering this rating directly against
+ratings that state no horizon.
+
+The bounded reader/writer compatibility cases in Section~\ref{sec:indie},
+\code{IND-SAF-001} and \code{IND-SAF-002}, remain separately registered. They
+are worth reading as the short-horizon, fully evidenced instance of the same
+family: in both, a file that one reader accepted became unreadable to another.
+The only difference between those cases and \code{LONG-SAF-001} is how long the
+gap took to open.
 
 \paragraph{Priority reconciliation.}\mbox{}\\
-This chapter therefore creates no additional response route. Treatment of the
-two bounded compatibility cases follows their Planned clock and the acceptance
-criteria in \code{RM-2C}; broader archival concerns require a defined archive,
-failure condition, consequence, and exposure before they can be rated or
-prioritized.
+\code{LONG-SAF-001} is routed \emph{Planned} by recorded departure from the
+default map, for the rationale given in
+Appendix~\ref{app:findings-register}. The operative point is that the effective
+treatment window is at \emph{write and deposit} time, not at read time: once an
+archive holds files whose extension is gone, the remaining options are recovery
+archaeology or loss. A 30-day clock on a decadal harm would measure nothing,
+while a producer-side practice adopted now removes the harm prospectively. If
+an archive is identified whose readers are already failing, that scoped
+instance is expedited and rated without a horizon qualifier.
+
+The following identifier names a recommendation only; its number expresses no
+risk, urgency, effort, dependency, or implementation order.
+
+\subsubsection*{Recommendation LONG-S1: Make extension dependencies discoverable, then removable}
+
+Treat an extension dependency as something a file must declare, a depositor
+must justify, and an archive must be able to satisfy without the original
+environment.
+
+\begin{enumerate}
+    \item \textbf{Declare.} Provide a supported way to enumerate every non-core
+          dependency of a file --- filter identifiers and versions, VFD, VOL
+          connector, external resources, and format bounds --- as a single
+          machine-readable report. A depositor cannot manage a dependency that
+          cannot be listed. This reuses the reporting proposed in
+          \code{APP-S6} and \code{CORE-S11}, applied to a file rather than to a
+          build.
+    \item \textbf{Prefer removable dependencies at deposit.} Where an archival
+          copy is being produced, rewriting to core-only features --- or to a
+          filter that is registered, widely implemented, and specified --- is
+          the single most effective control, and \code{h5repack} already
+          performs the mechanical part. Make this an explicit, documented
+          archival profile rather than folklore.
+    \item \textbf{Preserve the specification, not the binary.} Where a
+          dependency cannot be removed, archive what would let someone
+          re-implement it: the codec specification, test vectors with known
+          inputs and outputs, and the identifier registration. A preserved
+          shared library becomes unbuildable long before a preserved
+          specification becomes unreadable.
+    \item \textbf{Say what a VOL-backed dataset actually is.} Require that a
+          deposit record state whether the archived artifact is a
+          self-contained HDF5 file or a view onto an external system, because
+          those are different preservation objects with different custodians.
+\end{enumerate}
+
+\noindent\textbf{Acceptance evidence.}
+For a defined corpus: every file has a generated dependency report, and the
+report is confirmed complete by opening the file in an environment where each
+declared dependency is deliberately absent and checking that no undeclared
+dependency is discovered. Files in the archival profile open and read
+correctly in a reference build with \emph{all} non-core plugins disabled ---
+that is the test that proves the dependency was actually removed rather than
+merely satisfied locally. For each retained dependency, the archived
+specification and test vectors are sufficient for an independent party to
+reproduce the codec output, demonstrated at least once rather than assumed.
 
 \end{document}
