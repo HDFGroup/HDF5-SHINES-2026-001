@@ -254,7 +254,7 @@ when assertions are disabled with \code{-DNDEBUG}. The open catalog task names
 version-2 B-trees, dataset chunk records, extensible arrays, fractal heaps,
 free-space managers, shared object-header messages, and metadata-cache images,
 with a cursory estimate of 50--100 instances
-~\cite{hdf5-pickles-issue-87}. A fixed August 25 develop snapshot corroborates
+~\cite{h5lens-issue-87}. A fixed August 25 develop snapshot corroborates
 the mechanism: its build configuration notes that CMake adds \code{NDEBUG} for
 Release builds, while representative source sites assert a decoded filtered-
 chunk address and byte count before returning success, assert extensible-array
@@ -872,11 +872,11 @@ of mutually referential, \textit{attacker-controlled} metadata.
 \subsubsection{Prior Art and the Remaining Work}
 \label{sec:core-prior-art}
 
-H5Lens / \code{hdf5-pickles} already provides machine-readable format
+H5Lens / \code{h5lens} already provides machine-readable format
 definitions, \code{h5policy} preflight profiles and a regression corpus, a
 versioned invariant registry, the evidence-gated \code{h5patch} repair planner,
 and differential measurements against selected libhdf5 builds
-\cite{hdf5-pickles,h5policy,h5policy-invariant-registry,h5patch}. Its strategy
+\cite{h5lens,h5policy,h5policy-invariant-registry,h5patch}. Its strategy
 and bounded-decoder work also define the decode--validate--construct
 architecture~\cite{hdf5-cve-strategy,hdf5-bounded-raw-decode}. Two refinements
 are material: validation occurs at record-local, aggregate-object, and
