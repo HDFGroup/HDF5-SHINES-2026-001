@@ -188,23 +188,11 @@ Backlog & Evidence action (\code{RM-2F}) & \code{REL} \\
 
 Fourteen formal findings are registered: seven Rated and seven Provisional.
 Their tiers comprise one Critical, four High, four Moderate--High ranges, and
-five Moderate. Four further observations remain in the evidence-and-scoping
-backlog below the rule in the table. \textbf{A backlog record is an evidence
-gap, not a determination of Low risk.}
-
-One backlog record, \code{FMT-SAF-001}, is about the normative artifact rather
-than an implementation. Issue~\#6616 establishes an unresolved adjudication
-question, but the evidence does not yet bound an adverse consequence or
-affected population. It therefore carries an administrative action and no
-inherent-risk urgency.
-
-Three further findings --- \code{CORE-SAFE-001}, \code{CORE-SAFE-002}, and
-\code{LONG-SAF-001} --- are write-side and lifecycle safety risks that an
-earlier revision of this report either left unrated or did not register at all.
-They are called out here because they are the conditions HDF5 users encounter
-in ordinary, non-adversarial operation, and because the rest of this report is
-organised around a different question: hostile input arriving from outside,
-rather than data failing to survive. This emphasis is not a prevalence claim.
+five Moderate. Four observations remain in the evidence backlog; backlog means
+insufficient evidence to rate, not Low risk. \code{FMT-SAF-001} carries an
+administrative adjudication but no inherent-risk urgency. The registered
+write-side and lifecycle findings ensure that non-adversarial data survival is
+considered alongside hostile-input risk; this is not a prevalence claim.
 
 \subsection*{Where the priority actually falls}
 
@@ -240,21 +228,17 @@ effort, and dependencies do not create or revise it.
 
 \subsection*{If only a few things can be funded}
 
-The roadmap in Appendix~\ref{app:phased-roadmap} is scoped to risk, not to
-budget. Section~\ref{sec:roadmap-minimum-viable} identifies a
-capacity-constrained subset that preserves the response clocks and delivers
-a bounded set of controls selected under the stated assumptions. It is a
-funding aid and explicitly not a risk rank or a quantitative efficiency result.
+Section~\ref{sec:roadmap-minimum-viable} identifies a capacity-constrained
+subset that preserves response clocks. It is a funding aid, not a risk rank or
+quantitative efficiency claim.
 
 \subsection*{What this report does not establish}
 
-No proposed mitigation is shown to be adopted, implemented, or effective.
-Every roadmap package is \emph{Proposed / implementation not verified} at
-publication, and no residual-risk acceptance is recorded. Current installed
-populations, exact fix coverage across supported releases, and
-deployment-specific control effectiveness remain incomplete. Unless a record
-expressly states otherwise, findings rest on document, artifact, and
-architecture examination rather than independent reproduction. The absence of
-a reported finding does not establish the absence of defects.
+No proposed mitigation is shown adopted or effective; every package remains
+\emph{Proposed / implementation not verified}, with no residual-risk
+acceptance. Population, fix-coverage, and deployment-control evidence remain
+incomplete, and findings rely on document, artifact, or architecture review
+unless independent reproduction is expressly stated. Silence is not evidence
+of absence.
 
 \end{document}

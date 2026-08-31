@@ -869,978 +869,300 @@ B-tree nodes, object headers, global heaps, local heaps, and
 free-space metadata. That means the library is parsing a dense graph
 of mutually referential, \textit{attacker-controlled} metadata.
 
-\subsubsection{Prior Art: What Already Exists}
+\subsubsection{Prior Art and the Remaining Work}
 \label{sec:core-prior-art}
 
-Several recommendations below describe controls that have already been
-designed, and in some cases built and measured, in the H5Lens /
-\code{hdf5-pickles} project~\cite{hdf5-pickles}. Presenting them as new proposals
-would misstate both the effort involved and the state of the art inside the
-programme, so this subsection records what exists before the recommendations
-restate what is still missing.
+H5Lens / \code{hdf5-pickles} already provides machine-readable format
+definitions, \code{h5policy} preflight profiles and a regression corpus, a
+versioned invariant registry, the evidence-gated \code{h5patch} repair planner,
+and differential measurements against selected libhdf5 builds
+\cite{hdf5-pickles,h5policy,h5policy-invariant-registry,h5patch}. Its strategy
+and bounded-decoder work also define the decode--validate--construct
+architecture~\cite{hdf5-cve-strategy,hdf5-bounded-raw-decode}. Two refinements
+are material: validation occurs at record-local, aggregate-object, and
+reference-graph scope; and materialization must remain separate from activation
+(cache publication, ID registration, plugin loading, decompression, callbacks,
+and external-file access). Locally valid metadata can fail only at a wider
+scope, and successful parsing must not authorize a side effect. The latter is
+the core-library counterpart of \code{APP-SEC-001}.
 
-H5Lens describes HDF5 on-disk metadata as machine-readable format definitions
-and builds four things on top of them: \code{h5policy}, an independent
-preflight oracle for untrusted files with named security profiles and a
-regression corpus; a versioned invariant registry mapping each record family's
-invariants to finding codes, enforcement points, tests, fuzz targets, and
-migration status; \code{h5patch}, an evidence-gated repair planner; and a
-differential measurement harness that records, per record family, what a
-selected libhdf5 build actually did with a malformed specimen
-\cite{h5policy,h5policy-invariant-registry,h5patch}. The accompanying design
-document, \emph{A CVE Strategy for the HDF5 Library}, sets out the
-decode-validate-construct architecture in more detail than this report
-does~\cite{hdf5-cve-strategy,hdf5-bounded-raw-decode}.
-
-\paragraph{Two places where the existing design is ahead of this report.}
-This matters for sequencing, not just for credit.
-
-\begin{enumerate}
-    \item \textbf{Three validation scopes, not two phases.} \code{CORE-S2}
-          below describes decode, validate, construct. The strategy document
-          decomposes the middle step into \emph{record-local},
-          \emph{aggregate-object}, and \emph{reference-graph} validation, which
-          is the distinction that actually explains the harder CVE variants: a
-          continuation message that references part of itself, a shared message
-          that resolves through itself, or a compound member that extends past
-          its enclosing datatype are all locally well-formed and fail only at a
-          wider scope. A two-phase boundary does not by itself catch them.
-
-    \item \textbf{Materialization versus activation.} The strategy document
-          separates constructing a native object from performing operations
-          with side effects --- cache publication, ID registration, plugin
-          loading, decompression, user callbacks, and \emph{external-file
-          access}. Its rule is that successfully parsing fields must not
-          authorize any of those. This report has no equivalent concept, and
-          the omission is consequential: that rule is the core-library-side
-          statement of the same boundary failure this report rates as
-          \code{APP-SEC-001} at the service boundary. The two framings are
-          complementary, and a reader of this report alone would conclude that
-          external-resource policy is purely a downstream concern.
-\end{enumerate}
-
-\paragraph{Re-scoped recommendations.}
-Table~\ref{tab:core-prior-art-rescope} restates the affected recommendations
-against what exists. The revised effort in the last column supersedes the
-estimate carried in Appendix~\ref{app:recommendation-register} for these six
-items, and the reuse is subject to the licensing boundary in
-Section~\ref{sec:roadmap-licensing}: identifiers, boundaries, fixtures, and
-measurements are consumable as data; GPLv3 implementation source is not
-consumable into a BSD-licensed library.
+Table~\ref{tab:core-prior-art-rescope} distinguishes reuse from remaining
+implementation. Effort is separate from inherent risk and is subject to the
+licensing boundary in Section~\ref{sec:roadmap-licensing}: identifiers,
+boundaries, fixtures, and measurements may be usable after provenance, licence,
+and, where needed, legal review; GPLv3 implementation source is not directly
+consumable into the BSD-licensed library.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
+\renewcommand{\arraystretch}{1.08}
 \setlength{\LTleft}{-0.9in}
 \setlength{\LTright}{-0.9in}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.11\widetablewidth}>{\raggedright\arraybackslash}p{0.34\widetablewidth}>{\raggedright\arraybackslash}p{0.38\widetablewidth}>{\raggedright\arraybackslash}p{0.15\widetablewidth}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.10\widetablewidth}>{\raggedright\arraybackslash}p{0.35\widetablewidth}>{\raggedright\arraybackslash}p{0.41\widetablewidth}>{\raggedright\arraybackslash}p{0.12\widetablewidth}@{}}
 \caption{Recommendations re-scoped against existing H5Lens work}
 \label{tab:core-prior-art-rescope}\\
 \hline
-\textbf{Rec.} & \textbf{What already exists} &
-\textbf{What this recommendation therefore is} & \textbf{Effort} \\
+\textbf{Rec.} & \textbf{Existing asset} & \textbf{Remaining work} & \textbf{Effort} \\
 \hline
 \endfirsthead
-
 \caption[]{Recommendations re-scoped against existing H5Lens work, continued}\\
 \hline
-\textbf{Rec.} & \textbf{What already exists} &
-\textbf{What this recommendation therefore is} & \textbf{Effort} \\
+\textbf{Rec.} & \textbf{Existing asset} & \textbf{Remaining work} & \textbf{Effort} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
-
-\code{CORE-S1} &
-A versioned, machine-readable invariant registry with per-record-family
-invariants, finding codes, enforcement points, test and fuzz-target mappings,
-and per-family migration status. &
-\emph{Adopt the vocabulary; build the enforcement.} The design and enumeration
-work is largely done. What remains is mapping each adopted invariant to an
-always-active enforcement point \emph{inside libhdf5} and proving it in both
-build modes. &
-Large $\rightarrow$ \textbf{Medium} (design and enumeration reused;
-enforcement is new) \\
-
-\code{CORE-S2} &
-A complete architectural design with three validation scopes, the
-materialization/activation rule, a seven-phase incremental migration plan, and
-a working bounded decoder demonstrating the contract. &
-\emph{Adopt the design, including the two refinements above; migrate the
-library.} The remaining work is the migration itself, which is genuinely large
-and is not reduced by the existence of a design. &
-Large $\rightarrow$ \textbf{Large} (unchanged; design reuse does not reduce
-migration cost) \\
-
-\code{CORE-S4} &
-\code{h5policy} implements four profiles --- \code{legacy},
-\code{trusted-fast}, \code{untrusted-strict}, \code{forensic} --- with the same
-names and substantially the same semantics this recommendation proposes,
-including feature policy and resource budgets. &
-\emph{Port a proven profile design into the library API.} The semantics have
-been exercised against a corpus; the open work is the \code{H5P} surface,
-default-state behavior, and enforcement inside libhdf5 rather than beside it. &
-Large $\rightarrow$ \textbf{Medium} \\
-
-\code{CORE-S5} &
-A mutation harness with per-family recipes, truncation sweeps, and a
-boundary-value inventory identifying which values the corpus lacks. Its own
-coverage report records that OSS-Fuzz integration is absent for every family. &
-\emph{Adopt the harness design and close the two named gaps:} OSS-Fuzz
-integration and per-family fuzz targets, which exist for only a small minority
-of families. This recommendation should stop proposing OSS-Fuzz as a new idea
-and start treating it as a known, scheduled gap. &
-Large $\rightarrow$ \textbf{Medium} \\
-
-\code{CORE-S6} &
-A malformed-input corpus with per-fixture expected-outcome records, a valid
-control set, and a manifest --- structurally the \code{expected.yml} design
-sketched below. &
-\emph{Adopt the corpus and its expectation format;} add HDF5-side CI
-integration and the debug/\code{-DNDEBUG} parity requirement. Subject to
-per-specimen provenance review before redistribution. &
-Medium $\rightarrow$ \textbf{Small} \\
-
-\code{APP-S2} &
-\code{h5policy} \emph{is} a working preflight validator for untrusted files,
-invocable per profile and emitting structured results. &
-\emph{Two distinct deliverables, previously conflated.} A validator exists and
-can be used today by deployments willing to run an external GPLv3 tool. What
-does not exist is the enforcement coupling this recommendation requires ---
-binding the preflight verdict to the same open handle or verified file
-identity used at load time --- which is the part that makes preflight an
-authorization rather than an advisory. &
-Large $\rightarrow$ \textbf{Medium} (validator reused; coupling is the real
-work) \\
-
+\code{CORE-S1} & Versioned per-family invariant registry with finding, test,
+fuzz, enforcement, and migration mappings. & Adopt the vocabulary; implement
+always-active enforcement inside libhdf5 and prove debug/release parity. &
+\textbf{Medium} \\
+\code{CORE-S2} & Three validation scopes, materialization/activation rule,
+seven-phase migration design, and bounded-decoder demonstration. & Migrate the
+library; design reuse does not reduce that work. & \textbf{Large} \\
+\code{CORE-S4} & Four exercised profiles with feature policy and resource
+budgets. & Port semantics to the \code{H5P} API and enforce defaults and policy
+inside libhdf5. & \textbf{Medium} \\
+\code{CORE-S5} & Per-family mutation recipes, truncation sweeps, and a
+boundary-value coverage inventory. & Add OSS-Fuzz integration and the missing
+per-family targets. & \textbf{Medium} \\
+\code{CORE-S6} & Manifested malformed-input and valid-control corpus with
+per-fixture outcomes. & Review specimen provenance; integrate HDF5 CI and
+debug/\code{-DNDEBUG} parity. & \textbf{Small} \\
+\code{APP-S2} & Working profile-based preflight validator with structured
+results. & Bind the verdict to the same handle or verified identity used at
+load time; otherwise preflight remains advisory. & \textbf{Medium} \\
 \end{longtable}
 \endgroup
 
-\paragraph{What this report adds that the existing work does not cover.}
-Stating the reuse honestly also requires stating the complement. The
-application-boundary findings, the independent-implementation and
-interoperability analysis, the separation of inherent from residual risk with
-response clocks and accountable owners, and the attribution of recommendations
-to enforcing actors across downstream projects have no counterpart in H5Lens,
-which is deliberately a format-and-oracle project rather than an
-ecosystem-governance one. The two are complementary. The defect corrected here
-is that this report previously described the overlap as future work.
+H5Lens does not supply this report's application-boundary findings,
+independent-implementation analysis, inherent/residual-risk separation,
+response clocks, accountable owners, or ecosystem attribution; those are
+complementary governance contributions. One loop also remains open: many
+tracked divergences are reported as oracle-rejected but libhdf5-unfixed. Two
+concern external-file-list handling, including an uninvestigated case in which
+an external file is opened before its wrapped segment is validated
+\cite{h5policy-case-efl-open}. If substantiated, it is an
+activation-before-validation instance relevant to \code{APP-SEC-001}; this
+report did not evaluate it. \code{RM-1E} therefore takes the full
+oracle-hardened set as triage input.
 
-\paragraph{An unclosed loop.}
-The existing case records report that a substantial majority of their tracked
-divergences are \emph{oracle-hardened}: the oracle rejects the specimen and the
-libhdf5 side is unfixed. Two of those concern external-file-list handling, and
-one --- an external data file opened before the wrapped segment is validated
---- is recorded as
-uninvestigated~\cite{h5policy-case-efl-open}. If substantiated, that is a
-core-library instance of the activation-before-validation rule above and bears
-directly on \code{APP-SEC-001}. This report did not evaluate it, and
-\code{RM-1E} should take the full set of oracle-hardened cases as triage input.
+\subsubsection{Core Security Control Programme}
 
-\subsubsection*{Recommendation CORE-S0: Separate defect closure from recurring-class closure}
-
-Adopt the following rule:
-
-\textit{A verified local repair may close the affected defect, but it must not
-be represented as elimination of the recurring class without structural
-evidence.}
-
-For every new CVE or crash:
+The objective is controlled rejection of any hostile byte stream: no crash,
+assertion, leak, undefined behaviour, unbounded work, or late encode/flush
+failure caused by an invalid decode. The authoritative ownership, finding
+mapping, effort, package, and acceptance evidence for \code{CORE-S0} through
+\code{CORE-S12} are in Appendix~\ref{app:recommendation-register} and
+Appendix~\ref{app:phased-roadmap}. The synthesis below preserves the control
+logic without duplicating repository layouts, sample APIs, YAML, or checklists.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.09\widetablewidth}>{\raggedright\arraybackslash}p{0.25\widetablewidth}>{\raggedright\arraybackslash}p{0.45\widetablewidth}>{\raggedright\arraybackslash}p{0.17\widetablewidth}@{}}
+\caption{Core security recommendations: strategic synthesis}
+\label{tab:core-security-synthesis}\\
+\hline
+\textbf{ID} & \textbf{Control} & \textbf{Required outcome} & \textbf{Roadmap} \\
+\hline
+\endfirsthead
+\caption[]{Core security recommendations: strategic synthesis, continued}\\
+\hline
+\textbf{ID} & \textbf{Control} & \textbf{Required outcome} & \textbf{Roadmap} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+\code{CORE-S0} & Separate defect and class closure. & A local repair may close
+the affected defect, including under embargo, but the paired class-prevention
+record stays open until sibling paths are structurally covered. & \code{RM-1B},
+\code{RM-3C}, \code{RM-4A} \\
+\code{CORE-S1} & Adopt the invariant registry. & Each declared on-disk
+condition maps to an always-active libhdf5 check, expected error, test, fuzz
+target, and migration state. Issue~\#87's seven families are the first audit
+perimeter; consequence and supported-release reachability, not candidate count,
+set tranche order. & \code{RM-3A} \\
+\code{CORE-S2} & Enforce the parser boundary. & Bounded decode precedes
+record-local, object-wide, and graph validation; construction precedes a
+separately authorized activation step. No raw file quantity becomes a trusted
+pointer or side effect. & \code{RM-3B} \\
+\code{CORE-S3} & Centralize checked arithmetic. & File-derived addition,
+multiplication, address ranges, allocation, copying, cursor movement, and graph
+traversal use checked wrappers or recorded exemptions. & \code{RM-2A},
+\code{RM-3A} \\
+\code{CORE-S4} & Make open policy explicit. & \code{legacy},
+\code{trusted-fast}, \code{untrusted-strict}, and \code{forensic} profiles bind
+validation, external access, plugins, traversal, metadata, allocation, and
+filter-expansion budgets to tested defaults. & \code{RM-2A} \\
+\code{CORE-S5} & Fuzz structures and invariants. & Whole-file, structure-aware,
+and single-invariant mutation cover object headers, datatypes, dataspaces,
+layouts, heaps, filters, cache images, and tool rendering; coverage is reported
+per component. & \code{RM-3C} \\
+\code{CORE-S6} & Make regression permanent and cheap. & Every closed case has
+a minimized, provenance-reviewed seed, expected controlled outcome, invariant
+mapping, and identical assertion-enabled/\code{-DNDEBUG} rejection. &
+\code{RM-1B}, \code{RM-2C}, \code{RM-3C} \\
+\code{CORE-S7} & Block unsafe parser changes. & Review and automated gates
+require explicit bounds, checked arithmetic and copies, bounded traversal,
+partial-initialization cleanup, policy-aware plugin use, malformed-input tests,
+and always-active counterparts to file-derived assertions. & \code{RM-1E},
+\code{RM-3C} \\
+\code{CORE-S8} & Separate compatibility from safety. & Valid legacy files
+remain readable, but tolerated corruption does not become compatibility and
+repair never occurs silently during normal open. & \code{RM-2C}, \code{RM-4A} \\
+\code{CORE-S9} & Treat tools as attack surfaces. & Inspection and conversion
+tools use forensic or strict profiles; rendering is bounded; legacy converters
+are explicit opt-ins; plugin-dependent tools require warning or approval. &
+\code{RM-1B}, \code{RM-2A}, \code{RM-3C} \\
+\code{CORE-S10} & Govern executable extensions. & A protected manifest and
+allowlist bind identity, profile, capability, and resource limits; signatures
+prove provenance, not resource safety. & \code{RM-3D} \\
+\code{CORE-S11} & Coordinate supply-chain controls. & Independently owned
+Scorecard, CodeQL, pinned-action, SBOM, signing, checksum, and SLSA controls run
+in parallel with parser work; only concrete dependencies affect sequence. &
+\code{RM-3E}, \code{RM-4A} \\
+\code{CORE-S12} & Measure class elimination. & A public dashboard reports a
+versioned denominator and named, expiring exceptions; metrics are coverage
+evidence, not defect closure. & \code{RM-1B}, \code{RM-3C}, \code{RM-4A} \\
+\end{longtable}
+\endgroup
 
-\begin{longtable}{@{}p{0.30\linewidth}p{0.66\linewidth}@{}}
+The defect/class distinction requires the seven artifacts in
+Table~\ref{tab:cve-closure-artifacts}. Recent fixes illustrate the intended
+direction: the file-space page-size fix converted an assertion into a
+corrupted-file error and reused its fuzzer, while cache-image reconstruction
+added buffer-size tracking, overflow checks, validation, and safe cleanup
+\cite{commit_804f3ba,commit_3914bb7}. The 2024 dataset-storage fix similarly
+added multiplication-overflow and file-bound checks~\cite{commit_ce53bc0}.
+These local repairs should become programme-wide invariants and primitives.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{@{}p{0.27\linewidth}p{0.69\linewidth}@{}}
 \caption{Required artifacts for defect closure and recurring-class tracking}
 \label{tab:cve-closure-artifacts}\\
 \hline
-\textbf{Required artifact} & \textbf{Purpose} \\
+\textbf{Artifact} & \textbf{Purpose} \\
 \hline
 \endfirsthead
-
-\caption[]{Required artifacts for defect closure and recurring-class tracking, continued}\\
 \hline
-\textbf{Required artifact} & \textbf{Purpose} \\
+\textbf{Artifact} & \textbf{Purpose} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
-\hline
-\endlastfoot
-
-crashing input & becomes a permanent corpus seed \\
-minimized input & used in quick PR regression \\
-root-cause category & maps to a known invariant class \\
-invariant update & records and advances prevention of sibling bugs \\
-sanitizer regression & proves no crash, no leak, no UAF \\
-negative test & checks the same controlled failure in assertion-enabled and
-\code{-DNDEBUG} builds \\
-reviewer checklist update & prevents reintroduction \\
+crashing input & permanent corpus seed \\
+minimized input & fast PR regression \\
+root-cause category & invariant-class mapping \\
+invariant update & sibling-defect prevention record \\
+sanitizer regression & no crash, leak, or use-after-free \\
+negative test & same controlled result with assertions enabled and disabled \\
+reviewer-checklist update & reintroduction gate \\
 \end{longtable}
 \endgroup
 
-Variant closure requires evidence that the affected path is repaired or
-contained and that its negative and sanitizer regressions pass. A local
-\texttt{if} may therefore be a valid treatment, including for an embargoed
-fix, while the corresponding \textbf{class-prevention record} remains open
-until the invariant framework and related gates cover sibling cases.
-
-Recent commits show the right direction, but too locally. One fix
-added a sanity check immediately after reading file-space page size
-from the file and used the same fuzzer to verify that the previous
-assertion became a corrupted-file error.~\cite{commit_804f3ba}
-Another hardened \texttt{H5C\_\_reconstruct\_cache\_entry()} by adding
-buffer-size tracking, overflow checks, input validation, and safe cleanup.~\cite{commit_3914bb7}
-Those are exactly the moves to systematize.
-
-\subsubsection*{Recommendation CORE-S1: Build an invariant registry for the file format}
-
-\noindent\emph{Prior art:} see Table~\ref{tab:core-prior-art-rescope}; this item is re-scoped against existing work.
-Create a versioned document and machine-readable metadata file, for example:
-
-\begin{verbatim}
-security/invariants/
-  superblock.yml
-  btree_v2.yml
-  chunk_records.yml
-  extensible_array.yml
-  object_header.yml
-  dataspace.yml
-  datatype.yml
-  layout.yml
-  filters.yml
-  heaps.yml
-  fractal_heap.yml
-  free_space.yml
-  links.yml
-  shared_object_header_messages.yml
-  cache_image.yml
-\end{verbatim}
-
-Each entry should define:
-
-\begin{minted}{yaml}
-id: H5O-CONT-001
-component: object_header
-structure: continuation_message
-condition: continuation_chunk_size > 0
-failure: H5E_CORRUPT
-checked_at:
-  - H5O__cont_decode
-  - H5O__chunk_deserialize
-release_enforced: true
-diagnostic_assert_sites: []
-fuzz_targets:
-  - fuzz_object_header
-cves:
-  - CVE-2025-6856
-  - CVE-2025-6816
-\end{minted}
-
-The following are candidate initial invariant-registry families. Tranche order
-must be recorded in the implementation plan from affected scope, coverage gaps,
-and concrete enabling dependencies; this list is not a risk rank.
+Structure-aware fuzzing supplements whole-file mutation; OSS-Fuzz supplies
+long-running public execution and CI supplies fast feedback. These cadences are
+acceptance gates, not risk priorities.
 
 \begingroup
 \small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.7in}
-\setlength{\LTright}{-0.7in}
-
-\begin{longtable}{@{}p{0.16\widetablewidth}p{0.80\widetablewidth}@{}}
-\caption{Candidate initial invariant-registry families}
-\label{tab:invariant-families-first}\\
-\hline
-\textbf{Area} & \textbf{Candidate invariants} \\
-\hline
-\endfirsthead
-
-\caption[]{Candidate initial invariant-registry families, continued}\\
-\hline
-\textbf{Area} & \textbf{Candidate invariants} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-superblock &
-offset size and length size are valid; base address, EOF address, driver info
-address, and root object address are inside the file or explicitly undefined;
-EOF does not wrap \\
-object headers &
-message length fits inside chunk; continuation chunks are nonzero; continuations
-do not self-reference; continuations are acyclic; message flags match message
-type; unknown messages cannot be cast into known message structures \\
-free-space metadata &
-page size is nonzero and below max; section size fits page/file bounds;
-serialized section count matches decoded section count \\
-heaps &
-heap object offset and size are inside heap; free-list blocks do not overlap;
-free-block list is acyclic; no allocation uses unchecked \code{count * size} \\
-dataspaces &
-rank is bounded; dimension product is checked; selected point count is checked;
-hyperslab stride, count, block, and start do not overflow \\
-datatypes &
-storage size is nonzero; precision fits storage size; member offsets fit
-compound size; string length is bounded; vlen/ref types cannot escape validation \\
-layouts &
-compact data size equals \code{dataspace elements * datatype size}; chunk
-dimensions are nonzero; chunk product is checked; chunk index references are
-inside file bounds \\
-filters &
-parameter count is bounded; decompressed size is bounded; scale-offset precision
-is validated; filter output ratio cannot exceed configured resource limits \\
-cache image &
-cache-entry count, address, size, and alignment are bounded; decoding consumes
-exactly the expected number of bytes; cleanup is safe after partial decode \\
-tools &
-string rendering is length-bounded; conversion tools never trust input
-dimensions; tool-only parsers use the same checked arithmetic wrappers as the
-library \\
-\end{longtable}
-\endgroup
-
-The seven component families named in issue~\#87 are the mandatory first
-audit perimeter for assert-masked checks. That perimeter is not itself a risk
-rank. Within it, first migrate a candidate that is a sole release-reachable
-guard for memory bounds, pointer arithmetic, allocation, copy, or traversal;
-then address termination-only paths and redundant diagnostics. Record the
-reachability and consequence evidence so a raw candidate count cannot
-substitute for prioritization.
-
-This registry becomes the source of truth for code review, tests, fuzzing, and documentation.
-
-\subsubsection*{Recommendation CORE-S2: Introduce a two-phase parser boundary}
-
-\noindent\emph{Prior art:} see Table~\ref{tab:core-prior-art-rescope}; this item is re-scoped against existing work.
-Right now, too many paths appear to do this:
-\begin{verbatim}
-file bytes -> native internal object
-           -> later code assumes validity
-\end{verbatim}
-
-Change the architecture to:
-\begin{verbatim}
-file bytes -> bounded raw decode
-           -> semantic validation
-           -> native object construction
-\end{verbatim}
-
-Concrete rule: \textit{No public or internal runtime object is constructed from
-file metadata until the corresponding validator has passed.}
-
-Implement the pattern by component:
-
-\begin{minted}{c}
-herr_t H5O_msg_decode_raw(const uint8_t *buf, size_t buf_size, H5O_msg_raw_t *raw);
-herr_t H5O_msg_validate(const H5F_t *f, const H5O_msg_raw_t *raw, H5O_validation_ctx_t *ctx);
-herr_t H5O_msg_construct(const H5O_msg_raw_t *raw, H5O_msg_t *out);    
-\end{minted}
-
-Do not let decode functions allocate complex structures before basic
-bounds are known. A raw decoded object should hold values, offsets,
-and spans, not trusted pointers into long-lived internal state.
-
-All decode functions that consume file bytes should take one of these forms:
-\begin{minted}{c}
-herr_t decode(const H5F_t *f, const uint8_t *buf, size_t buf_size, out_t *out);
-
-herr_t decode_cursor(H5_decode_cursor_t *cur, out_t *out);
-\end{minted}
-
-Ban this pattern in security-sensitive decode code:
-\begin{minted}{c}
-const uint8_t **pp
-\end{minted}
-unless there is also an explicit \texttt{p\_end} or remaining-size counter. The cache-image fix already moved in this direction
-by adding a buffer-size argument and bounds checks.~\cite{commit_3914bb7}
-
-\subsubsection*{Recommendation CORE-S3: Centralize checked arithmetic and allocation}
-
-Most parser bugs become exploitable when metadata reaches allocation, copy, or pointer arithmetic. Add a small, mandatory checked-arithmetic layer.
-
-Example API:
-\begin{minted}{c}
-herr_t H5_checked_add_hsize(hsize_t a, hsize_t b, hsize_t *out);
-herr_t H5_checked_mul_hsize(hsize_t a, hsize_t b, hsize_t *out);
-herr_t H5_checked_addr_add(haddr_t base, hsize_t len, haddr_t eoa, haddr_t *end);
-herr_t H5_checked_alloc_size(size_t count, size_t elem_size, size_t *bytes);
-\end{minted}
-
-Then make these rules review-blocking:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.48\widetablewidth}p{0.48\widetablewidth}@{}}
-\caption{Review-blocking parser arithmetic and allocation patterns}
-\label{tab:review-blocking-parser-patterns}\\
-\hline
-\textbf{Ban} & \textbf{Replacement} \\
-\hline
-\endfirsthead
-
-\caption[]{Review-blocking parser arithmetic and allocation patterns, continued}\\
-\hline
-\textbf{Ban} & \textbf{Replacement} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-\code{malloc(n * size)} & \code{H5MM_calloc_checked(n, size)} \\
-\code{addr + size} & \code{H5_checked_addr_add(addr, size, eoa, \&end)} \\
-\code{memcpy(dst, src, n)} from file-derived size &
-\code{H5_checked_memcpy(dst, dst_size, src, src_size, n)} \\
-pointer increment without \code{p_end} & cursor-based decode \\
-raw recursion through object graph & bounded traversal context \\
-\end{longtable}
-\endgroup
-
-The 2024 security commit added multiplication-overflow checks for
-dataset storage size and checks against file bounds.~\cite{commit_ce53bc0}
-That pattern should become a library-wide rule, not a local repair.
-
-\subsubsection*{Recommendation CORE-S4: Create security profiles for file opening}
-
-\noindent\emph{Prior art:} see Table~\ref{tab:core-prior-art-rescope}; this item is re-scoped against existing work.
-Add explicit modes. Do not rely on users to infer safe behavior.
-\begin{minted}{c}
-typedef enum {
-    H5_SECURITY_PROFILE_LEGACY,
-    H5_SECURITY_PROFILE_TRUSTED_FAST,
-    H5_SECURITY_PROFILE_UNTRUSTED_STRICT,
-    H5_SECURITY_PROFILE_FORENSIC
-} H5_security_profile_t;
-\end{minted}
-
-Suggested semantics:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.24\linewidth}p{0.72\linewidth}@{}}
-\caption{Security profile semantics}
-\label{tab:security-profile-semantics}\\
-\hline
-\textbf{Profile} & \textbf{Behavior} \\
-\hline
-\endfirsthead
-
-\caption[]{Security profile semantics, continued}\\
-\hline
-\textbf{Profile} & \textbf{Behavior} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-\code{legacy} & current compatibility bias \\
-\code{trusted_fast} & normal validation, generous resource limits \\
-\code{untrusted_strict} & strict metadata validation, plugin loading disabled unless allowlisted, resource limits enforced \\
-\code{forensic} & never repairs silently, reports all structural anomalies, best-effort inspection without unsafe traversal \\
-\end{longtable}
-\endgroup
-
-Expose it through file-access property lists:
-\begin{minted}{c}
-H5Pset_security_profile(fapl, H5_SECURITY_PROFILE_UNTRUSTED_STRICT);
-H5Pset_max_metadata_bytes(fapl, 256 * 1024 * 1024);
-H5Pset_max_object_header_chunks(fapl, 1024);
-H5Pset_max_btree_depth(fapl, 64);
-H5Pset_max_filter_expansion_ratio(fapl, 100);
-H5Pset_plugin_policy(fapl, H5_PLUGIN_POLICY_DISABLED);
-\end{minted}
-
-This matters because HDF5 supports dynamically loaded plugins, and the
-runtime API can enable or disable plugin classes; the docs also state
-that \texttt{HDF5\_PLUGIN\_PRELOAD=::} disables all dynamic plugins.
-Turn that capability into a first-class security policy, not an
-environment-variable trick.
-
-\subsubsection*{Recommendation CORE-S5: Fuzz by structure, not just by whole-file crashes}
-
-\noindent\emph{Prior art:} see Table~\ref{tab:core-prior-art-rescope}; this item is re-scoped against existing work.
-Whole-file fuzzing is necessary but insufficient. It finds symptoms. Structure-aware fuzzing finds families.
-
-Treat the following as an initial harness-investment portfolio, not a finding
-rank or response order. Known finding fixtures and changed paths enter
-regression immediately; new harnesses may proceed in parallel, with tranche
-order recorded from shared-enablement and coverage evidence.
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.38\widetablewidth}p{0.58\widetablewidth}@{}}
-\caption{Candidate structure-aware fuzzing portfolio}
-\label{tab:structure-aware-fuzzing-sequence}\\
-\hline
-\textbf{Candidate target} & \textbf{Coverage rationale} \\
-\hline
-\endfirsthead
-
-\caption[]{Candidate structure-aware fuzzing portfolio, continued}\\
-\hline
-\textbf{Candidate target} & \textbf{Coverage rationale} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-object-header message decoder & shared decode paths and continuation structures \\
-datatype decoder and converter & complex nested metadata and conversion operations \\
-dataspace and selection decoder & rank, count, hyperslab, and point arithmetic \\
-layout and chunk index decoder & storage-size, address, and chunk-product checks \\
-free-space and local/global heap decoders & historical overflow and list-corruption variants \\
-filter pipeline and scale-offset filter & compression and decompression boundaries \\
-metadata cache image reconstruction & complex bounds, lifecycle, and cleanup paths \\
-\code{h5dump}/\code{h5repack} rendering paths & tool paths that add handling and rendering behavior \\
-\end{longtable}
-\endgroup
-
-Use three fuzzing layers:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.28\widetablewidth}p{0.68\widetablewidth}@{}}
-\caption{Fuzzing layers}
-\label{tab:fuzzing-layers}\\
-\hline
-\textbf{Layer} & \textbf{Description} \\
-\hline
-\endfirsthead
-
-\caption[]{Fuzzing layers, continued}\\
-\hline
-\textbf{Layer} & \textbf{Description} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-byte-level fuzzing & current randomized mutation against APIs \\
-structure-aware mutation & valid superblock with corrupted object headers, valid object header with bad continuation, valid datatype with bad member offset \\
-invariant-guided generation & generate files that violate exactly one invariant at a time \\
-\end{longtable}
-\endgroup
-
-OSS-Fuzz already supports libFuzzer, AFL++, Honggfuzz, Centipede, sanitizers,
-and distributed execution for C/C++ projects. Use OSS-Fuzz for long-running
-public coverage and ClusterFuzzLite or local CI for PR-level checks.
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.24\linewidth}p{0.72\linewidth}@{}}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{@{}p{0.22\linewidth}p{0.74\linewidth}@{}}
 \caption{Fuzzing acceptance criteria}
 \label{tab:fuzzing-acceptance-criteria}\\
 \hline
 \textbf{Stage} & \textbf{Gate} \\
 \hline
 \endfirsthead
-
-\caption[]{Fuzzing acceptance criteria, continued}\\
 \hline
 \textbf{Stage} & \textbf{Gate} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
-\hline
-\endlastfoot
-
-PR & run minimized CVE corpus under \code{ASan}/\code{UBSan}/\code{LSan} \\
-nightly & run structure fuzzers for core parsers \\
-weekly & report coverage by component, not just total line coverage \\
-release candidate & 72-hour fuzz soak on changed parser areas \\
-CVE closure & crashing input added to corpus and mapped to invariant \\
+PR & minimized CVE corpus under \code{ASan}/\code{UBSan}/\code{LSan} \\
+nightly & structure fuzzers for core parsers \\
+weekly & component-level coverage report \\
+release candidate & 72-hour soak on changed parser areas \\
+CVE closure & crashing input added and mapped to an invariant \\
 \end{longtable}
 \endgroup
 
-\subsubsection*{Recommendation CORE-S6: Make malformed-input regression cheap}
-
-\noindent\emph{Prior art:} see Table~\ref{tab:core-prior-art-rescope}; this item is re-scoped against existing work.
-Create this repository layout:
-\begin{verbatim}
-test/security/
-  corpus/
-    cve/
-      CVE-2025-7069/
-        input.h5
-        expected.yml
-      CVE-2025-6269/
-        input.h5
-        expected.yml
-    invariants/
-      H5O-CONT-001/
-      H5T-SIZE-002/
-  harnesses/
-    fuzz_object_header.c
-    fuzz_datatype.c
-    fuzz_dataspace.c
-    fuzz_layout.c
-    fuzz_filters.c
-  expected_errors/
-    corrupt_file.yml
-\end{verbatim}
-
-Each expected.yml should include:
-\begin{minted}{yaml}
-expected:
-  exit: controlled_error
-  allowed_errors:
-    - H5E_CORRUPT
-    - H5E_BADVALUE
-    - H5E_OVERFLOW
-forbidden:
-  - SIGSEGV
-  - SIGABRT
-  - leak
-  - use_after_free
-  - timeout
-invariant:
-  - H5FS-PAGE-001
-\end{minted}
-
-This gives maintainers a fast way to prove that old crashes remain dead.
-
-\subsubsection*{Recommendation CORE-S7: Add a security-review checklist that blocks risky parser changes}
-
-Every PR touching decode, encode, object lifecycle, filters, tools, or plugin
-loading should answer:
+Backward compatibility does not authorize malformed metadata. The profile
+contract is therefore:
 
 \begingroup
 \small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.58\widetablewidth}p{0.38\widetablewidth}@{}}
-\caption{Security-review checklist for parser-adjacent changes}
-\label{tab:security-review-checklist}\\
-\hline
-\textbf{Question} & \textbf{Required answer} \\
-\hline
-\endfirsthead
-
-\caption[]{Security-review checklist for parser-adjacent changes, continued}\\
-\hline
-\textbf{Question} & \textbf{Required answer} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-Does this read file-derived bytes? & list buffer and bounds source \\
-Does this allocate using file-derived values? & show checked multiplication \\
-Does this copy memory using file-derived sizes? & show source and destination bounds \\
-Does this traverse links, chunks, heaps, B-trees, or continuations? & show cycle and depth bounds \\
-Does this construct native objects before validation? & explain why or refactor \\
-Does any file-derived validity predicate appear only in an assertion? & show
-the always-active check and matching \code{-DNDEBUG} negative test \\
-Does this add or change cleanup paths? & show partial-init safety \\
-Does this invoke plugins or filters? & show policy interaction \\
-Does this alter error handling? & show malformed-input test \\
-\end{longtable}
-\endgroup
-
-Add automated enforcement where possible:
-
-\begin{verbatim}
-fail PR if new decode function lacks size parameter
-fail PR if malloc(count * size) appears outside checked wrapper
-fail PR if memcpy appears in parser code without checked wrapper annotation
-fail PR if new parser file lacks fuzz target registration
-fail PR if new object traversal lacks max-depth or visited-set logic
-fail PR if file-derived validity is assert-only
-run malformed corpus in debug and -DNDEBUG builds
-require the same controlled rejection in both
-\end{verbatim}
-
-This will annoy contributors at first. Good. That friction is cheaper than post-release CVEs.
-
-\subsubsection*{Recommendation CORE-S8: Separate compatibility from safety}
-
-HDF5’s backward compatibility is valuable, but it creates a security trap: old,
-permissive parsing keeps malformed legacy structures alive.
-
-Implement this policy:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.7in}
-\setlength{\LTright}{-0.7in}
-
-\begin{longtable}{@{}p{0.42\widetablewidth}p{0.54\widetablewidth}@{}}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{@{}p{0.38\linewidth}p{0.58\linewidth}@{}}
 \caption{Compatibility and safety profile policy}
 \label{tab:compatibility-safety-profile-policy}\\
 \hline
-\textbf{Case} & \textbf{Behavior} \\
+\textbf{Case} & \textbf{Required behaviour} \\
 \hline
 \endfirsthead
-
-\caption[]{Compatibility and safety profile policy, continued}\\
 \hline
-\textbf{Case} & \textbf{Behavior} \\
+\textbf{Case} & \textbf{Required behaviour} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
-\hline
-\endlastfoot
-
-valid legacy file & accepted \\
-ambiguous legacy construct & accepted only in \code{legacy} or \code{trusted_fast}; warning in \code{forensic}; rejected in \code{untrusted_strict} \\
-structurally invalid file that old versions tolerated & rejected in all non-legacy profiles \\
-parser repair needed & repair only through explicit tool, never silently during normal open \\
-unknown message with unsafe flags & rejected unless profile explicitly allows preservation \\
+valid legacy file & accept \\
+ambiguous legacy construct & accept only in \code{legacy}/\code{trusted-fast};
+warn in \code{forensic}; reject in \code{untrusted-strict} \\
+formerly tolerated structural invalidity & reject in every non-legacy profile \\
+repair required & explicit repair tool only; never silent normal-open repair \\
+unknown message with unsafe flags & reject unless the profile explicitly
+allows preservation \\
 \end{longtable}
 \endgroup
 
-The point is not to break legitimate archives. The point is to stop treating
-corrupted metadata as compatibility.
-
-\subsubsection*{Recommendation CORE-S9: Harden tools as separate attack surfaces}
-
-Do not assume \code{h5dump}, \code{h5repack}, converters, and test utilities are
-less important. They are often the first thing users run on untrusted files.
-
-Actions:
+Finally, the dashboard denominator must make declared coverage auditable:
 
 \begingroup
 \small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.30\linewidth}p{0.66\linewidth}@{}}
-\caption{Tool hardening actions}
-\label{tab:tool-hardening-actions}\\
-\hline
-\textbf{Tool class} & \textbf{Change} \\
-\hline
-\endfirsthead
-
-\caption[]{Tool hardening actions, continued}\\
-\hline
-\textbf{Tool class} & \textbf{Change} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-inspection tools & use \code{H5_SECURITY_PROFILE_FORENSIC} by default \\
-conversion tools & use \code{H5_SECURITY_PROFILE_UNTRUSTED_STRICT} by default \\
-rendering paths & bounded strings only \\
-legacy converters & disable by default; build behind explicit \code{HDF5_ENABLE_LEGACY_UNSAFE_TOOLS=ON} \\
-plugin-dependent tools & warn or require allowlist \\
-\end{longtable}
-\endgroup
-
-A dangerous file should not become more dangerous because the user tried to
-inspect it.
-
-\subsubsection*{Recommendation CORE-S10: Plugin policy and signed extensions}
-
-Plugins are executable extension code requiring a distinct control domain; this
-statement is not a risk rating. They are loaded at runtime.
-HDF5’s plugin system supports dynamically loaded filter plugins and lets users
-implement custom filters. That is useful, but it must not be invisible in
-untrusted mode.
-
-Implement:
-\begin{verbatim}
-default profile:
-  trusted_fast: existing plugin behavior
-  untrusted_strict: plugins disabled unless allowlisted
-  forensic: plugins disabled; report missing filter
-\end{verbatim}
-
-Add a plugin manifest:
-\begin{minted}{yaml}
-plugin_id: 32008
-name: blosc
-version: 1.0.0
-sha256: ...
-signer: ...
-allowed_profiles:
-  - trusted_fast
-  - untrusted_strict
-capabilities:
-  - filter_decode
-limits:
-  max_expansion_ratio: 100
-  max_alloc_bytes: 1073741824
-\end{minted}
-
-For affected deployments, disable plugins or restrict loading to protected,
-explicitly approved paths and artifacts within the applicable response clock.
-Hash allowlists may be an interim control; supported signature verification and
-resource budgets should be configured and tested independently when applicable.
-Neither waits for a complete PKI nor extends a finding's response horizon, and
-a valid signature does not make a buggy plugin resource-safe.
-
-\subsubsection*{Recommendation CORE-S11: Coordinate supply-chain controls with parser hardening}
-
-Supply-chain work can proceed in parallel with parser hardening. Assign it an
-owner and scope independently, and record any concrete cross-track dependency
-rather than inferring order from an unscored comparison of the risk areas.
-
-Minimum controls:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.32\linewidth}p{0.64\linewidth}@{}}
-\caption{Minimum supply-chain controls}
-\label{tab:minimum-supply-chain-controls}\\
-\hline
-\textbf{Control} & \textbf{Target} \\
-\hline
-\endfirsthead
-
-\caption[]{Minimum supply-chain controls, continued}\\
-\hline
-\textbf{Control} & \textbf{Target} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-OpenSSF Scorecard & weekly scheduled run, alerts in security tab \\
-CodeQL & required for PRs touching C/C++ parser surfaces \\
-pinned GitHub Actions & no floating third-party action refs \\
-SBOM & release artifacts include source and binary SBOMs \\
-signed release artifacts & signatures plus checksums \\
-SLSA provenance & release builds produce verifiable provenance \\
-\end{longtable}
-\endgroup
-
-OpenSSF Scorecard has an official GitHub Action, and public repositories can use
-it without cost. The SLSA GitHub generator provides tooling for SLSA provenance
-on GitHub Actions, including provenance that users can verify to understand how
-an artifact was built.
-
-\subsubsection*{Recommendation CORE-S12: Metrics that force the right behavior}
-
-Use metrics that measure class elimination, not activity.
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.70\linewidth}p{0.26\linewidth}@{}}
-\caption{Security program metrics}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.04}
+\begin{longtable}{@{}p{0.72\linewidth}p{0.24\linewidth}@{}}
+\caption{Security programme metrics}
 \label{tab:security-program-metrics}\\
 \hline
 \textbf{Metric} & \textbf{Target} \\
 \hline
 \endfirsthead
-
-\caption[]{Security program metrics, continued}\\
 \hline
 \textbf{Metric} & \textbf{Target} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
-\hline
-\endlastfoot
-
-CVE corpus pass rate under ASan/UBSan/LSan & 100\% \\
-parser decode functions with explicit buffer size or cursor & 100\% \\
+CVE corpus clean under ASan/UBSan/LSan & 100\% \\
+decoders with explicit buffer size or cursor & 100\% \\
 parser allocations through checked wrappers & 100\% \\
-parser memcpy/memmove through checked wrappers or reviewed exemption & 100\% \\
-structures in the versioned declared tranche with invariant files & 100\% \\
-structures in the versioned declared tranche with registered fuzz targets & 100\% \\
-cataloged file-derived assertions classified for dominance, reachability, and consequence & 100\% \\
-declared file-derived invariants enforced in \code{-DNDEBUG} builds & 100\% \\
-new CVEs that add invariant updates & 100\% \\
-time from new crash to minimized corpus seed & under 48 hours \\
-time from minimized seed to invariant classification & under 5 business days \\
-sanitizer-clean nightly fuzz runs & sustained \\
-untrusted profile test coverage & every release \\
+file-derived copies through checked wrappers or reviewed exemption & 100\% \\
+declared-tranche structures with invariant files and fuzz targets & 100\% \\
+catalogued file-derived assertions classified by dominance, reachability, and consequence & 100\% \\
+declared invariants enforced with \code{-DNDEBUG} & 100\% \\
+new CVEs with invariant updates & 100\% \\
+new crash to minimized seed & under 48 hours \\
+minimized seed to invariant classification & under 5 business days \\
+sanitizer-clean nightly fuzzing & sustained \\
+untrusted-profile tests & every release \\
 \end{longtable}
 \endgroup
-
-Track the versioned tranche denominator and results in a public dashboard. The
-dashboard does not fix defects; it makes declared coverage and gaps auditable.
 
 \subsubsection{Safety: Durability and Recovery}
 

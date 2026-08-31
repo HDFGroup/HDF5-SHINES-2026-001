@@ -8,100 +8,97 @@
 \section{HDF5 Wrappers and Language Bindings}
 \label{sec:wrappers}
 
-\subsection{Overview}
+\subsection{Boundary Model}
 
-\paragraph{Vocabulary.}
-This chapter uses the issue families defined by the SSP SIG's HDF5 Python
-Wrapper (H5PW) model~\cite{hdf5-python-wrapper-model}. Although the model is
-written for Python, its families generalise to any binding that mediates
-between file content and a managed runtime: \textbf{W1} native parser or codec
-compromise, \textbf{W2} code in data, \textbf{W3} dynamic loader boundary
-failure, \textbf{W4} concurrency and lifecycle mismatch, \textbf{W5} resource
-exhaustion and amplification, \textbf{W6} ABI, dependency, or packaging drift,
-\textbf{W7} metadata, log, and artifact exposure, \textbf{W8} trust-boundary
-confusion, \textbf{W9} misleading safety or security signal, and \textbf{W10}
-external reference traversal. These labels classify mechanisms and carry no
-risk rating.
+The SSP SIG's HDF5 Python Wrapper (H5PW) model~\cite{hdf5-python-wrapper-model}
+defines ten mechanism families that generalize to any binding between HDF5 and
+a managed runtime: \textbf{W1} native parser or codec compromise, \textbf{W2}
+code in data, \textbf{W3} dynamic-loader boundary failure, \textbf{W4}
+concurrency or lifecycle mismatch, \textbf{W5} resource exhaustion or
+amplification, \textbf{W6} ABI,
+dependency, or packaging drift, \textbf{W7} metadata, log, or artifact
+exposure, \textbf{W8} trust-boundary confusion, \textbf{W9} misleading safety
+signal, and \textbf{W10} external-reference traversal. The labels classify
+mechanisms and carry no risk rating.
 
 Bindings for C\#, Java, Python, JavaScript, Rust, and other languages mediate
-between HDF5's C interfaces and language-specific object, memory, exception,
-packaging, and deployment models. This chapter uses the Python-facing cases
-below only as boundary references. It does not claim exhaustive coverage of
-those binding families or establish that a condition observed in a downstream
-framework is caused by the binding through which HDF5 was reached.
+HDF5's C interfaces into different object, memory, exception, packaging, and
+deployment models. The Python cases below are boundary references, not an
+exhaustive binding review; none establishes that a downstream framework
+failure was caused by the binding through which HDF5 was reached.
 
-\subsection{Python}
+\subsection{Python-Facing Cases}
 
-Four advisories in the assessment window reached users through a Python-facing
-workflow, and all four are useful precisely because none of them is a
-binding defect. In each case h5py or an equivalent layer performed as
-specified, and the failure occurred above it:
+All four advisories reached users through Python-facing workflows, but the
+binding performed as specified and the missing decision was above it.
 
-\begin{description}[leftmargin=1.5em,style=nextline]
-    \item[CVE-2025-9905~\cite{cve-2025-9905}.]
-    Keras legacy \code{.h5} loading executed a \code{Lambda} layer's
-    serialized code despite \code{safe_mode=True}. The unsafe step is
-    application-level deserialization of a framework object, not HDF5 decode.
-    Rated as \code{APP-SEC-002}. H5PW \textbf{W2} (code in data) compounded by
-    \textbf{W9} (misleading safety signal): the model describes W9 as a
-    \code{safe\_mode} or scanner label that ``implies a boundary that is not
-    enforced for the active format or loader path,'' which is this CVE stated
-    as a family.
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.18\textwidth}p{0.61\textwidth}p{0.16\textwidth}@{}}
+\hline
+\textbf{Case} & \textbf{Boundary conclusion} & \textbf{Routing / family} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Case} & \textbf{Boundary conclusion} & \textbf{Routing / family} \\
+\hline
+\endhead
+\hline
+\endfoot
 
-    \item[CVE-2026-1669~\cite{cve-2026-1669}.]
-    Model loading followed an HDF5 external dataset reference to a local path
-    and disclosed its contents. External raw storage is a documented HDF5
-    capability; the missing control is a policy on whether the loader may
-    follow it. Rated as \code{APP-SEC-003}. H5PW \textbf{W10}, external
-    reference traversal.
+CVE-2025-9905~\cite{cve-2025-9905} &
+Keras legacy \code{.h5} loading executed serialized \code{Lambda} code despite
+\code{safe_mode=True}. Application-level framework-object deserialization,
+not HDF5 decode, was unsafe; the safety label did not govern this loader path. &
+\code{APP-SEC-002}; W2, W9 \\
+\hline
 
-    \item[CVE-2026-0897~\cite{cve-2026-0897}.]
-    Weight loading allocated from a file-declared shape without a budget. HDF5
-    metadata may legitimately declare a logical shape far larger than the
-    useful payload, so the budget must exist in the consumer. Rated as
-    \code{APP-SEC-004}. H5PW \textbf{W5}, resource exhaustion and
-    amplification.
+CVE-2026-1669~\cite{cve-2026-1669} &
+Model loading followed a documented HDF5 external raw-storage reference to a
+local path and disclosed its contents. The consumer lacked a policy deciding
+whether this file could exercise that capability. &
+\code{APP-SEC-003}; W10 \\
+\hline
 
-    \item[CVE-2026-2492~\cite{cve-2026-2492}.]
-    TensorFlow's HDF5 integration searched an unsecured location for plugins.
-    The mechanism is HDF5 dynamic plugin loading; the defect is the
-    search-path policy of the embedding application. Rated as
-    \code{APP-SEC-005}. H5PW \textbf{W3}, dynamic loader boundary failure.
-\end{description}
+CVE-2026-0897~\cite{cve-2026-0897} &
+Weight loading allocated from a file-declared shape without a budget. HDF5 can
+legitimately describe a logical shape much larger than the useful payload, so
+the consumer must enforce the budget. &
+\code{APP-SEC-004}; W5 \\
+\hline
 
-The pattern is the chapter's substantive point, and it is H5PW \textbf{W8},
-trust-boundary confusion: a binding faithfully exposes HDF5 capability, and the
-security decision --- whether this process, holding this authority, should
-honor that capability for this file --- belongs to the layer above. That all
-five application-boundary findings in this report land on named W-families is
-worth noting in itself: the vocabulary anticipated them, and this report
-arrived at the same boundary independently rather than by applying it. It is
-also why \code{APP-S1} asks bindings to surface these controls in the binding
-API rather than leaving them reachable only through environment variables.
+CVE-2026-2492~\cite{cve-2026-2492} &
+TensorFlow's integration searched an unsecured location for plugins. Dynamic
+loading is an HDF5 mechanism; the defect was the embedding application's
+search-path policy. &
+\code{APP-SEC-005}; W3 \\
+\hline
+\end{longtable}
+\endgroup
 
-\subsection{Java}
+Together the cases instantiate H5PW \textbf{W8}: a binding faithfully exposes
+an HDF5 capability, while the security decision---whether this process, with
+this authority, should honor it for this file---belongs above the binding.
+All five application-boundary findings in this report map to named W-families;
+the vocabulary anticipated the boundary independently of this assessment.
+Accordingly, \code{APP-S1} asks bindings to surface controls through their APIs
+rather than leave them reachable only through environment variables.
 
-No Java-specific adverse-event scenario was sufficiently developed for a
-formal finding in this revision. Java remains within the ecosystem census and
-control-exposure scope described below. The H5PW families apply to the JNI
-boundary as directly as to the CPython one --- \textbf{W1}, \textbf{W3},
-\textbf{W4}, and \textbf{W6} in particular --- and a Java-facing review using
-that vocabulary is the obvious next increment for this chapter.
+\subsection{Coverage and Mitigation Routing}
 
-\subsection{Audit Findings and Mitigation Planning}
+No Java-specific adverse-event scenario, or additional binding-specific
+scenario, was sufficiently developed for a formal finding. Java remains in the
+ecosystem census and control-exposure scope; W1, W3, W4, and W6 are especially
+applicable to its JNI boundary and provide a vocabulary for the next review.
 
-This chapter does not establish an additional binding-specific formal finding.
-The listed Keras and TensorFlow cases are rated at their application boundaries
-as \code{APP-SEC-002} through \code{APP-SEC-005} in
-Appendix~\ref{app:findings-register}; their presence in a Python-facing workflow
-does not make them h5py or Python-binding findings without separate evidence.
-
-\paragraph{Priority reconciliation.}\mbox{}\\
-Wrappers and bindings therefore have no separate report-wide urgency in this
-revision. They participate in the Phase~1 version, linkage, feature, and
-authority census and should expose the controls required by the applicable
-application package. When a binding is part of a deployment matching a formal
-finding, that finding's response clock controls; the chapter in which a CVE is
-mentioned does not create a second priority.
+The four cases remain formal application findings in
+Appendix~\ref{app:findings-register}, not h5py or Python-binding findings.
+Wrappers therefore receive no separate report-wide urgency: they participate
+in the Phase~1 version, linkage, feature, and authority census and expose the
+controls required by the applicable application package. Where a binding is
+part of a deployment matching a formal finding, that finding's response clock
+controls; mentioning a CVE here does not create a second priority.
 
 \end{document}

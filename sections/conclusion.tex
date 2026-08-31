@@ -48,24 +48,19 @@ This is neither a universal HDF5 rating nor a certification or conclusion about
 an unassessed release or deployment.
 \end{notebox}
 
-The authoritative register contains fourteen formal findings: seven Rated and
-seven Provisional. Their tiers comprise one Critical, four High, four
-Moderate--High ranges, and five Moderate. Four additional observations remain
-in the evidence-and-scoping backlog. These
-counts describe the bounded scenarios in Appendix~\ref{app:findings-register};
-they are not prevalence estimates and must not be aggregated into a score for
-HDF5 as a technology.
+The authoritative counts and rating bases are maintained in
+Appendix~\ref{app:findings-register}; they describe bounded scenarios, not
+prevalence or a technology-wide score.
 
 \subsection{Reconciled Mitigation Priorities}
 
-Table~\ref{tab:conclusion-priority-reconciliation} summarizes the only
-report-wide ordering. The deployment census and assert-site source catalog are
-due within 30 days of roadmap adoption; a finding-response clock starts when an
-affected deployment or equivalent exposure is identified. Treatment removes or
-controls the concrete scenario; \code{RM-1A} establishes scope and is not a
-substitute for the operator-owned \code{RM-1F} containment. Prevention addresses
-recurrence and may continue after the scoped finding is reassessed.
+Appendix~\ref{app:findings-register} supplies the authoritative response
+routing. A finding-response clock starts when affected scope is identified;
+the deployment census and assert-site catalog are due within 30 days of roadmap
+adoption. Scope discovery is not treatment, and prevention work does not defer
+containment.
 
+\iffalse
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
@@ -154,23 +149,37 @@ treatment or acquire an inherent-risk tier of its own. \\
 
 \end{longtable}
 \endgroup
+\fi
 
-This ordering also reconciles the chapters. The application chapter owns the
-only Immediate route. The core and tool chapter combines Near-term treatment of
-confirmed affected High and upper-bound-High scope with Planned resource controls and
-longer-term class prevention; the assert-masking observation adds a 30-day
-source-catalog action but no risk tier of its own; its development-tree
-reproduction remains outside the rated population until a supported release
-path is established. The core chapter additionally owns two Near-term write-side safety
-containments and their longer structural treatments. The
-independent-implementation chapter owns two Planned interoperability
-treatments and one format-governance evidence action, and the long-term-access
-chapter owns one Planned, horizon-qualified, filter-specific archival finding
-that an earlier revision left unregistered. Extension privacy and supply-chain mismatch themes
-remain evidence actions until a concrete affected population and harm are
-established. The wrappers chapter creates no additional formal priority in this revision. Appendix~\ref{app:phased-roadmap} then
-translates these lanes into accountable work packages without changing their
-inherent risk.
+\begin{description}
+    \item[Immediate.] Before the next untrusted job and within 24 hours of
+    identification, stop or sandbox any equivalent \code{APP-SEC-001}
+    external-resource path. This is conditional on a still-exposed deployment,
+    not a rating of every HDF5 consumer or Hugging Face's present state.
+
+    \item[Near-term.] Within 30 days of identifying affected scope, treat the
+    High and upper-bound-High core, tool, application, privacy, and write-side
+    findings listed in the register. For \code{CORE-SAFE-001} and
+    \code{CORE-SAFE-002}, \code{RM-1F} operational containment---not the
+    \code{RM-1A} census or a future library change---is the time-bound action.
+
+    \item[Planned.] Within 90 days or the next supported release or migration
+    window, whichever is sooner, bound resource use and resolve the registered
+    interoperability and filter-dependent preservation scenarios.
+
+    \item[Evidence action.] \code{CORE-SEC-003}, \code{FMT-SAF-001},
+    \code{EXT-PRIV-001}, and \code{SUP-SAFE-001} retain administrative evidence
+    schedules but no assigned inherent-risk urgency. Backlog status is not Low
+    risk.
+\end{description}
+
+Continuing prevention---invariant-driven parsing, release-build checks,
+differential conformance, governed extensions, privacy-lifecycle controls, and
+release gates---runs in parallel and never changes these treatment clocks.
+
+The chapter analyses supply evidence; Appendix~\ref{app:phased-roadmap}
+translates these lanes into accountable work packages without changing
+inherent risk. No chapter order or recommendation number creates priority.
 
 \subsection{Significance of the 2026 Developments}
 
@@ -198,59 +207,39 @@ permissiveness by default nor strictness without compatibility evidence
 \cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432,hdf5-gh-issue-6534,
 purehdf-gh-issue-164}.
 
-HDF5 Pickles issue~\#87 sharpens the core-parser conclusion. A validity
-predicate derived from in-file bytes but enforced only inside
-\code{assert(...)} is not a release control when \code{-DNDEBUG} removes it.
-The issue's seven component families and cursory 50--100 estimate define an
-urgent audit perimeter, not 50--100 proven vulnerabilities. This changes
-sequence without manufacturing a rating: complete the catalog and paired
-release/debug tests within 30 days of roadmap adoption, route and locally
-repair a supported adverse path as soon as it is confirmed, and use the
-results to order independently releasable Phase~3 migration tranches
-~\cite{hdf5-pickles-issue-87}.
+HDF5 Pickles issue~\#87 shows why a predicate derived from file bytes is not a
+release control when it exists only inside \code{assert(...)} and
+\code{-DNDEBUG} removes it. Its seven component families and cursory 50--100
+estimate define an audit perimeter, not a vulnerability count. One
+source-reported v2 B-tree case supplies a concrete \code{SIGFPE} fixture on a
+release-configured HDF5 2.3.0 development tree, but does not establish 32-bit
+behavior, supported-release scope, or a version range
+~\cite{hdf5-pickles-issue-87,h5policy-case-v2btree-recordsize}. It therefore
+sharpens the 30-day catalog and paired-build test action without acquiring a
+risk tier.
 
-The perimeter is not entirely static. One source-reported case shows a
-version-2 B-tree zero record size reaching an integer division whose only guard
-is an assertion, producing \code{SIGFPE} through a public API path on an
-\code{-DNDEBUG}, release-configured HDF5 2.3.0 development tree
-~\cite{h5policy-case-v2btree-recordsize}. The same case record states that
-32-bit behavior, affected supported releases, and the version range were not
-measured. It therefore corroborates the mechanism and supplies a concrete
-fixture, but it does not meet this report's supported-version condition for
-promotion into \code{CORE-SEC-002}. That distinction demonstrates the rubric
-working as designed: useful development-tree evidence can sharpen an audit
-perimeter without acquiring a tier before the rated population is established.
-
-The developments therefore reinforce the rubric rather than reorder it by
-recency or publicity. The Hugging Face evidence supports a Critical
-application-boundary scenario with an Immediate conditional response; the two
-independent-implementation cases support Moderate safety scenarios with Planned
-treatment; issue~\#6616 creates an administrative adjudication and evidence
-action without a risk tier; and the assert-masking observation remains an
-evidence action until a supported-release path and consequence are verified.
-Together they show why the enforcing actor, affected scope, consequence, and
-acceptance evidence must be explicit.
+These developments validate rather than override the rubric: the Hugging Face
+case supports a conditional Immediate application-boundary response; the two
+independent-implementation cases support Planned Moderate safety treatment;
+issue~\#6616 requires adjudication without inherent-risk urgency; and the
+assert observation remains an evidence action until its supported population
+and consequence are established.
 
 \subsection{Assurance, Closure, and Residual Risk}
 
-This report does not establish that any proposed mitigation has been adopted or
-that current residual risk has been reduced. Unless a record expressly states
-otherwise, the assessment relied on public document and artifact examination
-rather than independent reproduction. Current installed populations, exact fix
-coverage across supported releases, and deployment-specific control
-effectiveness remain incomplete. Every roadmap package is therefore
-\emph{Proposed / implementation not verified} at publication, and no
-residual-risk acceptance is recorded.
+No mitigation or residual-risk reduction is verified at publication. Unless a
+record says otherwise, evidence came from public document and artifact review,
+not independent reproduction; installed populations, supported-release fix
+coverage, and deployment control effectiveness remain incomplete. Every work
+package is therefore \emph{Proposed / implementation not verified}.
 
-Priority becomes an auditable commitment only after the roadmap authority
-adopts or modifies the plan, defines the census boundary, assigns named owners
-and due dates, and preserves finding-by-scope response records. A concrete
-finding may close after verified local treatment removes its scoped scenario
-and the accountable authority records the residual-risk disposition; the
-separate recurrence-prevention program remains open until its own acceptance
-evidence passes. Every package requires independent verification and a
-residual-risk disposition. For High and Critical scope, the verifier must also
-be separate from the package owner, rollout approver, and risk acceptor.
+Priority becomes auditable only after the roadmap authority defines the census
+boundary, assigns owners and dates, and preserves finding-by-scope response
+records. Local treatment may close a scoped scenario after independent
+verification and an accountable residual-risk disposition, while recurrence
+prevention remains open until its separate evidence passes. For High and
+Critical scope, the verifier must be separate from the package owner, rollout
+approver, and risk acceptor.
 
 The practical conclusion is consequently twofold. Known affected populations
 should be treated on their response clocks without waiting for architectural

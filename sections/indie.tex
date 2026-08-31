@@ -170,6 +170,88 @@ Appendix~\ref{app:findings-register} and addressed by \code{FMT-S1} below. It
 does not receive a tier until an affected population and adverse consequence
 are bounded.
 
+\paragraph{Disposition matrix.}
+Table~\ref{tab:purehdf-disposition-matrix} is the compact decision record for
+the three cases. It prevents two unsafe shortcuts: treating acceptance by an
+older reader as proof of conformance, or treating the reference library's
+behavior as more authoritative than a clear normative requirement.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.7in}
+\setlength{\LTright}{-0.7in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.12\widetablewidth}
+>{\raggedright\arraybackslash}p{0.29\widetablewidth}
+>{\raggedright\arraybackslash}p{0.25\widetablewidth}
+>{\raggedright\arraybackslash}p{0.30\widetablewidth}@{}}
+\caption{PureHDF-related interoperability dispositions}
+\label{tab:purehdf-disposition-matrix}\\
+\hline
+\textbf{Case} & \textbf{Disposition at the evidence cutoff} &
+\textbf{What acceptance or rejection establishes} &
+\textbf{Required control and closure evidence} \\
+\hline
+\endfirsthead
+\caption[]{PureHDF-related interoperability dispositions, continued}\\
+\hline
+\textbf{Case} & \textbf{Disposition at the evidence cutoff} &
+\textbf{What acceptance or rejection establishes} &
+\textbf{Required control and closure evidence} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{\#6409}\newline
+\code{IND-SAF-001} &
+The nonminimal chunk-width encoding was permitted. The reference reader added
+an exact-width condition and was corrected; PureHDF also changed new output for
+compatibility~\cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432,
+purehdf-gh-issue-168,purehdf-pr-160}. &
+Rejection established a reader/specification divergence, not malformed writer
+output. Choosing one canonical writer form cannot narrow what readers must
+accept. &
+Keep the nonminimal form as a positive fixture. Verify the exact supported
+release and backport containing the reader correction; separately test the
+producer's canonical output. \\
+
+\textbf{\#6534}\newline
+\code{IND-SAF-002} &
+PureHDF 2.1.2 emitted contradictory element sizes. HDF5 2.0 correctly rejected
+the file; older readers had tolerated it~\cite{hdf5-gh-issue-6534,
+purehdf-gh-issue-164}. &
+Earlier acceptance did not establish conformance, and later rejection did not
+establish a regression. Permissiveness concealed the writer defect until an
+upgrade exposed it. &
+Keep the file as a negative fixture; enforce cross-message invariants; inventory
+the bounded legacy population; and provide reproducible repair, regeneration,
+migration, or an accountable compatibility disposition. \\
+
+\textbf{\#6616}\newline
+\code{FMT-SAF-001} &
+The specification calls the group-info message optional, while the C library
+cannot modify a file when it is absent. Two resolutions were proposed, but no
+authoritative ruling was recorded~\cite{hdf5-gh-issue-6616}. &
+The observed divergence establishes a disputed rule, not which artifact is
+wrong, a class-wide conformance failure, or a bounded risk tier. &
+Keep a contested fixture under both interpretations. The named format authority
+must rule, update the losing artifact, and record any explicitly
+implementation-defined outcome and compatibility consequence. \\
+
+\end{longtable}
+\endgroup
+
+A canonical producer profile may select minimal widths, mutually consistent
+metadata, and --- pending adjudication --- a group-info message to reduce
+cross-reader variation. It remains an interoperability subset, not a replacement
+for the normative format: it cannot make the \#6409 form invalid, make the
+\#6534 contradiction harmless, or decide \#6616 without the responsible
+authority. This is why \code{IND-S1} needs separate positive, negative, and
+contested fixtures and why only the third case depends on \code{FMT-S1}'s
+adjudication procedure.
+
 \subsection{Audit Findings and Mitigation Planning}
 
 The main interoperability challenge across direct-format implementations is not
@@ -208,6 +290,37 @@ The \code{FMT-S} and \code{IND-S} identifiers below identify recommendations
 only; their numbers do not express risk, urgency, effort, dependency, or
 implementation order.
 
+\subsubsection*{Recommendation FMT-S1: Make the specification executable and adjudicable}
+
+For a declared format subset, maintain a machine-readable description that
+generates valid, invalid, and contested fixtures, and adopt a standing dispute
+procedure naming the decision authority, deadline, permitted dispositions, and
+authoritative record. A disposition must identify a library defect, a
+description/specification defect, or an explicitly implementation-defined
+construct with documented compatibility consequences. A producer change made
+without that ruling does not close the normative question.
+
+The candidate \code{hdf5-pickles} foundation is GPLv3 while HDF5 is BSD-style;
+reuse therefore requires the provenance and licensing review in
+Section~\ref{sec:roadmap-licensing}, and generated artifacts become normative
+only through an explicit governance decision~\cite{hdf5-pickles}.
+
+\subsubsection*{Recommendation IND-S1: Maintain a differential conformance corpus}
+
+Preserve positive, negative, and contested fixtures across current and
+supported older readers, recording writer/reader versions, format bounds, and
+expected outcomes. Keep \#6409 (permitted nonminimal width), \#6534
+(contradictory element sizes), and \#6616 (unresolved group-info optionality)
+as distinct cases. Acceptance requires supported readers to accept the valid
+fixtures, reject invalid ones with controlled diagnostics, and provide a
+reproducible repair, regeneration, migration, or accountable compatibility
+disposition for the complete defined legacy PureHDF population, with provenance
+preserved when bytes change.
+
+The authoritative package, owner, clock, and closure evidence for both
+recommendations are in Appendix~\ref{app:phased-roadmap}.
+
+\iffalse
 \subsubsection*{Recommendation FMT-S1: Make the specification machine-readable and adjudicable}
 
 Two separate deliverables are conflated whenever this is discussed, and they
@@ -308,5 +421,6 @@ The machine-readable specification project \code{hdf5-pickles} is a natural
 source for generating and checking these fixtures~\cite{hdf5-pickles}, and
 under \code{FMT-S1} it is also the candidate normative artifact rather than
 only a generator of test material.
+\fi
 
 \end{document}

@@ -99,6 +99,24 @@ risk, urgency, effort, dependency, or implementation order.
 
 \subsubsection*{Recommendation LONG-S1: Make extension dependencies discoverable, then removable}
 
+For a defined archival corpus, generate one machine-readable report of filters,
+format bounds, external resources, and relevant VFD/VOL dependencies. Prefer a
+tested core-only or widely specified archival copy; where a filter cannot be
+removed, preserve its identifier, specification, test vectors, source/build
+provenance, and a reproducible environment. A deposit must also say whether it
+is a self-contained HDF5 file or a view onto an external system.
+
+Acceptance for \code{LONG-SAF-001} requires every file in the defined corpus to
+have a complete dependency report; the archival profile to open and read with
+all non-core plugins disabled; and every retained filter to be independently
+reproducible from preserved evidence at least once. VFD/VOL inventory results
+remain evidence only until a separate bounded study establishes consequence
+and population. Owners, work packages, and closure records are in
+Appendix~\ref{app:phased-roadmap}.
+
+\iffalse
+\subsubsection*{Recommendation LONG-S1: Make extension dependencies discoverable, then removable}
+
 Treat an extension dependency as something a file must declare, a depositor
 must justify, and an archive must be able to satisfy without the original
 environment.
@@ -149,5 +167,6 @@ reproduce the codec output, demonstrated at least once rather than assumed.
 VFD and VOL reporting is accepted as an inventory result only; a separate
 bounded study is required before it supports a formal risk or preservation
 claim.
+\fi
 
 \end{document}

@@ -86,8 +86,8 @@
 \ifpdf
   \RequirePackage[pdftex]{graphicx}
   \DeclareGraphicsExtensions{.pdf,.jpeg,.jpg,.png}
-  % For transparency
-  \pdfpageattr{/Group <</S /Transparency /I true /CS /DeviceRGB>>}
+  % The current PDF graphics stack supplies the page transparency group.
+  % Adding another /Group entry here creates duplicate page-dictionary keys.
 \else
   \RequirePackage[dvips]{graphicx}
 \fi
@@ -485,4 +485,3 @@
       \parbox{1.7cm}{\scriptsize\bfseries\raggedright #1}
       }}}
 }
-

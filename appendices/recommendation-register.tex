@@ -5,632 +5,253 @@
 \section{Recommendation Register}
 \label{app:recommendation-register}
 
-Section~\ref{sec:risk-rubric} requires every recommendation record to identify
-the findings addressed, the enforcing actor or owner, response urgency,
-dependencies, effort, sequence and target horizon, acceptance evidence,
-status, and residual-risk decision. This appendix is that register. It
-consolidates the forty-three recommendations issued across
-Sections~\ref{sec:core-lib-format}--\ref{sec:long-haul} into a single
-reverse index from recommendation to finding, owner, work package, and
-observable acceptance evidence.
+This appendix is the authoritative reverse index for the forty-three
+recommendations issued across
+Sections~\ref{sec:core-lib-format}--\ref{sec:long-haul}. It records each
+recommendation's purpose, owner, covered finding or evidence record, work
+package, and effort. Response routes remain authoritative in
+Table~\ref{tab:findings-response-routing}; dependencies, clocks, acceptance
+evidence, closure, and residual-risk decisions remain authoritative in
+Appendix~\ref{app:phased-roadmap}. Keeping those facts in one place prevents a
+summary from silently diverging from the delivery plan.
 
-The register does not create, revise, or imply a risk rating.
-\textbf{Recommendation identifiers name items only.} Their numbers express no
-risk, urgency, effort, dependency, or delivery order, and a recommendation
-addressing several findings does not thereby acquire a tier. Where a
-\emph{route} is shown, it is the maximum inherited response route of the
-findings the recommendation addresses, reproduced from
-Table~\ref{tab:findings-response-routing} for convenience; it is a property of
-those findings, not of the recommendation. A recommendation whose only linked
-record is an unrated evidence record inherits no urgency and is marked
-\emph{Evidence-conditional}.
+Recommendation numbers express no risk, urgency, effort, dependency, or
+delivery order. A link to an evidence record is evidence-conditional and
+inherits no urgency. Effort uses Table~\ref{tab:treatment-planning-fields} and
+describes work breadth, not elapsed time or risk. At publication every item is
+\emph{Proposed}, implementation is \emph{not verified}, and no residual-risk
+decision is recorded.
 
-Dependencies, delivery sequence, and target horizons are maintained in
-Appendix~\ref{app:phased-roadmap} through the work-package column; they are
-not duplicated here. Effort uses the definitions in
-Table~\ref{tab:treatment-planning-fields} and describes work breadth, not
-elapsed time or risk.
-
-\paragraph{Effort revised against existing work.}
-Six recommendations --- \code{CORE-S1}, \code{CORE-S2}, \code{CORE-S4},
-\code{CORE-S5}, \code{CORE-S6}, and \code{APP-S2} --- describe controls that
-are already designed, and in several cases built and measured, in the H5Lens /
-\code{hdf5-pickles} project. Their effort below is the \emph{revised} estimate
-from Table~\ref{tab:core-prior-art-rescope}, which assumes that existing
-identifiers, boundaries, fixtures, and measurements can be used after
-artifact-level provenance, license, and, where needed, legal review under
-Section~\ref{sec:roadmap-licensing}. This is an implementation-planning
-assumption, not a legal opinion. Each is marked
-\textbf{(re-scoped)}. Effort is still not subtracted from risk, and a smaller
-estimate never shortens a response clock.
-
-\paragraph{Status and residual-risk decision.}
-At publication every recommendation in this register has status
-\emph{Proposed}, implementation status \emph{not verified}, and \textbf{no
-recorded residual-risk decision}. These two fields are deliberately not
-tabulated per row in this revision, because populating them with a uniform
-value would misrepresent an unadopted plan as a tracked program. On adoption,
-the roadmap authority should add the per-row status vocabulary and
-residual-risk disposition required by
-Appendix~\ref{app:phased-roadmap}.
+Six effort estimates assume that reviewed H5Lens / \code{hdf5-pickles}
+identifiers, boundaries, fixtures, and measurements can reduce implementation
+work after artifact-level provenance, license, and, where needed, legal review
+under Section~\ref{sec:roadmap-licensing}: \code{CORE-S1}, \code{CORE-S2},
+\code{CORE-S4}, \code{CORE-S5}, \code{CORE-S6}, and \code{APP-S2}. They are
+marked \textbf{re-scoped}; this planning assumption is not a legal opinion and
+does not shorten a response clock.
 
 \begingroup
-\scriptsize
+\small
 \setlength{\tabcolsep}{2pt}
 \renewcommand{\arraystretch}{1.15}
 \setlength{\LTleft}{-0.9in}
 \setlength{\LTright}{-0.9in}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.095\widetablewidth}>{\raggedright\arraybackslash}p{0.20\widetablewidth}>{\raggedright\arraybackslash}p{0.22\widetablewidth}>{\raggedright\arraybackslash}p{0.10\widetablewidth}>{\raggedright\arraybackslash}p{0.365\widetablewidth}@{}}
-\caption{Recommendation register: findings addressed, owner, package, effort,
-and acceptance evidence}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.095\widetablewidth}>{\raggedright\arraybackslash}p{0.31\widetablewidth}>{\raggedright\arraybackslash}p{0.34\widetablewidth}>{\raggedright\arraybackslash}p{0.20\widetablewidth}@{}}
+\caption{Recommendation reverse index}
 \label{tab:recommendation-register}\\
 \hline
-\textbf{ID} & \textbf{Recommendation / owner} &
-\textbf{Findings addressed (inherited route)} &
-\textbf{Package / effort} & \textbf{Acceptance evidence} \\
+\textbf{ID} & \textbf{Purpose / owner} & \textbf{Finding or evidence record} &
+\textbf{Package / effort} \\
 \hline
 \endfirsthead
-
-\caption[]{Recommendation register, continued}\\
+\caption[]{Recommendation reverse index, continued}\\
 \hline
-\textbf{ID} & \textbf{Recommendation / owner} &
-\textbf{Findings addressed (inherited route)} &
-\textbf{Package / effort} & \textbf{Acceptance evidence} \\
+\textbf{ID} & \textbf{Purpose / owner} & \textbf{Finding or evidence record} &
+\textbf{Package / effort} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
 
-\multicolumn{5}{@{}l}{\textbf{Core library, tools, and format --- security and
-safety track}}\\
-\hline
-
-\code{CORE-S0} & Separate defect closure from recurring-class closure.
-\code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002} (Near-term; Planned) &
-\code{RM-1B}, \code{RM-3C}, \code{RM-4A} / Medium &
-Every closed defect record carries the seven artifacts in
-Table~\ref{tab:cve-closure-artifacts}; the paired class-prevention record
-remains open and separately identified until the invariant framework covers
-sibling cases. \\
-
-\code{CORE-S1} & Build an invariant registry for the file format. \code{CORE} &
+\multicolumn{4}{@{}l}{\textbf{Core security and safety}}\\ \hline
+\code{CORE-S0} & Separate defect from recurring-class closure / \code{CORE} &
+\code{CORE-SEC-001}, \code{CORE-SEC-002} &
+\code{RM-1B}, \code{RM-3C}, \code{RM-4A} / Medium \\
+\code{CORE-S1} & Build a file-format invariant registry / \code{CORE} &
 \code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{IND-SAF-001},
-\code{IND-SAF-002} (Near-term; Planned) &
-\code{RM-3A} / Medium \textbf{(re-scoped)} &
-Versioned invariant files exist for every structure in the declared tranche;
-each invariant maps to an always-active enforcement point; single-invariant
-violation fixtures are rejected predictably in assertion-enabled and
-\code{-DNDEBUG} builds; no declared invariant relies solely on an assertion. \\
-
-\code{CORE-S2} & Introduce a two-phase parser boundary. \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002} (Near-term; Planned) &
-\code{RM-3B} / Large \textbf{(re-scoped; unchanged)} &
-Each migrated component exposes raw-decode, then record-local, aggregate-object
-and reference-graph validation, then construction, with materialization
-separated from activation; no
-native object is constructed from file metadata before its validator passes;
-malformed and valid compatibility corpora pass with sanitizer and fuzz
-evidence. Closure names migrated components only, never the class. \\
-
-\code{CORE-S3} & Centralize checked arithmetic and allocation. \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{APP-SEC-004}
-(Near-term; Planned) &
-\code{RM-2A}, \code{RM-3A} / Large &
-Parser allocations and file-derived copies route through checked wrappers or a
-reviewed, recorded exemption; overflow-boundary unit tests cover each wrapper;
-the corresponding \code{CORE-S12} metrics report 100\% over the declared
-tranche denominator. \\
-
-\code{CORE-S4} & Create security profiles for file opening. \code{CORE} &
+\code{IND-SAF-002} & \code{RM-3A} / Medium \textbf{(re-scoped)} \\
+\code{CORE-S2} & Introduce a two-phase parser boundary / \code{CORE} &
+\code{CORE-SEC-001}, \code{CORE-SEC-002} &
+\code{RM-3B} / Large \textbf{(re-scoped; unchanged)} \\
+\code{CORE-S3} & Centralize checked arithmetic and allocation / \code{CORE} &
+\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{APP-SEC-004} &
+\code{RM-2A}, \code{RM-3A} / Large \\
+\code{CORE-S4} & Create file-opening security profiles / \code{CORE} &
 \code{APP-SEC-001}, \code{APP-SEC-003}, \code{APP-SEC-004},
-\code{CORE-SEC-001}, \code{CORE-SEC-002} (Immediate; Near-term) &
-\code{RM-2A} / Medium \textbf{(re-scoped)} &
-Profile API and defaults documented and default-state tested; hostile-file
-integration corpus passes; external-resource, plugin, traversal, metadata,
-allocation, and filter-expansion budgets are enforced and tested; a
-file-replacement test proves preflight and runtime enforcement cannot
-diverge. \\
-
-\code{CORE-S5} & Fuzz by structure, not just by whole-file crashes. \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002} (Near-term; Planned) &
-\code{RM-3C} / Medium \textbf{(re-scoped)} &
-Each declared parser has a registered harness, and the two named gaps ---
-OSS-Fuzz integration and per-family targets --- are closed; the PR, nightly, weekly,
-release-candidate, and CVE-closure gates in
-Table~\ref{tab:fuzzing-acceptance-criteria} run at their stated cadence;
-coverage is reported by component, not only as total line coverage. \\
-
-\code{CORE-S6} & Make malformed-input regression cheap. \code{CORE} &
+\code{CORE-SEC-001}, \code{CORE-SEC-002} &
+\code{RM-2A} / Medium \textbf{(re-scoped)} \\
+\code{CORE-S5} & Fuzz by structure / \code{CORE} &
+\code{CORE-SEC-001}, \code{CORE-SEC-002} &
+\code{RM-3C} / Medium \textbf{(re-scoped)} \\
+\code{CORE-S6} & Make malformed-input regression cheap / \code{CORE} &
 \code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001},
-\code{IND-SAF-001}, \code{IND-SAF-002} (Near-term; Planned) &
-\code{RM-1B}, \code{RM-2C}, \code{RM-3C} / Small \textbf{(re-scoped)} &
-The \code{test/security} corpus layout exists; every closed finding has a
-minimized seed and \code{expected.yml}; the full corpus runs green in
-assertion-enabled and \code{-DNDEBUG} builds with identical controlled
-rejection. \\
-
-\code{CORE-S7} & Add a security-review checklist that blocks risky parser
-changes. \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002}; \code{CORE-SEC-003} evidence
-(Near-term; Planned) &
-\code{RM-1E}, \code{RM-3C} / Medium &
-The checklist is recorded on every parser-adjacent PR; the automated rules
-fail non-conforming PRs; a new or declared file-derived validity predicate
-enforced only by an assertion demonstrably fails the gate. \\
-
-\code{CORE-S8} & Separate compatibility from safety. \code{CORE} &
-\code{CORE-SEC-002}, \code{IND-SAF-001}, \code{IND-SAF-002} (Planned) &
-\code{RM-2C}, \code{RM-4A} / Medium &
-Each case class in Table~\ref{tab:compatibility-safety-profile-policy} has a
-documented per-profile disposition; positive and negative fixtures produce
-exactly the documented result across the supported-reader matrix. \\
-
-\code{CORE-S9} & Harden tools as separate attack surfaces. \code{CORE} &
-\code{CORE-TOOL-001}, \code{CORE-SEC-001}, \code{CORE-SEC-002}
-(Near-term; Planned) &
-\code{RM-1B}, \code{RM-2A}, \code{RM-3C} / Medium &
-Tool default-profile tests pass; rendering paths are length-bounded under
-adversarial fixtures; legacy converters do not build without
-\code{HDF5_ENABLE_LEGACY_UNSAFE_TOOLS=ON}; tool-specific sanitizer regression
-is green. \\
-
-\code{CORE-S10} & Plugin policy and signed extensions. \code{EXT} &
-\code{APP-SEC-005} (Near-term); \code{EXT-PRIV-001} conditionally &
-\code{RM-3D} / Large &
-Plugin manifest schema and protected allowlist or keystore are deployed; tests
-reject unsigned, untrusted, writable-path, over-budget, and wrong-profile
-plugins. A valid signature is not accepted as evidence of resource safety. \\
-
-\code{CORE-S11} & Coordinate supply-chain controls with parser hardening.
-\code{REL} &
-\code{SUP-SAFE-001} (Evidence-conditional); provenance support for all records &
-\code{RM-3E}, \code{RM-4A} / Large &
-Scorecard runs weekly with alerting; CodeQL is required on C/C++ parser PRs;
-third-party actions are pinned; releases carry source and binary SBOMs,
-signatures, checksums, and verifiable SLSA provenance. \\
-
-\code{CORE-S12} & Metrics that force the right behavior. \code{CORE} &
+\code{IND-SAF-001}, \code{IND-SAF-002} &
+\code{RM-1B}, \code{RM-2C}, \code{RM-3C} / Small \textbf{(re-scoped)} \\
+\code{CORE-S7} & Block risky parser changes at review / \code{CORE} &
+\code{CORE-SEC-001}, \code{CORE-SEC-002}; \code{CORE-SEC-003} evidence &
+\code{RM-1E}, \code{RM-3C} / Medium \\
+\code{CORE-S8} & Separate compatibility from safety / \code{CORE} &
+\code{CORE-SEC-002}, \code{IND-SAF-001}, \code{IND-SAF-002} &
+\code{RM-2C}, \code{RM-4A} / Medium \\
+\code{CORE-S9} & Harden tools as distinct attack surfaces / \code{CORE} &
+\code{CORE-TOOL-001}, \code{CORE-SEC-001}, \code{CORE-SEC-002} &
+\code{RM-1B}, \code{RM-2A}, \code{RM-3C} / Medium \\
+\code{CORE-S10} & Govern and authenticate plugins / \code{EXT} &
+\code{APP-SEC-005}; \code{EXT-PRIV-001} evidence &
+\code{RM-3D} / Large \\
+\code{CORE-S11} & Coordinate supply-chain and parser controls / \code{REL} &
+\code{SUP-SAFE-001} evidence; provenance support for all records &
+\code{RM-3E}, \code{RM-4A} / Large \\
+\code{CORE-S12} & Publish behavior-forcing metrics / \code{CORE} &
 \code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001};
-\code{CORE-SEC-003} evidence (Near-term; Planned) &
-\code{RM-1B}, \code{RM-3C}, \code{RM-4A} / Medium &
-A public dashboard publishes every metric in
-Table~\ref{tab:security-program-metrics} against a versioned tranche
-denominator; each target is met or carries a named, expiring exception. The
-dashboard is coverage evidence, not defect closure. \\
-
-\code{CORE-SAFE-S1} & Give HDF5 an \code{ENOSPC} story. \code{CORE},
-\code{APP} &
-\code{CORE-SAFE-001} (Near-term containment; structural treatment Planned) &
-\code{RM-1F}, \code{RM-2D}, \code{RM-3G} / Medium &
-For each named deployment, tested headroom monitoring alerts before exhaustion;
-flush and checkpoint discipline is tied to a recovery-point objective;
-storage-exhaustion recovery is rehearsed; and a validated independent copy is
-available. Structural evidence then shows fault injection at write, flush, and
-close for each supported VFD and buffering profile, records the error surfaced,
-last durable state, and recovery result, and rejects reported success followed
-by a file later found inconsistent. \\
-
-\code{CORE-SAFE-S2} & State, then improve, the crash-consistency guarantee.
-\code{CORE}, \code{APP} &
-\code{CORE-SAFE-002} (Near-term containment; structural treatment Phase~3) &
-\code{RM-1F}, \code{RM-2D}, \code{RM-3G} / Large &
-For each named deployment, checkpoint and orderly-quiescence discipline is
-tied to a recovery-point objective, abrupt-termination recovery is rehearsed,
-and a validated independent copy is available. Structural evidence then
-publishes a per-layout and per-driver guarantee including its limits; a
-fault-injection harness kills the writer across metadata update, flush, and
-close and records open, repair, and acknowledged-versus-read-back outcomes per
-supported release. Divergence is reported separately and treated as a defect. \\
+\code{CORE-SEC-003} evidence &
+\code{RM-1B}, \code{RM-3C}, \code{RM-4A} / Medium \\
+\code{CORE-SAFE-S1} & Define storage-exhaustion behavior / \code{CORE},
+\code{APP} & \code{CORE-SAFE-001} &
+\code{RM-1F}, \code{RM-2D}, \code{RM-3G} / Medium \\
+\code{CORE-SAFE-S2} & State and improve crash consistency / \code{CORE},
+\code{APP} & \code{CORE-SAFE-002} &
+\code{RM-1F}, \code{RM-2D}, \code{RM-3G} / Large \\
 
 \hline
-\multicolumn{5}{@{}l}{\textbf{Core library and ecosystem --- privacy track}}\\
-\hline
-
-\code{CORE-PRIV-S1} & Privacy exposure awareness. \code{PRIV} &
-\code{CORE-PRIV-001} (Near-term) &
-\code{RM-1D} / Small &
-A dated privacy review exists for the defined population, covering datasets,
-metadata, structure, workflow artifacts, derived products, and
-aggregation/inference, and naming a data owner and intended recipients for
-each disclosure boundary. \\
-
-\code{CORE-PRIV-S2} & Privacy exposure through HDF5 tools and plugins
-awareness. \code{PRIV} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3D} / Medium &
-Each in-scope tool, connector, filter, and VFD has published documentation of
-the outputs it generates and the controls available to suppress or bound them;
-the artifact inventory is reproduced by test rather than asserted. \\
-
-\code{CORE-PRIV-S3} & Privacy-aware system design. \code{PRIV} &
-\code{CORE-PRIV-001} (Near-term); \code{EXT-PRIV-001} &
-\code{RM-1D}, \code{RM-3F} / Medium &
-Before/after inspection through both the HDF5 API and raw-byte search shows
-the effect of minimization; temporary artifacts are removed on a tested
-retention rule; generated metadata introduced by conversion is enumerated and
-dispositioned. \\
-
-\code{CORE-PRIV-S4} & Data encryption as one privacy control. \code{PRIV} &
-\code{CORE-PRIV-001} conditionally (Near-term) &
-\code{RM-2G} / Large &
-Ciphertext and metadata inspection, unauthorized-open test, partial-I/O
-workflow test, protected key inventory, backup/restore evidence, and a
-successful key-loss-and-recovery exercise. Encryption is credited only for the
-boundaries actually tested. \\
+\multicolumn{4}{@{}l}{\textbf{Privacy}}\\ \hline
+\code{CORE-PRIV-S1} & Establish privacy-exposure awareness / \code{PRIV} &
+\code{CORE-PRIV-001} & \code{RM-1D} / Small \\
+\code{CORE-PRIV-S2} & Document tool and plugin exposure / \code{PRIV} &
+\code{EXT-PRIV-001} evidence & \code{RM-3D} / Medium \\
+\code{CORE-PRIV-S3} & Apply privacy-aware system design / \code{PRIV} &
+\code{CORE-PRIV-001}; \code{EXT-PRIV-001} evidence &
+\code{RM-1D}, \code{RM-3F} / Medium \\
+\code{CORE-PRIV-S4} & Use encryption where policy requires / \code{PRIV} &
+\code{CORE-PRIV-001} conditionally & \code{RM-2G} / Large \\
 
 \hline
-\multicolumn{5}{@{}l}{\textbf{Downstream applications and services}}\\
-\hline
-
-\code{APP-S1} & Define an ``untrusted HDF5'' profile. \code{APP} &
+\multicolumn{4}{@{}l}{\textbf{Downstream applications and services}}\\ \hline
+\code{APP-S1} & Define an untrusted-HDF5 profile / \code{APP} &
 \code{APP-SEC-001}, \code{APP-SEC-003}, \code{APP-SEC-004},
-\code{CORE-SEC-002} (Immediate; Near-term) &
-\code{RM-0A}, \code{RM-1C}, \code{RM-2A}, \code{RM-2B} / Medium &
-The profile's stated defaults are enforced and individually tested at each
-governed boundary; a deployment that cannot reach the core API demonstrates an
-equivalent tested wrapper rather than documentation alone. \\
-
-\code{APP-S2} & Ship a preflight validator. \code{APP}, \code{CORE} &
-\code{APP-SEC-001}, \code{APP-SEC-003}, \code{CORE-SEC-002},
-\code{CORE-TOOL-001} (Immediate; Near-term) &
-\code{RM-2A}, \code{RM-2B} / Medium \textbf{(re-scoped)} &
-Validator output is machine-checkable against the profile; a file-replacement
-test proves the preflight result is bound to the same open handle or verified
-immutable identity used at load time; runtime hooks fail closed on file,
-policy, or target change. \\
-
-\code{APP-S3} & Disable dangerous HDF5 features by default in ML model
-loading. \code{APP} &
-\code{APP-SEC-002}, \code{APP-SEC-003}, \code{APP-SEC-004} (Near-term) &
-\code{RM-1C} / Medium &
-Negative tests prove rejection of executable reconstruction from legacy
-containers, external dataset references, dynamic plugins, and CWD-relative
-resolution; allocation budgets are enforced before materialization. \\
-
-\code{APP-S4} & Make external references opt-in. \code{APP} &
-\code{APP-SEC-001}, \code{APP-SEC-003} (Immediate; Near-term) &
-\code{RM-0A}, \code{RM-1C}, \code{RM-2B} / Medium &
-Negative fixtures exist for every supported external-resource form --- raw
-storage, external links, virtual sources --- including absolute paths,
-traversal, and CWD lookup; a sandbox-escape test passes; every resolution is
-logged. \\
-
-\code{APP-S5} & Treat plugins as executable code. \code{APP} &
-\code{APP-SEC-005} (Near-term) &
-\code{RM-1C}, \code{RM-3D} / Medium &
-Startup evidence records the effective plugin-loading state; canary plugins
-planted in the current directory, an environment-selected path, and a
-user-writable searched path do not load or execute. \\
-
-\code{APP-S6} & Require downstream SBOM and version reporting. \code{REL},
-\code{APP} &
-\code{SUP-SAFE-001} (Evidence-conditional); census support for all records &
-\code{RM-1A}, \code{RM-3E}, \code{RM-4A} / Medium &
-Each downstream publishes the listed fields in a consumer-readable form and
-they are ingested by the \code{RM-1A} census. Reporting supplies census input
-only; it does not establish that a deployment is affected or remediated. \\
-
-\code{APP-S7} & Split CVE classification into scope tags. \code{GOV} &
-\emph{None.} Triage-process control supporting the \code{RM-1A} census and
-\code{RM-4A} reassessment; addresses no single finding
-(Evidence-conditional) &
-\code{RM-1A}, \code{RM-4A} / Small &
-Every HDF5-related advisory carries exactly one scope tag from the published
-list, and the tag is recorded in the census. A tag assigns no priority: each
-bounded scenario is still rated and routed under
-Section~\ref{sec:risk-rubric}. \\
+\code{CORE-SEC-002} &
+\code{RM-0A}, \code{RM-1C}, \code{RM-2A}, \code{RM-2B} / Medium \\
+\code{APP-S2} & Ship an enforcement-coupled preflight validator / \code{APP},
+\code{CORE} & \code{APP-SEC-001}, \code{APP-SEC-003},
+\code{CORE-SEC-002}, \code{CORE-TOOL-001} &
+\code{RM-2A}, \code{RM-2B} / Medium \textbf{(re-scoped)} \\
+\code{APP-S3} & Disable dangerous ML-loader features by default / \code{APP} &
+\code{APP-SEC-002}--\code{APP-SEC-004} & \code{RM-1C} / Medium \\
+\code{APP-S4} & Make external references opt-in / \code{APP} &
+\code{APP-SEC-001}, \code{APP-SEC-003} &
+\code{RM-0A}, \code{RM-1C}, \code{RM-2B} / Medium \\
+\code{APP-S5} & Treat plugins as executable code / \code{APP} &
+\code{APP-SEC-005} & \code{RM-1C}, \code{RM-3D} / Medium \\
+\code{APP-S6} & Require downstream SBOM and version reporting / \code{REL},
+\code{APP} & \code{SUP-SAFE-001} evidence; census support &
+\code{RM-1A}, \code{RM-3E}, \code{RM-4A} / Medium \\
+\code{APP-S7} & Apply advisory scope tags / \code{GOV} & None; triage support &
+\code{RM-1A}, \code{RM-4A} / Small \\
 
 \hline
-\multicolumn{5}{@{}l}{\textbf{Extensions --- VOL connectors, filter plugins,
-and virtual file drivers}}\\
-\hline
-
-\code{VOL-S1} & Document connector privacy characteristics. \code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3D} / Small &
-Each in-scope connector publishes the listed disclosure characteristics, and a
-reproducible data-flow test confirms the documented external endpoints,
-caches, and generated metadata are complete for the tested configuration. \\
-
-\code{VOL-S2} & Improve connector transparency and introspection. \code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3D} / Medium &
-An application can query, at runtime, the actual data origin, endpoints, and
-artifacts a connector will use; introspection output is tested against the
-observed data flow. \\
-
-\code{VOL-S3} & Strengthen connector trust and deployment practices.
-\code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional); mechanism shared with
-\code{APP-SEC-005} &
-\code{RM-3D} / Medium &
-Connector search paths are protected and non-writable by unprivileged users;
-provenance or signature verification is enforced and its rejection path
-tested. \\
-
-\code{VOL-S4} & Follow privacy-aware connector development guidelines.
-\code{EXT}, \code{PRIV} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3F} / Small &
-Published guidelines exist and a reference connector demonstrably satisfies
-them under the \code{RM-2E} data-flow test. \\
-
-\code{FILTER-S1} & Strengthen filter trust and deployment practices.
-\code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional); mechanism shared with
-\code{APP-SEC-005} &
-\code{RM-3D} / Medium &
-Filter plugin paths are protected; unsigned, untrusted, and writable-path
-filters are rejected by test; expansion-ratio and allocation budgets are
-enforced. \\
-
-\code{FILTER-S2} & Select and document filter configurations with privacy in
-mind. \code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3D} / Small &
-Filter identifiers, parameters, and chunk-size characteristics that remain
-observable are enumerated for the tested configuration and dispositioned by
-the data owner. \\
-
-\code{FILTER-S3} & Use encryption when filter metadata are privacy sensitive.
-\code{PRIV} &
-\code{EXT-PRIV-001} conditionally (Evidence-conditional) &
-\code{RM-3F} / Medium &
-Ciphertext inspection confirms the identified filter metadata are not
-observable, and key-loss and recovery testing passes under \code{RM-2G}
-custody controls. \\
-
-\code{FILTER-S4} & Minimize workflow artifacts. \code{PRIV} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3F} / Medium &
-Temporary buffers and files created by the filter pipeline are enumerated,
-securely handled, and removed on a tested retention rule. \\
-
-\code{FILTER-S5} & Standardize privacy documentation. \code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3D} / Small &
-A common documentation template is published and applied to the in-scope
-filter set. \\
-
-\code{VFD-S1} & Document storage behavior. \code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3D} / Small &
-Each in-scope VFD publishes where bytes and metadata are placed, replicated,
-cached, and logged; the documentation is confirmed by a reproducible storage
-trace. \\
-
-\code{VFD-S2} & Minimize unintended persistence. \code{PRIV} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3F} / Medium &
-Snapshots, caches, and temporary copies are enumerated and removed on a tested
-retention rule; residual artifacts after normal and abnormal termination are
-inspected. \\
-
-\code{VFD-S3} & Strengthen cloud and distributed-storage guidance. \code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional) &
-\code{RM-3D} / Small &
-Published guidance covers credentials, endpoint trust, request logging, and
-access-pattern observability for the supported cloud VFDs. \\
-
-\code{VFD-S4} & Strengthen VFD trust and deployment practices. \code{EXT} &
-\code{EXT-PRIV-001} (Evidence-conditional); mechanism shared with
-\code{APP-SEC-005} &
-\code{RM-3D} / Medium &
-VFD plugin paths are protected; where signed-plugin verification is used, the
-keystore is protected, approved artifacts are signed, and rejection of
-unsigned or untrusted drivers is tested. Upgrading alone is not accepted as
-enabling the control. \\
+\multicolumn{4}{@{}l}{\textbf{Extensions}}\\ \hline
+\code{VOL-S1} & Document connector privacy characteristics / \code{EXT} &
+\code{EXT-PRIV-001} evidence & \code{RM-3D} / Small \\
+\code{VOL-S2} & Expose connector runtime introspection / \code{EXT} &
+\code{EXT-PRIV-001} evidence & \code{RM-3D} / Medium \\
+\code{VOL-S3} & Strengthen connector trust and deployment / \code{EXT} &
+\code{EXT-PRIV-001} evidence; mechanism shared with \code{APP-SEC-005} &
+\code{RM-3D} / Medium \\
+\code{VOL-S4} & Publish privacy-aware connector guidance / \code{EXT},
+\code{PRIV} & \code{EXT-PRIV-001} evidence & \code{RM-3F} / Small \\
+\code{FILTER-S1} & Strengthen filter trust and deployment / \code{EXT} &
+\code{EXT-PRIV-001} evidence; mechanism shared with \code{APP-SEC-005} &
+\code{RM-3D} / Medium \\
+\code{FILTER-S2} & Document privacy-relevant filter configuration / \code{EXT} &
+\code{EXT-PRIV-001} evidence & \code{RM-3D} / Small \\
+\code{FILTER-S3} & Protect privacy-sensitive filter metadata / \code{PRIV} &
+\code{EXT-PRIV-001} conditionally & \code{RM-3F} / Medium \\
+\code{FILTER-S4} & Minimize filter-workflow artifacts / \code{PRIV} &
+\code{EXT-PRIV-001} evidence & \code{RM-3F} / Medium \\
+\code{FILTER-S5} & Standardize filter privacy documentation / \code{EXT} &
+\code{EXT-PRIV-001} evidence & \code{RM-3D} / Small \\
+\code{VFD-S1} & Document storage behavior / \code{EXT} &
+\code{EXT-PRIV-001} evidence & \code{RM-3D} / Small \\
+\code{VFD-S2} & Minimize unintended persistence / \code{PRIV} &
+\code{EXT-PRIV-001} evidence & \code{RM-3F} / Medium \\
+\code{VFD-S3} & Strengthen cloud/distributed-storage guidance / \code{EXT} &
+\code{EXT-PRIV-001} evidence & \code{RM-3D} / Small \\
+\code{VFD-S4} & Strengthen VFD trust and deployment / \code{EXT} &
+\code{EXT-PRIV-001} evidence; mechanism shared with \code{APP-SEC-005} &
+\code{RM-3D} / Medium \\
 
 \hline
-\multicolumn{5}{@{}l}{\textbf{Interoperability and supply chain}}\\
-\hline
-
-\code{FMT-S1} & Make the specification machine-readable and adjudicable.
-\code{INTEROP} &
-\code{FMT-SAF-001} (Evidence-conditional; 90-day administrative adjudication
-target; Phase~3 artifact) &
-\code{RM-2C}, \code{RM-3I} / Large &
-For a declared subset, the machine-readable description generates fixtures the
-reference library accepts and rejects as predicted, with every divergence
-classified as a library defect, a description/specification defect, or
-explicitly implementation-defined behavior with documented compatibility
-consequences; no unexplained residual category remains. Every dispute raised in
-the tracking period has a recorded
-disposition naming the authoritative artifact and the change made, with elapsed
-time from report to ruling published. A dispute closed by an implementation
-changing to match the reference library, without a ruling, is recorded
-\emph{unresolved}. \\
-
-\code{IND-S1} & Maintain a differential conformance and compatibility corpus.
-\code{INTEROP} &
-\code{IND-SAF-001}, \code{IND-SAF-002} (Planned) &
-\code{RM-2C}, \code{RM-4A} / Large &
-The supported-reader matrix accepts every valid fixture and rejects every
-intentionally invalid fixture with a controlled, documented diagnostic; the
-\#6409 and \#6534 cases are preserved as separate regressions; the defined
-legacy population has a reproducible repair, regeneration, migration, or
-accountable compatibility disposition preserving checksums and provenance. \\
-
-\code{LONG-S1} & Make extension dependencies discoverable, then removable.
-\code{INTEROP}, \code{EXT} &
-\code{LONG-SAF-001} (Planned) &
-\code{RM-2H}, \code{RM-3H}, \code{RM-2C}, \code{RM-3E} / Medium &
-Within 90 days for the defined population, every file has a verified non-core
-dependency manifest, an absent-dependency test, a self-contained/external-view
-classification, and an accountable disposition for each unavailable or
-removable dependency. Structural acceptance then requires automated dependency
-reports, archival-profile files that read in a reference build with \emph{all}
-non-core plugins disabled, and reviewed specifications and test vectors shown
-sufficient for an independent party to reproduce each retained codec output. \\
-
-\code{SUP-S1} & Maintain a producer/consumer profile compatibility and
-migration matrix. \code{REL} &
-\code{SUP-SAFE-001} (Evidence-conditional) &
-\code{RM-3E}, \code{RM-4A} / Large &
-A finite, versioned supported-profile catalog, matrix, and fixture set run in
-CI; diagnostics identify the mismatched capability; every incompatible
-supported pair has a tested deterministic repair, rebuild, migration,
-controlled rejection with a supported alternative, or accountable exception. \\
-
+\multicolumn{4}{@{}l}{\textbf{Interoperability and supply chain}}\\ \hline
+\code{FMT-S1} & Make the specification adjudicable and machine-readable /
+\code{INTEROP} & \code{FMT-SAF-001} evidence &
+\code{RM-2C}, \code{RM-3I} / Large \\
+\code{IND-S1} & Maintain a differential conformance corpus / \code{INTEROP} &
+\code{IND-SAF-001}, \code{IND-SAF-002} &
+\code{RM-2C}, \code{RM-4A} / Large \\
+\code{LONG-S1} & Make extension dependencies discoverable and removable /
+\code{INTEROP}, \code{EXT} & \code{LONG-SAF-001} &
+\code{RM-2H}, \code{RM-3H}, \code{RM-2C}, \code{RM-3E} / Medium \\
+\code{SUP-S1} & Maintain a producer/consumer compatibility matrix / \code{REL} &
+\code{SUP-SAFE-001} evidence & \code{RM-3E}, \code{RM-4A} / Large \\
 \end{longtable}
 \endgroup
 
 \subsection{Correspondence with SSP SIG Policy Controls}
 \label{sec:rec-ssp-crosswalk}
 
-The SSP SIG maintains a catalog of \code{HDF5-SHINES-*} policy
-controls~\cite{hdf5-ssp-controls}, which is a \emph{different namespace} from
-the recommendation identifiers in this appendix
-(Section~\ref{sec:identifier-scheme}). The correspondence below is recorded so
-that the two documents can be read together, and so that a reader of the
-OpenSSF coverage matrix~\cite{hdf5-ssp-osps-matrix} can see which of this
-report's recommendations bear on a control family that matrix scores.
-
-\textbf{The mapping is stated at family granularity, not control granularity},
-because the control catalog was consulted through its published references
-rather than enumerated in full for this revision; a control-level mapping is an
-adoption-time task for the \code{GOV} role. \textbf{A correspondence is not a
-claim that the control is satisfied.} A recommendation may bear on a control
-and, if implemented, still leave it unmet --- and the SSP SIG, not this report,
-renders that judgment.
+The SSP SIG \code{HDF5-SHINES-*} controls use a different namespace
+\cite{hdf5-ssp-controls}. Table~\ref{tab:rec-ssp-crosswalk} is editorial,
+family-level correspondence, not a control-satisfaction claim; the SSP SIG
+retains that judgment. A control-level mapping against the OpenSSF matrix is an
+adoption-time \code{GOV} task~\cite{hdf5-ssp-osps-matrix}.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
+\renewcommand{\arraystretch}{1.1}
 \setlength{\LTleft}{-0.7in}
 \setlength{\LTright}{-0.7in}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.30\widetablewidth}>{\raggedright\arraybackslash}p{0.30\widetablewidth}>{\raggedright\arraybackslash}p{0.36\widetablewidth}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.43\widetablewidth}>{\raggedright\arraybackslash}p{0.28\widetablewidth}>{\raggedright\arraybackslash}p{0.25\widetablewidth}@{}}
 \caption{Recommendation families mapped to SSP SIG policy-control families}
 \label{tab:rec-ssp-crosswalk}\\
 \hline
-\textbf{Recommendations} & \textbf{Control family} & \textbf{Note} \\
+\textbf{Recommendations} & \textbf{Control family} & \textbf{Scope note} \\
 \hline
 \endfirsthead
-
-\caption[]{Recommendation families mapped to SSP SIG policy-control families,
-continued}\\
+\caption[]{Recommendation-to-policy correspondence, continued}\\
 \hline
-\textbf{Recommendations} & \textbf{Control family} & \textbf{Note} \\
+\textbf{Recommendations} & \textbf{Control family} & \textbf{Scope note} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
-
-\code{CORE-S0}, \code{APP-S7} &
-\code{HDF5-SHINES-VULN-*} &
-Vulnerability triage, classification, and disclosure process. \\
-
-\code{CORE-S1}, \code{CORE-S2} &
-\code{HDF5-SHINES-TM-*} &
-Threat modeling and security architecture. The OpenSSF matrix records
-\code{TM} as its only COVERED entry at Level 3 security assessment, so this is
-the family where existing policy is strongest. \\
-
-\code{CORE-S3}, \code{CORE-S7} &
-\code{HDF5-SHINES-SDLC-*} &
-Secure SDLC and code review, including review-blocking gates. \\
-
+\code{CORE-S0}, \code{APP-S7} & \code{HDF5-SHINES-VULN-*} & Triage and disclosure. \\
+\code{CORE-S1}, \code{CORE-S2} & \code{HDF5-SHINES-TM-*} & Threat model and architecture. \\
+\code{CORE-S3}, \code{CORE-S7} & \code{HDF5-SHINES-SDLC-*} & Review-blocking SDLC gates. \\
 \code{CORE-S4}, \code{CORE-S9}, \code{APP-S1}--\code{APP-S4} &
-\code{HDF5-SHINES-HARD-*} &
-Secure configuration and hardening; the profile work is a material
-contribution this report makes to that family. \\
-
-\code{CORE-S5}, \code{CORE-S6}, \code{IND-S1} &
-\code{HDF5-SHINES-TEST-*} &
-Security testing and fuzzing. \\
-
+\code{HDF5-SHINES-HARD-*} & Secure profiles and tools. \\
+\code{CORE-S5}, \code{CORE-S6}, \code{IND-S1} & \code{HDF5-SHINES-TEST-*} & Testing and fuzzing. \\
 \code{CORE-S8}, \code{SUP-S1}, \code{LONG-S1}, \code{FMT-S1} &
-\code{HDF5-SHINES-COMP-*} &
-Compatibility and lifecycle support. \code{LONG-S1} extends this family to a
-decadal archival horizon that the control catalog does not currently
-address. \\
-
-\code{CORE-SAFE-S1}, \code{CORE-SAFE-S2} &
-No control family &
-\textbf{A gap in the control catalog, not in this report.} Neither project's
-policy controls cover write-side durability, crash consistency, or recovery
-tooling. The SSP SIG hazard registry rates these conditions but no
-\code{HDF5-SHINES-*} control governs them. \\
-
+\code{HDF5-SHINES-COMP-*} & Compatibility and lifecycle. \\
+\code{CORE-SAFE-S1}, \code{CORE-SAFE-S2} & No family & Durability/control-catalog gap. \\
 \code{CORE-S10}, \code{APP-S5}, \code{VOL-S1}--\code{VOL-S4},
 \code{FILTER-S1}--\code{FILTER-S5}, \code{VFD-S1}--\code{VFD-S4} &
-\code{HDF5-SHINES-PLUG-*} &
-Plugin and extension governance. Signature and keystore aspects of
-\code{CORE-S10} and \code{FILTER-S3} also touch
-\code{HDF5-SHINES-CRYPTO-*}. \\
-
-\code{CORE-S11}, \code{APP-S6} &
-\code{HDF5-SHINES-BUILD-*}, \code{HDF5-SHINES-DEP-*},
-\code{HDF5-SHINES-REL-*} &
-Secure build and provenance, dependency policy, release and change control. \\
-
-\code{CORE-S12} &
-\code{HDF5-SHINES-GOV-*} &
-Governance and program metrics. \\
-
-\code{CORE-PRIV-S1}--\code{CORE-PRIV-S3} &
-\code{HDF5-SHINES-PRIV-*} &
-Data handling and privacy policy. \\
-
-\code{CORE-PRIV-S4} &
-\code{HDF5-SHINES-CRYPTO-*} &
-Cryptography and key management, including the key-custody and recovery
-requirements this report makes non-optional. \\
-
+\code{HDF5-SHINES-PLUG-*} & Extension governance. \\
+\code{CORE-S11}, \code{APP-S6} & \code{HDF5-SHINES-BUILD-*},
+\code{HDF5-SHINES-DEP-*}, \code{HDF5-SHINES-REL-*} & Build and provenance. \\
+\code{CORE-S12} & \code{HDF5-SHINES-GOV-*} & Program metrics. \\
+\code{CORE-PRIV-S1}--\code{CORE-PRIV-S3} & \code{HDF5-SHINES-PRIV-*} & Data handling. \\
+\code{CORE-PRIV-S4} & \code{HDF5-SHINES-CRYPTO-*} & Keyed protection and recovery. \\
 \end{longtable}
 \endgroup
 
-Conversely, two families in the control catalog have no recommendation in this
-report:
-\code{HDF5-SHINES-IR-*} (incident response and evidence retention) and the
-CI/CD least-privilege and input-sanitization controls that the OpenSSF matrix
-flags as GAP. This report's \code{RM-0A} touches evidence preservation in
-passing but develops no incident-response recommendation, and build-pipeline
-security is outside its stated scope.
+The catalog's incident-response family and CI/CD least-privilege and input-
+sanitization controls have no recommendation here. \code{RM-0A} preserves
+evidence only incidentally; build-pipeline security is outside scope.
 
 \subsection{Recommendations Not Tied to a Formal Finding}
 
-Four recommendation groups deliberately address no rated finding, and this is
-recorded rather than hidden:
-
-\begin{description}
-    \item[\code{APP-S7}] is a triage-process control. It improves the
-          applicability signal that the \code{RM-1A} census and \code{RM-4A}
-          reassessment consume, but it treats no adverse-event scenario and
-          therefore inherits no urgency.
-    \item[The extension track] (\code{VOL-S1}--\code{VOL-S4},
-          \code{FILTER-S1}--\code{FILTER-S5}, \code{VFD-S1}--\code{VFD-S4})
-          and \code{CORE-PRIV-S2} address the unrated evidence record
-          \code{EXT-PRIV-001}. They are proactive assurance proposals. Their
-          existence does not convert that observation into a rated finding,
-          and their delivery does not by itself establish residual-risk
-          reduction.
-    \item[\code{CORE-S11}, \code{APP-S6}, and \code{SUP-S1}] address the
-          unrated evidence record \code{SUP-SAFE-001}. They also supply
-          provenance inputs used across the register, but provenance is not
-          treatment.
-    \item[\code{FMT-S1}] addresses the unrated evidence record
-          \code{FMT-SAF-001}. Its 90-day adjudication target is an
-          administrative assurance target rather than inherited risk urgency;
-          the larger machine-readable-format programme remains proposed
-          structural governance work.
-\end{description}
-
-In an earlier revision one finding had no recommendation at all:
-\code{CORE-SAFE-001} was recorded as a treatment gap. That gap is closed ---
-\code{CORE-SAFE-S1} now addresses it, drawing on treatment options that had
-already been proposed publicly by maintainers but had not been carried into
-this report. \textbf{Every formal finding now has at least one linked
-recommendation.}
+Four groups deliberately address no formal finding: \code{APP-S7} supports
+triage; the extension track and \code{CORE-PRIV-S2} address
+\code{EXT-PRIV-001}; \code{CORE-S11}, \code{APP-S6}, and \code{SUP-S1}
+address \code{SUP-SAFE-001}; and \code{FMT-S1} addresses
+\code{FMT-SAF-001}. They inherit no urgency and do not convert an observation
+into a rating. Every formal finding nevertheless has at least one linked
+recommendation, including \code{CORE-SAFE-001} through
+\code{CORE-SAFE-S1}.
 
 \end{document}

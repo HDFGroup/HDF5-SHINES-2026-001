@@ -5,1255 +5,556 @@
 \section{Phased Mitigation Roadmap}
 \label{app:phased-roadmap}
 
-This appendix converts the response routing in
-Table~\ref{tab:findings-response-routing} into a proposed delivery plan. It is
-an assessment recommendation, not evidence that an organization has accepted
-the dates, assigned the work, or implemented the controls. The response clocks
-in Phases~0--2 begin when an affected deployment or equivalent exposure is
-identified, as specified in Table~\ref{tab:findings-response-routing}; the
-scope census in \code{RM-1A}, assert-site catalog in \code{RM-1E}, and the
-Phase~3 program horizon begin when the roadmap is adopted. The assessment
-sponsor should record a dated decision to adopt, modify, or reject the
-proposal; adoption must set due dates for both inventories so a response clock
-cannot remain latent through unbounded non-discovery. A pre-adoption exposure
-still enters the response route and is not held for the program decision.
+This appendix turns Table~\ref{tab:findings-response-routing} into a proposed
+delivery plan; it does not show stakeholder acceptance or implementation.
+Phase~0--2 clocks begin when an affected deployment or equivalent exposure is
+identified. The \code{RM-1A} census, \code{RM-1E} assertion catalog, evidence
+actions, and Phase~3 programme begin at roadmap adoption. Adoption must assign
+dated owners and inventory deadlines; a pre-adoption exposure enters its
+response route immediately.
 
-The roadmap does not revise inherent risk. Phase, dependency, owner, effort,
-and implementation order are treatment-planning fields under
-Table~\ref{tab:treatment-planning-fields}; none is added to or subtracted from
-a finding's impact, exposure, tier, or confidence. A dependency that prevents
-a final control from shipping does not extend a response horizon: the
-accountable owner must maintain an interim containment, record the variance,
-and obtain an explicit residual-risk decision.
-
-At publication, every work package below has planning status
-\emph{Proposed} and implementation status \emph{not verified}. The role labels
-are proposed accountability boundaries, not assertions about present HDF Group
-or downstream assignments. No residual-risk acceptance is recorded by this
-roadmap. Within ten business days of adoption, the roadmap authority should
-replace each role label with a named accountable person, issue or program
-record, dated target or release, and implementation status. For a triggered
-Phase~0 record, the \code{APP} owner and \code{GOV} risk authority are assigned
-at T0 and containment begins immediately; the ten-day allowance applies only
-to untriggered program packages.
+Phase, dependency, owner, effort, and sequence are treatment-planning fields,
+not risk inputs. A blocked final control does not extend a response clock: the
+owner maintains tested containment, records the variance, and obtains an
+explicit residual-risk decision. At publication every package is
+\emph{Proposed}, implementation is \emph{not verified}, and no residual risk
+has been accepted. Within ten business days of adoption, \code{GOV} should add
+a named accountable person, programme record, date or release, and status to
+each untriggered package. A triggered Phase~0 record receives its \code{APP}
+owner and \code{GOV} authority at T0.
 
 \subsection{Accountability Roles}
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
+\renewcommand{\arraystretch}{1.1}
+\setlength{\LTleft}{-0.7in}
+\setlength{\LTright}{-0.7in}
 \begin{longtable}{@{}p{0.12\widetablewidth}p{0.27\widetablewidth}p{0.55\widetablewidth}@{}}
 \caption{Proposed roadmap accountability roles}
 \label{tab:roadmap-roles}\\
 \hline
-\textbf{Code} & \textbf{Role} & \textbf{Accountability boundary} \\
+\textbf{Code} & \textbf{Role} & \textbf{Accountability} \\
 \hline
 \endfirsthead
-
-\caption[]{Proposed roadmap accountability roles, continued}\\
+\caption[]{Roadmap roles, continued}\\
 \hline
-\textbf{Code} & \textbf{Role} & \textbf{Accountability boundary} \\
+\textbf{Code} & \textbf{Role} & \textbf{Accountability} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
-
-\code{GOV} & Security and roadmap authority &
-Owns scope, named assignments, exceptions, phase-gate decisions, and formal
-residual-risk acceptance or escalation. \\
-
-\code{CORE} & Core library and tools engineering &
-Owns parser, arithmetic, resource-policy, utility, regression, fuzzing, and
-core API changes. \\
-
-\code{APP} & Downstream application, service, and storage-operations owner &
-Owns model or dataset loading policy, deployment containment, capacity
-monitoring, checkpoint and recovery operation, independent-copy protection,
-supported-version rollout, sandboxing, and application acceptance tests. \\
-
-\code{PRIV} & Privacy and data-governance owner &
-Owns data classification, metadata minimization, disclosure boundaries,
-retention, encryption requirements, and privacy acceptance evidence. \\
-
-\code{INTEROP} & Format and interoperability owner &
-Coordinates the reference library, specification, independent implementations,
-compatibility fixtures, and repair or migration policy. \\
-
-\code{EXT} & Extension and plugin ecosystem owner &
-Owns plugin, VOL, VFD, and filter policy, manifests, trust controls,
-introspection, and extension documentation. \\
-
-\code{REL} & Release and supply-chain owner &
-Owns build provenance, dependency policy, SBOMs, release gates, and
-downstream-consumable configuration reporting. \\
-
-\code{ASSURE} & Independent verifier &
-Does not implement the control being reviewed; reproduces the acceptance tests,
-checks the evidence boundary, and signs the verification result used for
-closure and residual-risk reassessment. \\
-
+\code{GOV} & Roadmap and risk authority & Scope, assignments, gates,
+exceptions, and residual-risk decisions. \\
+\code{CORE} & Core library and tools & Parser, arithmetic, policy API, tool,
+regression, fuzz, and durability changes. \\
+\code{APP} & Application/service/storage operations & Deployment policy,
+containment, rollout, capacity, checkpoint, recovery, and independent copies. \\
+\code{PRIV} & Privacy and data governance & Classification, minimization,
+disclosure, retention, encryption, and privacy acceptance. \\
+\code{INTEROP} & Format and interoperability & Specification, reference and
+independent implementations, fixtures, repair, and migration. \\
+\code{EXT} & Extension ecosystem & Plugin, VOL, VFD, and filter policy,
+manifests, trust, introspection, and documentation. \\
+\code{REL} & Release and supply chain & Provenance, dependencies, SBOMs,
+release gates, and configuration reporting. \\
+\code{ASSURE} & Independent verifier & Reproduces acceptance evidence and
+signs the verification used for closure. \\
 \end{longtable}
 \endgroup
 
-One role is accountable for each work package even when several roles perform
-the work. The named accountable person may delegate tasks but remains
-responsible for the evidence package and readiness attestation; only
-\code{GOV} approves a program gate, exception, or residual-risk disposition. A
-package that
-spans independently governed projects or deployments must be instantiated once
-per accountable owner and scope; the generic \code{APP} package, for example,
-does not make one downstream responsible for another. Every instance also
-names its responsible implementer, an \code{ASSURE} verifier independent of
-that implementer, and a separate release or deployment approver that authorizes
-rollout after verification. For a High or Critical scope, the verifier may not
-also be the package owner, rollout approver, or risk acceptor.
+Each package has one accountable owner, plus a responsible implementer,
+\code{ASSURE} verifier, and release or deployment approver. Cross-project work
+is instantiated once per governed scope. For High or Critical scope, the
+verifier is not also owner, rollout approver, or risk acceptor. Only
+\code{GOV} approves gates, exceptions, or residual-risk dispositions.
 
 \subsection{Phase Gates and Clocks}
 
-Phases are delivery waves, not severity levels. Work may proceed in parallel,
-and a later-phase structural control may begin before an earlier phase closes.
-The earlier response clock still controls. Phase~2 also contains evidence work
-for unrated records; its placement is an assurance target and does not assign
-those records a response urgency.
+Phases are delivery waves, not severity levels; work may run in parallel, but
+a later structural package never extends an earlier response clock. Each
+finding-and-scope instance therefore has an SLA child record containing its
+scope, T0, route, due and performed dates, interim action, status, and evidence,
+separate from a shared package's structural due date.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.14\widetablewidth}p{0.20\widetablewidth}p{0.25\widetablewidth}p{0.35\widetablewidth}@{}}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\LTleft}{-0.8in}
+\setlength{\LTright}{-0.8in}
+\begin{longtable}{@{}p{0.14\widetablewidth}p{0.20\widetablewidth}p{0.27\widetablewidth}p{0.33\widetablewidth}@{}}
 \caption{Roadmap phases and exit gates}
 \label{tab:roadmap-phases}\\
 \hline
-\textbf{Phase} & \textbf{Clock} & \textbf{Required outcome} &
-\textbf{Exit gate} \\
+\textbf{Phase} & \textbf{Clock} & \textbf{Outcome} & \textbf{Exit gate} \\
 \hline
 \endfirsthead
-
 \caption[]{Roadmap phases and exit gates, continued}\\
 \hline
-\textbf{Phase} & \textbf{Clock} & \textbf{Required outcome} &
-\textbf{Exit gate} \\
+\textbf{Phase} & \textbf{Clock} & \textbf{Outcome} & \textbf{Exit gate} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
-
-0---Contain &
-Before the next untrusted job and no later than 24 hours after equivalent
-exposure is identified &
-Remove the demonstrated external-resource path from attacker reach while
-preserving evidence and rotating exposed secrets where indicated. &
-No confirmed Critical-equivalent path remains in service without tested
-containment; an accountable owner, affected scope, and decision record exist. \\
-
-1---Verify and remediate known scope &
-Initial deployment census and assert-site catalog complete within 30 days of
-adoption; Near-term treatment completes within 30 days of identifying an
-affected deployment &
-Establish the current population, apply supported fixes or tested compensating
-controls for known High and upper-bound-High scenarios, and triage
-release-disabled file-derived checks. &
-Every applicable Phase~1 finding has version and exposure evidence, a negative
-test or rehearsed operational control as applicable, an implementation record,
-and a current residual-risk disposition; the
-assert-site perimeter is cataloged and each confirmed adverse path is routed
-without waiting for completion of structural migration. \\
-
-2---Establish release safeguards &
-For Planned findings, within 90 days of identification or the next supported
-release or migration window, whichever is sooner; evidence actions have an
-administrative assurance target of 90 days after adoption &
-Deliver strict-processing guardrails, interoperability coverage, and bounded
-evidence packages for the unrated observations. &
-The safeguards pass integration tests; compatibility cases have deterministic
-expected results; evidence gaps are either promoted to findings and routed or
-remain explicitly bounded and unrated. \\
-
-3---Eliminate recurring classes &
-Target 3--12 months after roadmap adoption, through staged supported releases &
-Replace local repairs with invariant-driven parsing, structural validation,
-fuzz and review gates, and governed extension loading. &
-Each declared component or release tranche satisfies its acceptance evidence;
-unfinished components remain visible with containment and dated follow-on
-work, rather than being treated as class closure. \\
-
-4---Sustain and reassess &
-Every pull request, nightly run, release candidate, supported release, and at
-least annual program review, as applicable &
-Keep controls effective, detect regression and ecosystem mismatch, and make
-residual-risk decisions from verified evidence. &
-Required gates run at their defined cadence; failures block or create a named,
-expiring exception; the findings and roadmap registers are updated. \\
-
+0---Contain & Before the next untrusted job and no later than 24 hours after
+identification & Remove the external-resource path from attacker reach;
+preserve evidence and rotate exposed secrets where indicated. & No confirmed
+Critical-equivalent path remains active without tested containment; owner,
+scope, and decision are recorded. \\
+1---Verify/remediate & Census and assertion catalog within 30 days of adoption;
+Near-term treatment within 30 days of affected-scope identification & Bound the
+population and apply a supported fix or tested operational control. & Each
+applicable finding has scope evidence, a negative test or rehearsed control,
+implementation record, and residual-risk disposition; confirmed assertion
+paths are routed without waiting for global migration. \\
+2---Release safeguards & Planned treatment within 90 days of identification or
+the next supported release/migration window, whichever is sooner; evidence
+actions target 90 days after adoption & Deliver strict-processing,
+interoperability, archive, and bounded evidence packages. & Tests pass;
+compatibility cases have deterministic outcomes; evidence records are promoted
+and routed, negatively dispositioned, or remain bounded and open. \\
+3---Recurring classes & Target 3--12 months after adoption through staged
+supported releases & Deliver invariant parsing, validation, fuzz/review gates,
+durability architecture, and governed extensions. & Each named tranche passes
+acceptance; untreated tranches remain visible with containment and dates. \\
+4---Sustain/reassess & PR, nightly, release, and at least annual cadence as
+applicable & Detect regressions and ecosystem mismatch; maintain verified
+residual decisions. & Gates run; failures block or receive named, expiring
+exceptions; registers are updated. \\
 \end{longtable}
 \endgroup
 
-When a package covers findings with different response routes, each finding
-retains its own maximum horizon. Co-delivering a Planned item during Phase~1 is
-an implementation convenience, not an increase in its risk or urgency; a
-Planned item in the same package cannot be used to defer a Near-term item to the
-later clock.
-
-Each finding-and-scope instance therefore has an SLA child record separate from
-the work package's final-control or structural due date. The child records the
-finding ID, defined census boundary and completeness attestation, deployment or
-artifact scope, T0, urgency and maximum horizon, required interim action, due
-date, performed date, status, and evidence. A 24-hour containment can close its
-SLA child without falsely marking a shared architectural package complete; a
-large shared package cannot hide an overdue child behind its later program date.
+When a package covers several routes, each finding keeps its own maximum
+horizon. Co-delivery does not raise or lower urgency, and a package cannot hide
+an overdue SLA child behind its later architectural date.
 
 \subsection{Licensing Constraint on Reuse of Existing Work}
 \label{sec:roadmap-licensing}
 
-Several packages below --- \code{RM-1E}, \code{RM-2A}, \code{RM-2C},
-\code{RM-3A}, \code{RM-3B}, and \code{RM-3C} --- may be able to draw on
-reviewed work that already
-exists in the H5Lens / \code{hdf5-pickles} project, which supplies a bounded
-decoder, a machine-readable invariant registry, an untrusted-input preflight
-oracle, a malformed-input corpus, and differential measurements against a
-selected libhdf5 build~\cite{hdf5-pickles,h5policy,h5policy-invariant-registry}.
-Section~\ref{sec:core-prior-art} describes what exists and how each
-recommendation is re-scoped as a result.
+\code{RM-1E}, \code{RM-2A}, \code{RM-2C}, and \code{RM-3A}--\code{RM-3C}
+may draw on the H5Lens / \code{hdf5-pickles} decoder, invariant registry,
+preflight oracle, corpus, and measurements
+\cite{hdf5-pickles,h5policy,h5policy-invariant-registry}. H5Lens reports
+GPLv3-or-later licensing while HDF5 uses a permissive BSD-style license. This
+is an implementation, provenance, and governance constraint, not a legal
+conclusion. Before reuse, \code{GOV}/\code{REL} must inventory rights and
+licenses, record provenance per artifact, and obtain qualified review where
+needed.
 
-The projects report different licenses: \textbf{H5Lens is distributed under
-the GNU General Public License, version 3 or later, while the HDF5 library is
-distributed under a permissive BSD-style license.} That difference is an
-implementation, provenance, and governance constraint to resolve before reuse;
-it is not a legal conclusion by this assessment. This report does not determine
-whether particular identifiers, fixtures, outputs, source-derived materials,
-linking arrangements, or redistributions are copyrightable, compatible,
-derivative, or permitted. Before implementation, the accountable
-\code{GOV}/\code{REL} roles should inventory the relevant licenses and rights,
-record provenance for each proposed input, and obtain qualified license or
-legal review where needed.
-
-For planning only, the roadmap assumes that separately reviewed factual
-interfaces, test inputs, and measurement outputs may be usable as evidence for
-an independently implemented native control. That assumption must be confirmed
-for each artifact and does not authorize source transfer, linking, vendoring,
-or redistribution. Subject to that review, the proposed implementation pattern
-is:
-
-\begin{description}[leftmargin=1.5em,style=nextline]
-    \item[Review as candidate data; implement independently.]
-    \code{RM-3A} may evaluate existing invariant identifiers, record-family
-    decomposition, and structural boundaries as candidate registry vocabulary
-    after provenance and license review, while writing native enforcement code
-    independently. The registry is planning and specification input; it is not
-    assumed to authorize source reuse or patches.
-
-    \item[Evaluate external-oracle use separately from component reuse.]
-    \code{RM-2A} and \code{RM-3C} may propose running the existing preflight
-    oracle as a separate differential reference in CI --- comparing what
-    libhdf5 does against what the oracle decides --- without assuming that
-    linking, vendoring, packaging, or redistribution is permitted. The exact
-    invocation, data exchange, distribution model, and resulting artifacts
-    require the review described above.
-
-    \item[Review fixtures and expectations artifact by artifact.]
-    \code{RM-1B}, \code{RM-2C}, and \code{RM-3C} may evaluate malformed
-    specimens and expected-outcome records as corpus inputs. Each specimen
-    needs its own provenance and license check: some are
-    generator-produced and reproducible, and others are supplied corpus finds
-    whose redistribution terms must be confirmed before they enter a public
-    test suite.
-
-    \item[Case records are triage input, not findings.]
-    \code{RM-1E} may take the existing case records as its starting inventory.
-    They are separate project artifacts, not independent third-party
-    validation; each still requires this programme's own reachability,
-    version-boundary, and consequence determination before it is promoted and
-    routed.
-\end{description}
-
-The accountable \code{GOV} role should record a dated implementation decision
-after the review above. The present effort estimates assume that reviewed
-identifiers, fixtures, and measurements can reduce some design or enumeration
-work while native implementation and verification remain necessary. If that
-assumption is not approved, the affected package estimates must be revisited.
-Any proposal to relicense, dual-license, link, vendor, distribute, or upstream
-existing material requires a separate recorded decision based on qualified
-review and is not assumed by this roadmap.
+Planning assumes only that approved factual interfaces, reproducible fixtures,
+and measurements may inform independent native implementation. It does not
+authorize source transfer, linking, vendoring, redistribution, or relicensing.
+Invariant vocabulary is candidate design input; an external oracle is evaluated
+separately from component reuse; each fixture receives its own provenance and
+redistribution decision; and case records remain triage inputs requiring local
+reachability, version, and consequence verification. If review rejects these
+uses, affected effort estimates are revised.
 
 \subsection{Work-Package Register}
 
-Dependencies below are concrete enabling relationships, not reasons to defer
-containment. \emph{None} means no prerequisite work package is known;
-\emph{external} means that a supported vendor release, deployment sponsor, or
-test fixture must be available. Effort uses the definitions in
-Table~\ref{tab:treatment-planning-fields} and describes work breadth, not risk
-or elapsed time.
+This is the authoritative package, dependency, owner, phase, and effort
+register. Finding coverage is indexed in
+Table~\ref{tab:roadmap-finding-coverage}; recommendation coverage is indexed in
+Table~\ref{tab:recommendation-register}; observable acceptance is stated once
+in Table~\ref{tab:roadmap-acceptance}. Dependencies enable final controls but
+never defer containment. Effort is breadth, not risk or elapsed time.
 
 \begingroup
-\scriptsize
+\small
 \setlength{\tabcolsep}{2pt}
-\renewcommand{\arraystretch}{1.15}
-\setlength{\LTleft}{-0.7in}
-\setlength{\LTright}{-0.7in}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.075\widetablewidth}>{\raggedright\arraybackslash}p{0.105\widetablewidth}>{\raggedright\arraybackslash}p{0.145\widetablewidth}>{\raggedright\arraybackslash}p{0.33\widetablewidth}>{\raggedright\arraybackslash}p{0.195\widetablewidth}>{\raggedright\arraybackslash}p{0.07\widetablewidth}@{}}
+\renewcommand{\arraystretch}{1.18}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.07\widetablewidth}>{\raggedright\arraybackslash}p{0.11\widetablewidth}>{\raggedright\arraybackslash}p{0.46\widetablewidth}>{\raggedright\arraybackslash}p{0.25\widetablewidth}>{\raggedright\arraybackslash}p{0.07\widetablewidth}@{}}
 \caption{Proposed mitigation work packages}
 \label{tab:roadmap-work-packages}\\
 \hline
-\textbf{ID} & \textbf{Phase / owner} & \textbf{Records} &
-\textbf{Scope and recommendation coverage} & \textbf{Dependencies} &
-\textbf{Effort} \\
+\textbf{ID} & \textbf{Phase / owner} & \textbf{Objective} &
+\textbf{Dependencies} & \textbf{Effort} \\
 \hline
 \endfirsthead
-
-\caption[]{Proposed mitigation work packages, continued}\\
+\caption[]{Mitigation work packages, continued}\\
 \hline
-\textbf{ID} & \textbf{Phase / owner} & \textbf{Records} &
-\textbf{Scope and recommendation coverage} & \textbf{Dependencies} &
-\textbf{Effort} \\
+\textbf{ID} & \textbf{Phase / owner} & \textbf{Objective} &
+\textbf{Dependencies} & \textbf{Effort} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
-
-\code{RM-0A} & 0 / \code{APP} &
-\code{APP-SEC-001}; equivalent exposure under \code{APP-SEC-003} &
-Disable or sandbox external raw storage, external links, and virtual sources in
-untrusted processing; remove worker access to unnecessary local files and
-credentials; preserve logs and rotate secrets where exposure is indicated.
-Provides application containment consistent with \code{APP-S1} and
-\code{APP-S4} while compensating for the absent or unverified
-\code{CORE-S4} API; it does not implement that core recommendation. & None;
-where a library control is unavailable, isolate or stop the affected job. & Medium \\
-
-\code{RM-1A} & 1 / \code{GOV} & All formal findings; scoping support for
-evidence records &
-Create a deployment, supported-version, feature, provenance, and authority
-census; assign the applicable HDF5/downstream scope tag; identify applicability,
-a named owner, production build mode and assertion state, and current control
-evidence for each record. Supports
-\code{APP-S6}, \code{APP-S7}, and \code{CORE-S11}. & None; affected
-projects and deployment owners must supply evidence. & Medium \\
-
-\code{RM-1B} & 1 / \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001}; confirmed
-cases promoted from \code{CORE-SEC-003} &
-Move affected core and tool populations to a supported fixed version or isolate
-them; replace any confirmed sole assertion guard on an adverse path with an
-always-active check; add minimized negative tests in assertion-enabled and
-\code{-DNDEBUG} builds and tool-specific sanitizer regression. Covers the
-near-term portions of \code{CORE-S0}, \code{CORE-S6}, \code{CORE-S9}, and
-\code{CORE-S12}. & \code{RM-1A}; \code{RM-1E} supplies promoted cases, but
-catalog completion is not a prerequisite to an urgent local repair; external
-supported fix or a documented containment. & Medium \\
-
-\code{RM-1C} & 1 / \code{APP} &
-\code{APP-SEC-001}--\code{APP-SEC-005} &
-Patch affected model and dataset loaders or deploy a tested local compensating
-control; verify safe deserialization, external-reference rejection, allocation
-budgets, and plugin-path ownership. Covers
-\code{APP-S3}--\code{APP-S5} and the deployable portions of \code{APP-S1};
-retains \code{RM-0A} until final controls pass. & \code{RM-0A} when triggered;
-\code{RM-1A}; an external supported application release or tested local
-control. Release unavailability does not extend the response clock. & Medium \\
-
-\code{RM-1D} & 1 / \code{PRIV} & \code{CORE-PRIV-001} &
-Identify sensitive plaintext metadata and sharing boundaries; minimize or
-tokenize metadata, restrict recipients, and determine whether those controls
-meet the disclosure policy. Covers \code{CORE-PRIV-S1} and
-\code{CORE-PRIV-S3}. & \code{RM-1A}; a data owner must classify the affected
-population and intended recipients. & Medium \\
-
-\code{RM-1E} & 1 / \code{CORE} & \code{CORE-SEC-003} &
-Within 30 days of roadmap adoption, catalog file-byte-dependent assertions in
-supported deserializer source lines, beginning with the seven component
-families in issue~\#87. For each site, record whether an always-active check
-dominates it, release reachability, first post-assert sink, paired debug and
-\code{-DNDEBUG} fixture behavior, affected versions, and consequence. Replace
-a confirmed sole guard or create and route a formal finding and SLA child
-without waiting for the catalog or Phase~3 migration to finish. Seeds
-\code{CORE-S1}, \code{CORE-S7}, and \code{CORE-S12}. & None; supported-branch
-owners and reproducible release configurations must bound the catalog. & Medium \\
-
-\code{RM-1F} & 1 / \code{APP} & \code{CORE-SAFE-001},
-\code{CORE-SAFE-002} &
-Within 30 days of identifying an affected deployment, implement and test
-write-side operational containment: define a minimum capacity-headroom
-threshold and alert before it is crossed; document flush, checkpoint, and
-orderly-quiescence discipline against a stated recovery-point objective;
-rehearse storage-exhaustion and abrupt-termination recovery; and maintain a
-validated independent copy whose location, recency, and failure domain meet
-that objective. Record which applications, filesystems, VFDs, and workloads the
-controls cover. This is deployment containment only; it neither establishes a
-library durability guarantee nor closes \code{RM-2D} or \code{RM-3G}. Covers
-the operational portions of \code{CORE-SAFE-S1} and \code{CORE-SAFE-S2}. &
-\code{RM-1A} supplies census context but is not a prerequisite to protecting a
-known deployment; requires the deployment/storage operator and data owner to
-set headroom and recovery objectives. & Medium \\
-
-\code{RM-2A} & 2 / \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001},
-enabling \code{APP-SEC-001}, \code{APP-SEC-003}, \code{APP-SEC-004} &
-Ship an enforceable untrusted-input profile and preflight interface with
-external-resource, plugin, traversal, metadata, allocation, and expansion
-budgets; bind any preflight decision to the same file identity and runtime open
-so validation cannot be bypassed by replacement or policy drift; harden
-inspection tools. Covers \code{CORE-S3}, \code{CORE-S4}, \code{CORE-S9}, and
-the core portions of \code{APP-S1} and \code{APP-S2}. & \code{RM-1A}; fixtures
-from \code{RM-1B} are a coordination input, not a hard prerequisite, and
-downstream work need not wait for the final core API. & Large \\
-
-\code{RM-2B} & 2 / \code{APP} &
-\code{APP-SEC-001}, \code{APP-SEC-003}, \code{APP-SEC-004} &
-Integrate strict runtime denial and enforcement-coupled preflight into each
-downstream boundary; impose overflow-safe per-object and aggregate allocation
-budgets before materialization. Covers the downstream portions of
-\code{APP-S1}--\code{APP-S4}. Application allocation controls are independently
-required and neither wait for nor follow automatically from core checked
-arithmetic. & \code{RM-1A}, \code{RM-1C}; \code{RM-2A} is a coordination
-dependency, and an interim application policy wrapper is acceptable. & Medium \\
-
-\code{RM-2C} & 2 / \code{INTEROP} &
-compatibility policy for \code{CORE-SEC-002}; \code{IND-SAF-001},
-\code{IND-SAF-002}; administrative adjudication for \code{FMT-SAF-001} &
-Maintain positive, intentionally invalid, and \emph{contested-reading}
-fixtures across supported readers and writers; inventory affected legacy files
-and provide deterministic repair, migration, or documented compatibility
-handling. Separately, target a ruling on each identified
-specification-versus-library dispute within 90 days of roadmap adoption, record
-the ruling, and change the losing artifact. That is an administrative evidence
-and governance target for an unrated record, not inherited risk urgency, and it
-is not contingent on \code{RM-3I}. Covers \code{CORE-S6}, \code{CORE-S8}, and
-\code{IND-S1}; per-case normative decisions feed, but do not duplicate, the
-\code{CORE-S1} registry in \code{RM-3A}. & \code{RM-1A};
-external writer, reader, and production-derived fixtures. & Large \\
-
-\code{RM-2D} & 2 / \code{CORE} & \code{CORE-SAFE-001},
-\code{CORE-SAFE-002} &
-\textbf{Write-path fault injection (widened).} One harness, two triggers:
-storage exhaustion \emph{and} abrupt process or host termination, injected
-across bounded write, flush, and close sequences, HDF5 versions, and
-VFD/filesystem/buffering profiles. For each injection point record the error
-surfaced to the caller, the last durable state, whether a later open succeeds,
-succeeds after repair, or fails, whether data read back differs from what was
-acknowledged written, repairability, and data uniqueness. Also covers the
-\code{HAZ-006}, \code{HAZ-012}, and \code{HAZ-015} durability cluster, which
-shares this apparatus. Supports \code{CORE-SAFE-S1} and \code{CORE-SAFE-S2}.
-Unlike the other Phase~2 studies this is \emph{not} evidence acquisition for an
-unrated record: both findings are rated, and this package produces their
-acceptance evidence. & Storage and process fault injection, representative
-workloads, and archival/data-owner input. & Large \\
-
-\code{RM-2E} & 2 / \code{PRIV} & \code{EXT-PRIV-001} &
-Select a representative extension deployment and trace classified data,
-metadata, credentials, caches, logs, network flows, artifacts, recipients, and
-retention to a bounded consequence or negative result. This is evidence
-acquisition, not assigned urgency. & Deployment sponsor, \code{EXT} technical
-support, data classification, and observable test environment. & Medium \\
-
-\code{RM-2F} & 2 / \code{REL} & \code{SUP-SAFE-001} &
-Reproduce a concrete producer/consumer mismatch with exact build and runtime
-profiles, affected artifacts, failure mode, recoverability, population, and
-recurrence evidence. This is evidence acquisition, not assigned urgency. &
-\code{INTEROP} and downstream owners; representative builds and fixtures. & Medium \\
-
-\code{RM-2G} & 2 / \code{PRIV} & \code{CORE-PRIV-001} conditionally &
-Where \code{RM-1D} cannot meet policy through minimization and recipient
-controls, deploy whole-file or equivalent all-metadata protection and test its
-workflow and recovery behavior. Until verification, avoid the affected sharing
-boundary or maintain tested access restriction within the Near-term clock.
-Covers \code{CORE-PRIV-S4}. & \code{RM-1D};
-supported encryption design, named key custodian, protected key lifecycle,
-backup, and tested recovery procedure. & Large \\
-
-\code{RM-2H} & 2 / \code{INTEROP} & \code{LONG-SAF-001} &
-Within 90 days of identifying an affected archival population, define a
-bounded corpus and produce a verified dependency manifest for every file;
-classify each artifact as self-contained or as a view onto an external system;
-test availability with each declared non-core dependency absent; and give each
-unavailable or removable dependency a dated migration, normalization,
-preservation-package, or controlled-access disposition. Preserve the exact
-runtime and installation evidence needed for the selected interim disposition,
-subject to provenance, license, and repository policy. This is the bounded
-Planned-route deliverable for \code{LONG-S1}; it does not claim an automated
-ecosystem-wide dependency reporter or a complete archival profile. & An archive
-or data-repository owner must define the corpus and preservation objective;
-\code{RM-1A}, \code{RM-2C}, and \code{RM-3E} are useful inputs but are not hard
-prerequisites to the 90-day disposition. & Medium \\
-
-\code{RM-3A} & 3 / \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{APP-SEC-004},
-\code{IND-SAF-001}, \code{IND-SAF-002}; \code{CORE-SEC-003} evidence &
-Create the versioned machine-readable invariant registry and mandatory checked
-arithmetic, bounds, allocation, and traversal primitives; import the
-\code{RM-1E} catalog and map every declared invariant to an always-active
-enforcement point. Covers \code{CORE-S1} and \code{CORE-S3}. & \code{RM-1B};
-\code{RM-1E} and \code{RM-2C} are coordination inputs for their applicable
-tranches, and work can begin before either catalog is complete. & Large \\
-
-\code{RM-3B} & 3 / \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002} &
-Migrate prioritized structures from direct object construction to bounded raw
-decode, semantic validation, and construction. Start the assert-masking
-perimeter with release-reachable sole guards ordered by post-assert consequence,
-not by raw candidate count. Covers \code{CORE-S2}. & \code{RM-3A}; migrate in
-independently releasable component tranches. & Large \\
-
-\code{RM-3C} & 3 / \code{CORE} &
-\code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001} &
-Make class closure auditable through structure-aware fuzzing, permanent
-malformed-input regression, parser-review gates, tool coverage, and public
-metrics. Run the corpus in assertion-enabled and \code{-DNDEBUG} builds and
-block any file-derived invariant enforced solely by an assertion. Covers
-\code{CORE-S0}, \code{CORE-S5}--\code{CORE-S7}, \code{CORE-S9}, and
-\code{CORE-S12}. & \code{RM-3A} for invariant identifiers; harness and corpus
-work may begin in Phase~1. & Large \\
-
-\code{RM-3D} & 3 / \code{EXT} &
-\code{APP-SEC-005}; \code{EXT-PRIV-001} conditionally &
-Establish explicit plugin policy, allowlisted paths and identities, manifests,
-resource limits, and tested signature enforcement; add extension privacy
-documentation and introspection where the bounded evidence supports it. Covers
-\code{CORE-S10}, \code{APP-S5}, \code{CORE-PRIV-S2},
-\code{VOL-S1}--\code{VOL-S3}, \code{FILTER-S1}, \code{FILTER-S2},
-\code{FILTER-S5}, \code{VFD-S1}, \code{VFD-S3}, and \code{VFD-S4}. &
-\code{RM-2A} for profile policy;
-privacy-specific prioritization uses \code{RM-2E}. & Large \\
-
-\code{RM-3E} & 3 / \code{REL} & \code{SUP-SAFE-001}; all records supported &
-Publish source and binary SBOMs, pinned dependency and action policy, signed
-artifacts, verifiable provenance, and runtime/build feature reporting; maintain
-a producer/consumer profile matrix with deterministic diagnostics and repair,
-rebuild, or migration paths for supported mismatches. Covers \code{CORE-S11},
-\code{APP-S6}, and \code{SUP-S1}. & \code{RM-1A}; mismatch-specific treatment
-uses evidence from \code{RM-2F}. & Large \\
-
-\code{RM-3F} & 3 / \code{PRIV} & \code{EXT-PRIV-001} conditionally &
-Implement extension privacy-lifecycle controls supported by \code{RM-2E}:
-metadata and cache minimization, privacy-aware connector development, whole-file
-protection where filter metadata are sensitive, secure temporary-artifact
-handling, and retention/deletion controls. Covers \code{CORE-PRIV-S3},
-\code{VOL-S4}, \code{FILTER-S3}, \code{FILTER-S4}, and \code{VFD-S2}. &
-\code{RM-1D}, \code{RM-2E}; encryption work also requires the key-management
-and recovery controls in \code{RM-2G}. & Large \\
-
-\code{RM-3G} & 3 / \code{CORE} & \code{CORE-SAFE-001},
-\code{CORE-SAFE-002} &
-Deliver the durability controls: an \code{ENOSPC} notification path at the VFD
-boundary with caller-selected response, a durable suspect-file state, and
-optional capacity reservation and pre-flush checks; publish the
-crash-consistency guarantee per layout and driver; then implement the selected
-crash-proofing mechanism. Covers \code{CORE-SAFE-S1} and \code{CORE-SAFE-S2}.
-Sequence the small, independently useful items first --- callback and pre-flush
-check --- ahead of the format-visible and architectural ones. & \code{RM-2D}
-supplies the harness and the baseline measurements; a pass-through VFD wrapper
-is an acceptable proving ground before any public API commitment. & Large \\
-
-\code{RM-3H} & 3 / \code{INTEROP} & \code{LONG-SAF-001} &
-Extend the bounded \code{RM-2H} treatment with automated per-file non-core
-dependency reporting; define and document an archival profile that removes
-removable dependencies; archive reviewed codec specifications and test vectors
-for those retained; and make the self-contained/external-view classification a
-required deposit field. Covers the structural portion of \code{LONG-S1}; its
-Phase~3 schedule does not defer the \code{RM-2H} 90-day deliverable. &
-\code{RM-2H}; \code{RM-2C} for fixture and reader-matrix machinery;
-\code{RM-3E} for provenance reporting; and an archive or data-repository
-partner. & Medium \\
-
-\code{RM-3I} & 3 / \code{INTEROP} & \code{FMT-SAF-001} &
-Maintain a declared subset of the file format as a machine-readable normative
-description from which validators and fixtures are generated, and adopt a
-standing adjudication procedure for specification-versus-implementation
-disputes covering ruler, timeline, dispositions, and where rulings are
-recorded. Covers \code{FMT-S1}. Declaring the description normative is a
-governance act, not a technical one, and requires an explicit \code{GOV}
-decision --- otherwise it becomes a fourth artifact to disagree with. &
-\code{RM-2C} for fixtures and adjudicated cases; no reuse of existing
-machine-readable format work is assumed until the artifact-level review in
-Section~\ref{sec:roadmap-licensing} approves the proposed use. & Large \\
-
-\code{RM-4A} & 4 / \code{GOV} & All records &
-Operate the release gates and metrics, re-run applicability and residual-risk
-reviews, maintain the differential corpus, and close or re-plan exceptions.
-Sustains \code{CORE-S0}, \code{CORE-S6}--\code{CORE-S8}, \code{CORE-S12},
-\code{CORE-S11}, \code{IND-S1}, \code{APP-S6}, \code{APP-S7}, and
-\code{SUP-S1}. & Begins with Phase~1 evidence and absorbs
-each accepted package; it does not wait for all Phase~3 work to finish. & Medium
-(recurring) \\
-
+\code{RM-0A} & 0 / \code{APP} & Disable or sandbox all supported external
+resource forms in untrusted processing; remove unnecessary worker authority,
+preserve evidence, and rotate indicated secrets. & None; isolate or stop if no
+library control exists. & Medium \\
+\code{RM-1A} & 1 / \code{GOV} & Census deployments, supported versions,
+features, provenance, authority, scope tags, build/assertion mode, owners, and
+current control evidence. & Deployment and project evidence. & Medium \\
+\code{RM-1B} & 1 / \code{CORE} & Patch or isolate affected core/tools; replace
+confirmed sole assertion guards; retain minimized debug/\code{-DNDEBUG} and
+sanitizer regressions. & \code{RM-1A}; promoted \code{RM-1E} cases; supported
+fix or containment. & Medium \\
+\code{RM-1C} & 1 / \code{APP} & Patch or contain affected loaders; test safe
+deserialization, external-reference denial, allocation budgets, and plugin-path
+ownership. & Triggered \code{RM-0A}; \code{RM-1A}; supported release or local
+control. & Medium \\
+\code{RM-1D} & 1 / \code{PRIV} & Bound sensitive metadata and recipients;
+minimize/tokenize or restrict the sharing boundary. & \code{RM-1A}; data owner
+and classification. & Medium \\
+\code{RM-1E} & 1 / \code{CORE} & Within 30 days of adoption, catalog supported
+file-byte-dependent assertion sites, guards, reachability, sinks, paired build
+results, versions, consequences, and dispositions; immediately route confirmed
+adverse paths. & Supported-branch owners and reproducible builds. & Medium \\
+\code{RM-1F} & 1 / \code{APP} & Within 30 days of deployment identification,
+test headroom alerts, checkpoint/quiescence discipline, recovery rehearsals,
+and an independent copy against stated recovery objectives. & Deployment,
+storage, and data owners; census is not prerequisite for known scope. & Medium \\
+\code{RM-2A} & 2 / \code{CORE} & Ship an enforceable untrusted-input profile
+and identity-bound preflight with external-resource, plugin, traversal,
+metadata, allocation, and expansion budgets; harden tools. & \code{RM-1A};
+\code{RM-1B} fixtures are coordination input. & Large \\
+\code{RM-2B} & 2 / \code{APP} & Integrate runtime denial and identity-bound
+preflight; enforce overflow-safe object and aggregate budgets before
+materialization. & \code{RM-1A}, \code{RM-1C}; coordinate with \code{RM-2A},
+using an interim wrapper if needed. & Medium \\
+\code{RM-2C} & 2 / \code{INTEROP} & Maintain valid, invalid, and contested
+fixtures across supported readers/writers; inventory and disposition legacy
+files; adjudicate each identified spec/library dispute within 90 days of
+adoption. & \code{RM-1A}; external readers, writers, and fixtures. & Large \\
+\code{RM-2D} & 2 / \code{CORE} & Inject storage exhaustion and abrupt
+termination across write/flush/close, versions, VFDs, filesystems, and buffering;
+measure errors, durable state, reopen/repair, read-back divergence, and loss. &
+Fault injection, representative workloads, and data-owner input. & Large \\
+\code{RM-2E} & 2 / \code{PRIV} & Trace one bounded extension deployment's data,
+credentials, caches, logs, networks, recipients, and retention to a consequence
+or defensible negative result. & Sponsor, \code{EXT}, classification, and
+observable environment. & Medium \\
+\code{RM-2F} & 2 / \code{REL} & Reproduce a producer/consumer mismatch with
+exact profiles, artifacts, failure, recoverability, population, and recurrence.
+& \code{INTEROP}, downstream owners, builds, and fixtures. & Medium \\
+\code{RM-2G} & 2 / \code{PRIV} & Where minimization and recipient controls are
+insufficient, deploy all-metadata protection with tested workflow, custody,
+backup, and recovery. & \code{RM-1D}; supported design and key custodian. & Large \\
+\code{RM-2H} & 2 / \code{INTEROP} & Within 90 days of archive identification,
+bound the corpus, manifest every non-core dependency, test absence, classify
+self-contained/external views, and disposition unavailable/removable
+dependencies. & Repository owner and preservation objective; other package
+inputs are non-blocking. & Medium \\
+\code{RM-3A} & 3 / \code{CORE} & Deliver versioned invariants and mandatory
+checked arithmetic, bounds, allocation, and traversal primitives, each mapped
+to always-active enforcement. & \code{RM-1B}; \code{RM-1E}/\code{RM-2C}
+coordination by tranche. & Large \\
+\code{RM-3B} & 3 / \code{CORE} & Migrate prioritized structures to bounded raw
+decode, semantic validation, then construction, in releasable tranches. &
+\code{RM-3A}. & Large \\
+\code{RM-3C} & 3 / \code{CORE} & Make class closure auditable through
+structure-aware fuzzing, permanent regression, parser/tool review gates, build-
+mode parity, and public metrics. & \code{RM-3A}; harness/corpus may start
+earlier. & Large \\
+\code{RM-3D} & 3 / \code{EXT} & Establish plugin identities, protected paths,
+manifests, resource limits, signature tests, and bounded extension privacy
+documentation/introspection. & \code{RM-2A}; privacy priority from \code{RM-2E}. & Large \\
+\code{RM-3E} & 3 / \code{REL} & Publish SBOMs, pinned automation, signatures,
+provenance, and feature reports; maintain a tested producer/consumer profile
+matrix and deterministic mismatch dispositions. & \code{RM-1A}; mismatch
+evidence from \code{RM-2F}. & Large \\
+\code{RM-3F} & 3 / \code{PRIV} & Implement evidenced extension minimization,
+temporary-artifact handling, retention/deletion, and protection of sensitive
+filter metadata. & \code{RM-1D}, \code{RM-2E}; encryption uses \code{RM-2G}. & Large \\
+\code{RM-3G} & 3 / \code{CORE} & Deliver VFD-level storage-exhaustion
+notification, suspect-file state, optional reservation/pre-flush controls, a
+per-layout/driver crash guarantee, and selected crash-proofing mechanism. &
+\code{RM-2D}; a pass-through VFD may prove the design. & Large \\
+\code{RM-3H} & 3 / \code{INTEROP} & Automate per-file dependency reports;
+define an archival profile and deposit classification; preserve reviewed codec
+specifications and test vectors. & \code{RM-2H}, \code{RM-2C}, \code{RM-3E},
+and repository partner. & Medium \\
+\code{RM-3I} & 3 / \code{INTEROP} & Maintain a declared machine-readable
+format subset generating validators/fixtures and a standing adjudication
+procedure; \code{GOV} decides whether it is normative. & \code{RM-2C}; reuse
+requires Section~\ref{sec:roadmap-licensing} review. & Large \\
+\code{RM-4A} & 4 / \code{GOV} & Operate gates and metrics; rerun applicability
+and residual reviews; sustain corpora and close or re-plan exceptions. & Begins
+with Phase~1 and absorbs accepted packages. & Medium recurring \\
 \end{longtable}
 \endgroup
 
 \subsection{Minimum Viable Subset Under Constrained Capacity}
 \label{sec:roadmap-minimum-viable}
 
-The register above is scoped to risk, not to budget. It proposes multiple
-\emph{Large} packages, several of which are multi-release architectural
-programs. A plan that cannot be started is not a control, so this subsection
-identifies what to fund first if the full program cannot be resourced.
-
-\paragraph{What this subsection is and is not.}
-This is a funding and sequencing aid. It is \textbf{not} a risk rank, and it
-does not revise any inherent rating, response route, or maximum horizon.
-Section~\ref{sec:risk-rubric} forbids effort from lowering urgency, and
-nothing here does so: Tier~A below is the Phase~0--1 work whose omission would
-breach an Immediate or Near-term response clock, and it is therefore not
-discretionary at any funding level. The bounded Planned-route deliverables in
-\code{RM-2C} and \code{RM-2H} likewise retain their 90-day clocks; only their
-broader structural follow-on may be capacity-sequenced. Tiers~B and C order the
-remaining \emph{prevention} program, which has program commitments rather than
-finding-response clocks. Deferring a Tier~C item is permissible only with the
-recorded, expiring exception required by
-Section~\ref{sec:roadmap-change-control}, and each deferral carries the
-consequence stated in Table~\ref{tab:roadmap-minimum-viable}.
-
-\paragraph{Tier A --- not discretionary.}
-\code{RM-0A} (when triggered), \code{RM-1A}, \code{RM-1B}, \code{RM-1C},
-\code{RM-1D}, \code{RM-1E}, and \code{RM-1F}. Every one is \emph{Medium}
-effort. Together they are the Phase~0--1 response obligation: contain a
-confirmed Critical-equivalent path, establish the population, treat the known
-affected scope, place identified write-side deployments under operational
-containment, and bound the assert-masking perimeter. \code{RM-1A} is first
-among equals for scoping --- without a census, the program cannot demonstrate
-population coverage, and the version-and-path gap recorded in
-Appendix~\ref{app:cve-history-summary} cannot be closed.
-
-\paragraph{Bounded Phase 2 obligations.}
-The case-specific treatment in \code{RM-2C} and the archival-population
-disposition in \code{RM-2H} complete on their Planned 90-day clocks. They are
-not displaced by the prevention ordering below. The broader compatibility
-matrix, machine-readable format work, automated dependency reporting, and
-archival-profile design remain separately tracked structural work.
-
-\paragraph{Tier B --- assessor-selected prevention sequence.}
-The following five items were selected because each is independently useful
-and, in the assessor's qualitative judgment, existing artifacts reduce some
-implementation work. No measured engineer-week, monetary cost, or comparative
-control-effectiveness model was available; this is a proposed sequence under
-the stated reuse and effort assumptions, not a cost-efficiency finding. The
-ordering reflects the effort revised in
-Table~\ref{tab:core-prior-art-rescope}: because the
-invariant registry, the profile semantics, the corpus, and the fuzz-harness
-design already exist and, subject to the artifact-level review in
-Section~\ref{sec:roadmap-licensing}, may reduce implementation work, four of
-the five are estimated as Small or Medium rather than Large. \code{CORE-S1} in
-particular moves up under that assumption: adapting an approved existing
-invariant vocabulary and mapping it to enforcement points is estimated as less
-work than designing the vocabulary from nothing, and it is a dependency for the
-rest of the registry-driven work.
-
-\paragraph{Tier C --- defer explicitly, with the consequence recorded.}
-The remaining Large programs. Deferring them is a legitimate capacity
-decision; representing them as unnecessary is not.
+Capacity ordering is not risk ranking and never changes a route or clock.
+Phase~0--1 obligations and the bounded Planned deliverables remain due even if
+the structural programme is deferred. The prevention ordering below is the
+assessor's qualitative judgment under the stated reuse assumptions; no
+engineer-week, cost, or comparative-effectiveness model was available.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.13\widetablewidth}>{\raggedright\arraybackslash}p{0.36\widetablewidth}>{\raggedright\arraybackslash}p{0.47\widetablewidth}@{}}
-\caption{Capacity-constrained ordering of the prevention program}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\LTleft}{-0.8in}
+\setlength{\LTright}{-0.8in}
+\begin{longtable}{@{}p{0.15\widetablewidth}p{0.40\widetablewidth}p{0.39\widetablewidth}@{}}
+\caption{Capacity-constrained programme ordering}
 \label{tab:roadmap-minimum-viable}\\
 \hline
-\textbf{Item} & \textbf{Reason for the proposed sequence} &
-\textbf{Consequence if deferred} \\
+\textbf{Tier} & \textbf{Items and basis} & \textbf{Boundary if deferred} \\
 \hline
 \endfirsthead
-
-\caption[]{Capacity-constrained ordering of the prevention program,
-continued}\\
+\caption[]{Capacity-constrained ordering, continued}\\
 \hline
-\textbf{Item} & \textbf{Why it is high leverage} &
-\textbf{Consequence if deferred} \\
+\textbf{Tier} & \textbf{Items and basis} & \textbf{Boundary if deferred} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
-
-\multicolumn{3}{@{}l}{\textbf{Tier B --- fund these five before any other
-Phase~2--3 work}}\\
-\hline
-
-\code{CORE-S6} via \code{RM-1B}, \code{RM-3C}\newline (Small, re-scoped) &
-The existing malformed-input corpus reduces new fixture work and supplies
-shared regression evidence for several controls. It also carries the
-debug/\code{-DNDEBUG} parity harness that \code{CORE-SEC-003} needs, so it is
-already required by Tier~A. &
-Subsequent fixes lose shared regression evidence, and closed defects can
-regress without detection by this corpus. Other acceptance evidence remains
-possible, but class-wide malformed-input claims remain weak. \\
-
-\code{CORE-S7} via \code{RM-1E}, \code{RM-3C}\newline (Medium) &
-The review checklist and its automated rules can be delivered independently of
-the parser migration and can detect reintroduction at the point of change,
-including the assert-only-guard pattern. &
-The program lacks this change-time gate, so new instances can erode the
-benefit of the invariant work in \code{RM-3A}. \\
-
-\code{CORE-S3} via \code{RM-2A}, \code{RM-3A}\newline (Large; tranche it) &
-Checked arithmetic and allocation address the step at which a validation
-failure can become memory corruption, and the work can be delivered
-structure-by-structure rather than as a single migration. &
-The dominant root-cause category in
-Table~\ref{tab:hdf5-cve-root-cause-categories} remains untreated even where
-decode-side checks are added. \\
-
-\code{CORE-S4} via \code{RM-2A}\newline (Medium, re-scoped) &
-Security profiles provide a shared policy mechanism that can reduce duplicated,
-divergent work across multiple downstreams. Shipping the profile and the
-external-resource policy first, with resource budgets following, provides a
-bounded initial tranche. &
-Each downstream continues to reimplement partial, divergent policy;
-\code{APP-S1} and \code{APP-S2} stay unimplementable as shared controls;
-\code{RM-0A} containment remains necessary until a tested shared or local
-replacement is available. \\
-
-\code{CORE-S1} via \code{RM-3A}\newline (Medium, re-scoped) &
-An invariant vocabulary, record-family decomposition, and per-family coverage
-map already exist. If their proposed use passes the artifact-level review,
-adapting them can reduce vocabulary-design work and focus the package on
-enforcement mapping; other registry-driven controls --- review gates, fuzz
-targeting, and metrics denominators --- can then key off the approved
-identifiers. &
-\code{CORE-S7} and \code{CORE-S12} lose their denominator: there is nothing
-to check a change against and nothing to measure coverage over. Deferring this
-while funding the others makes the others unmeasurable. \\
-
-\hline
-\multicolumn{3}{@{}l}{\textbf{Tier C --- defer with a recorded, expiring
-exception}}\\
-\hline
-
-\code{CORE-S2}\newline (\code{RM-3B}) &
-The parser migration is the actual class-elimination control, and it is the one
-item the existing design work does \emph{not} make cheaper: a design reduces
-uncertainty, not migration cost. With \code{CORE-S1} funded in Tier~B, the
-registry can still be seeded opportunistically from \code{RM-1E} and
-\code{RM-1B} findings while migration waits. &
-Class elimination cannot be claimed. Local repairs remain local; the
-\code{CORE-S0} class-prevention records stay open indefinitely and must be
-reported as such. \\
-
-\code{CORE-S5}\newline (\code{RM-3C}, Medium, re-scoped) &
-Structure-aware fuzzing finds families rather than instances, and a harness
-design with per-family recipes already exists. The two named gaps are OSS-Fuzz
-integration and per-family targets; close those rather than rebuilding the
-portfolio. Borderline Tier~B if capacity allows. &
-New variants of known families continue to arrive as individually reported
-defects. \\
-
-\code{CORE-S10}, \code{CORE-S11}\newline (\code{RM-3D}, \code{RM-3E}) &
-Plugin signing and full provenance are valuable but have low marginal effect
-while \code{CORE-S4} plugin policy is absent. Hash allowlists and protected
-paths are the interim control. &
-\code{APP-SEC-005}-class exposure is treated per deployment rather than
-structurally; release provenance stays unverifiable. \\
-
-\code{CORE-PRIV-S4}\newline (\code{RM-2G}) &
-Conditional by construction: reached only where \code{RM-1D} minimization and
-recipient controls cannot meet policy. Requires key custody and tested
-recovery before it may be credited. &
-Affected sharing boundaries are avoided or access-restricted instead, within
-the \code{CORE-PRIV-001} Near-term clock. This is an acceptable interim
-posture. \\
-
-\code{IND-S1}, \code{SUP-S1}\newline (\code{RM-2C}, \code{RM-3E}) &
-Both are Large and both are genuinely needed, but their findings are Moderate
-and their populations are bounded and known. Preserve the \#6409 and \#6534
-fixtures now; build the full matrix later. &
-The two Planned interoperability findings still require their bounded
-treatment on the 90-day clock; only the general corpus and profile matrix are
-deferred. \\
-
+A---not discretionary & Triggered \code{RM-0A}; \code{RM-1A}--\code{RM-1F}.
+These contain Critical-equivalent paths, establish population, treat known
+scope, contain write-side hazards, and bound assertions. & Omission breaches an
+Immediate or Near-term clock. Census incompleteness cannot be used to defer a
+known deployment. \\
+Bounded Phase~2 & Case-specific \code{RM-2C} treatment and \code{RM-2H}
+archive disposition complete within their Planned 90-day clocks. & Broader
+matrices, machine-readable format work, automated reporting, and archival
+profile design may be sequenced; the bounded deliverables may not. \\
+B---fund first & \code{CORE-S6}, \code{CORE-S7}, \code{CORE-S3},
+\code{CORE-S4}, then \code{CORE-S1} through their mapped packages. Existing
+corpus, profile, and invariant artifacts may reduce design/enumeration work
+after review; checked primitives are tranchable. & Regression, change-time
+gates, shared policy, and measurable invariant coverage remain incomplete;
+local treatments stay open as local rather than class closure. \\
+C---explicit deferral & Remaining structural packages, including parser
+migration, expanded fuzzing, plugin/provenance, encryption, full differential
+and profile matrices, durability architecture, extension privacy, archive
+automation, and machine-readable format governance. & Record a scoped,
+expiring exception and retain interim controls. Deferral prevents the
+corresponding class, lifecycle, durability, or governance closure claim. \\
 \end{longtable}
 \endgroup
 
-\paragraph{Reading the subset honestly.}
-Funding Tier~A and Tier~B, together with the bounded \code{RM-2C} and
-\code{RM-2H} deliverables, is a coherent program: it treats the identified
-affected populations, bounds the assert perimeter, and installs reusable
-verification and downstream-policy controls. It does \textbf{not} eliminate
-the recurring class, and a report of progress should not say that it does. Under
-\code{CORE-S0}, the class-prevention record remains open, and under
-\code{CORE-S12} the tranche denominator must show the untreated remainder
-rather than reporting only on the delivered subset.
+Funding A, bounded Phase~2, and B is coherent but does not eliminate recurring
+classes. \code{CORE-S0} prevention records remain open and \code{CORE-S12}
+metrics must show the untreated denominator.
 
 \subsection{Acceptance and Closure Evidence}
 
-A work package is complete only when its artifacts are linked from the
-implementation record and reproduced or otherwise independently verified by
-the assigned \code{ASSURE} role before acceptance by the accountable role.
-Shipping code or publishing guidance alone does not establish control coverage
-or reduce residual risk.
+Table~\ref{tab:roadmap-acceptance} is the canonical acceptance specification.
+For every row, the implementer links artifacts, \code{ASSURE} reproduces or
+independently verifies them, the package owner attests readiness, and the
+release/deployment approver authorizes rollout. \code{GOV} then records the
+credited scope and a current residual-risk decision. Guidance or code shipment
+alone is insufficient; failed, incomplete, or inconclusive tests remain open.
 
 \begingroup
-\small
+\normalsize
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.12\widetablewidth}p{0.57\widetablewidth}p{0.25\widetablewidth}@{}}
+\renewcommand{\arraystretch}{1.18}
+\setlength{\LTleft}{-0.8in}
+\setlength{\LTright}{-0.8in}
+\begin{longtable}{@{}p{0.11\widetablewidth}p{0.83\widetablewidth}@{}}
 \caption{Required work-package acceptance evidence}
 \label{tab:roadmap-acceptance}\\
 \hline
-\textbf{Package} & \textbf{Required observable evidence} &
-\textbf{Closure decision} \\
+\textbf{Package} & \textbf{Required observable evidence} \\
 \hline
 \endfirsthead
-
-\caption[]{Required work-package acceptance evidence, continued}\\
+\caption[]{Work-package acceptance evidence, continued}\\
 \hline
-\textbf{Package} & \textbf{Required observable evidence} &
-\textbf{Closure decision} \\
+\textbf{Package} & \textbf{Required observable evidence} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
-
-\code{RM-0A} & Configuration or code diff; deployment proof; negative fixtures
-for every supported external-resource form; sandbox escape test; credential and
-secret-rotation record where indicated. & \code{APP} confirms containment;
-\code{GOV} records whether incident handling remains open. \\
-
-\code{RM-1A} & Machine-readable inventory recording version, linkage, enabled
-features, production build mode, assertion state, scope tag, trust boundary,
-authority, exposure, owner, census boundary and completeness attestation, and
-evidence date for each applicable scope. &
-\code{GOV} accepts applicability and creates dated treatment
-or non-applicability records. \\
-
-\code{RM-1B} & Supported-version matrix; patch or isolation record; minimized
-fixtures; assertion-enabled and \code{-DNDEBUG} ASan/UBSan/LSan and
-controlled-error results for affected core and tool paths. & \code{CORE}
-accepts technical evidence; \code{GOV} records current residual risk. \\
-
-\code{RM-1C} & Application version and rollout evidence; tests proving safe-mode
-code rejection, external-path rejection, allocation-budget enforcement, and
-plugin-path ownership; a canary plugin placed in the current directory, an
-environment-selected path, and a user-writable searched path must not load or
-execute, and startup evidence must record the effective plugin-loading state. &
-\code{APP} accepts each deployed boundary;
-\code{GOV} records current residual risk. \\
-
-\code{RM-1D} & Metadata/data-flow inventory, classification and recipient
-matrix, and before/after inspection through both HDF5 APIs and raw-byte search
-showing the effect of minimization and recipient controls. & \code{PRIV} signs
-the disclosure-boundary decision and whether \code{RM-2G} is required;
-\code{GOV} records current residual risk. \\
-
-\code{RM-1E} & Versioned source-site inventory recording branch, function,
-predicate, file-byte provenance, dominating always-active guard, first
-post-assert sink, release reachability, fixture, assertion-enabled and
-\code{-DNDEBUG} result, supported-version scope, consequence, and disposition;
-paired negative tests for every confirmed site; promoted finding and SLA child
-records where an adverse path is supported. & \code{CORE} accepts the bounded
-catalog and local repairs; \code{GOV} confirms that supported scenarios are
-rated and routed and that inconclusive sites remain open. \\
-
-\code{RM-1F} & Defined deployment and workload boundary; stated capacity
-headroom and recovery-point objectives; monitoring and alert configuration;
-an injected threshold crossing showing the alert arrives before exhaustion;
-the documented flush, checkpoint, and orderly-quiescence runbook; successful
-rehearsals for both storage exhaustion and abrupt termination; and restore or
-reopen evidence from a validated independent copy, including its recency,
-integrity check, location, and failure-domain separation. & \code{APP} and the
-data owner accept the operational control for the named deployment;
-\code{GOV} records current residual risk. A failed or unrehearsed control does
-not close the 30-day containment child. \\
-
-\code{RM-2A} & API and policy documentation; default-state tests; hostile-file
-integration corpus; allocation, traversal, metadata, filter-expansion, external-
-resource, and plugin tests; a file-replacement test proving preflight and runtime
-enforcement cannot diverge; tool-default tests. & \code{CORE} accepts the core
-control; \code{GOV} records the scope for which it may be credited. \\
-
-\code{RM-2B} & Per-downstream policy and integration tests; before-allocation
-budget tests for extreme, overflow-boundary, cumulative, and valid boundary
-cases; external-resource rejection; file-replacement test; deployment evidence. &
-\code{APP} accepts each independently governed integration; \code{GOV} records
-credited coverage and current residual risk. \\
-
-\code{RM-2C} & Versioned positive and negative fixture corpus with writer,
-reader, format-bound, and expected-result metadata; supported-reader matrix;
-exact release/backport verification; acceptance of the sufficient nonminimal
-fixture and predictable rejection of an undersized comparator; corrected writer
-round-trip; complete in-scope legacy enumeration; and repaired-file pre/post
-checksums, provenance, and supported-reader acceptance. For each identified
-specification-versus-library dispute, a dated ruling names the deciding
-authority, authoritative artifact, losing artifact, and resulting change, or
-records why the evidence remains inconclusive. & \code{INTEROP} accepts
-conformance results and documents unresolved compatibility exceptions. A
-missed 90-day format-dispute target is recorded as an overdue administrative
-action, not converted into an inherent-risk route. \\
-
-\code{RM-2D} & Fault-injection matrix and logs covering \emph{both} the
-storage-exhaustion and abrupt-termination triggers, recording API sequence,
-version, VFD/filesystem/buffering profile, error surfaced, durable file state,
-reopen and repair result, any divergence between acknowledged and read-back
-data, data uniqueness, and affected workload boundary. & \code{CORE} and the
-data owner submit the result to \code{GOV}, which records current residual risk
-for \code{CORE-SAFE-001} and \code{CORE-SAFE-002}; an inconclusive study
-remains open and is re-planned. \\
-
-\code{RM-3G} & Fault-injection results showing a distinguishable
-\code{ENOSPC}-class error at every injected point for every supported VFD and
-buffering profile; suspect-state set and cleared under test; published
-per-layout crash-consistency guarantee; and a matrix of writer-kill points
-recording open/repair/fail outcomes and any divergence between acknowledged and
-read-back data. & \code{CORE} accepts the technical evidence; \code{GOV}
-records current residual risk for \code{CORE-SAFE-001} and
-\code{CORE-SAFE-002}. A run in which the library reported success and the file
-is later found inconsistent blocks acceptance. \\
-
-\code{RM-3I} & Machine-readable description of the declared subset; generated
-valid and invalid fixtures with reference-library results; a divergence log in
-which every entry is classified as a library defect, a description/specification
-defect, or explicitly implementation-defined behavior with documented
-compatibility consequences;
-the adopted adjudication procedure; and a dispute ledger recording disposition,
-authoritative artifact, change made, and elapsed time to ruling. &
-\code{INTEROP} accepts the technical evidence; \code{GOV} decides whether the
-description is declared normative and records that decision. An unruled dispute
-is reported open, never closed by concession. \\
-
-\code{RM-2H} & Defined archival corpus and completeness attestation; per-file
-dependency manifest; self-contained/external-view classification; tests with
-each declared dependency absent; and a dated, owner-approved migration,
-normalization, preservation-package, or controlled-access disposition for
-every unavailable or removable dependency. Any retained runtime or installation
-artifact carries provenance, license-review status, integrity evidence, and a
-tested reconstruction procedure. & \code{INTEROP} and the repository owner
-accept the bounded 90-day disposition; \code{GOV} records current residual
-risk for \code{LONG-SAF-001}. Closure applies only to the defined corpus. \\
-
-\code{RM-3H} & Generated dependency report per file in the defined corpus,
-confirmed complete by opening with each declared dependency absent;
-archival-profile files reading correctly in a reference build with all non-core
-plugins disabled; deposit records carrying the required dependency
-classification; and at least one demonstrated independent reproduction of a
-retained codec from its reviewed archived specification and test vectors. &
-\code{INTEROP} accepts; \code{GOV} records residual risk for
-\code{LONG-SAF-001}. \\
-
-\code{RM-2E} & Reproducible extension data-flow test, classified population,
-recipients, storage and network endpoints, cache/log/artifact retention, control
-evidence, and bounded consequence or negative result. & \code{PRIV} and
-\code{EXT} submit the result to \code{GOV}; a negative disposition requires a
-documented method, tested scope and population, and retained results, while an
-inconclusive study remains open. \\
-
-\code{RM-2F} & Exact producer and consumer build/runtime profiles, reproducible
-fixture and diagnostic, affected artifact inventory, recoverability, population,
-and recurrence results. & \code{REL} and \code{INTEROP} submit the result to
-\code{GOV}; a negative disposition requires a documented method and tested
-scope, while an inconclusive study remains open. \\
-
-\code{RM-2G} & Ciphertext and metadata inspection, unauthorized-open test,
-partial-I/O workflow test, protected key inventory, backup/restore evidence, and
-successful loss-and-recovery exercise. & \code{PRIV} and the key custodian
-accept confidentiality and recoverability; \code{GOV} records credited scope
-and current residual risk. \\
-
-\code{RM-3A} & Versioned invariant files; code-to-invariant mapping; checked
-primitive APIs; migration inventory; tests showing the prioritized structures
-reject single-invariant violations predictably in assertion-enabled and
-\code{-DNDEBUG} builds; proof that no declared invariant relies solely on an
-assertion. & \code{CORE} accepts each declared tranche; missing structures or
-enforcement mappings remain open. \\
-
-\code{RM-3B} & Per-component raw-decode/validate/construct boundary; no native
-object before validation; malformed and valid compatibility corpus results;
-assertion-enabled and \code{-DNDEBUG} sanitizer and fuzz evidence. &
-\code{CORE} closes only named migrated components, not the parser class
-globally. \\
-
-\code{RM-3C} & PR, nightly, weekly, release-candidate, and CVE-closure jobs;
-retained minimized seeds; coverage by structure; review-checklist records; metric
-dashboard; assertion-enabled/\code{-DNDEBUG} parity; and proof that a new or
-declared file-derived invariant enforced only by an assertion fails the release
-gate. & \code{CORE} and \code{GOV} approve the release gate; every bypass is
-named and expiring. \\
-
-\code{RM-3D} & Plugin manifest and policy; protected allowlist or keystore;
-tests rejecting unsigned, untrusted, writable-path, over-budget, and
-wrong-profile plugins; extension data-flow documentation and introspection tests. &
-\code{EXT} accepts technical coverage; \code{PRIV} accepts privacy claims;
-\code{GOV} records residual risk for affected findings only. \\
-
-\code{RM-3E} & Release SBOMs, checksums, signatures, provenance verification,
-pinned automation, dependency scans, a consumer-visible build/runtime feature
-report, and a versioned producer/consumer profile matrix with expected outcomes
-and a finite supported-profile catalog, fixture set, and retained CI execution
-results. Every incompatible supported pair has a
-tested deterministic repair, rebuild, migration, controlled rejection with a
-supported alternative, or accountable exception. & \code{REL} accepts the release evidence;
-mismatches become dated defects or scoped findings. \\
-
-\code{RM-3F} & Tests and artifacts showing minimized connector metadata and
-caches, secure temporary-buffer/file handling, enforced retention and deletion,
-and, where required, ciphertext inspection plus key-loss/recovery testing for
-filter metadata. & \code{PRIV} accepts the bounded lifecycle claims after
-\code{ASSURE} verification; unsupported claims remain open. \\
-
-\code{RM-4A} & Cadenced gate results in production-equivalent build modes,
-trend metrics, updated finding mappings, expired-exception report, and signed
-residual-risk decisions for the release or review period. & \code{GOV}
-accepts, further reduces, avoids, transfers, or escalates each verified
-residual risk. \\
-
+\code{RM-0A} & Configuration/code diff and deployment proof; negative fixtures
+for every supported external-resource form; sandbox-escape test; indicated
+credential/secret rotation. \\
+\code{RM-1A} & Machine-readable inventory of version, linkage, features,
+build/assertion mode, scope tag, trust/authority, exposure, owner, boundary,
+completeness attestation, and evidence date. \\
+\code{RM-1B} & Version matrix, patch/isolation record, minimized fixtures, and
+assertion-enabled plus \code{-DNDEBUG} ASan/UBSan/LSan controlled-error results. \\
+\code{RM-1C} & Rollout evidence and negative tests for executable reconstruction,
+external paths, allocation budgets, and plugin paths; startup state and canaries
+in CWD, environment-selected, and writable searched paths. \\
+\code{RM-1D} & Classified metadata/data-flow and recipient matrix; before/after
+HDF5-API and raw-byte inspection; decision whether \code{RM-2G} is required. \\
+\code{RM-1E} & Versioned site catalog with branch, function, predicate,
+file-byte provenance, dominating guard, first sink, reachability, paired build
+results, version scope, consequence, and disposition; tests and promoted
+finding/SLA children for confirmed adverse paths. \\
+\code{RM-1F} & Defined scope and recovery objectives; alert before injected
+exhaustion; checkpoint/quiescence runbook; successful exhaustion and abrupt-
+termination rehearsals; verified independent-copy recency, integrity,
+location, and failure-domain separation. \\
+\code{RM-2A} & API/policy documentation, default-state tests, hostile corpus,
+resource/plugin/external-reference tests, file-replacement identity test, and
+tool-default tests. \\
+\code{RM-2B} & Per-downstream integration and deployment evidence; extreme,
+overflow, cumulative, and valid-boundary allocation tests before materialization;
+external-reference and file-replacement tests. \\
+\code{RM-2C} & Versioned fixture metadata and reader matrix; exact release/
+backport verification; \#6409 sufficient/undersized pair; corrected-writer
+round trip; complete legacy enumeration and checksum/provenance-preserving
+repair or disposition; dated rulings naming authority and changed artifact. \\
+\code{RM-2D} & Fault-injection matrix for both triggers across API sequence,
+version, VFD/filesystem/buffering profile, recording surfaced error, durable
+state, reopen/repair, acknowledged-versus-read-back divergence, uniqueness,
+and workload boundary. \\
+\code{RM-2E} & Reproducible extension data-flow test with classified population,
+recipients, endpoints, caches/logs/artifacts, retention, controls, and bounded
+consequence or documented negative result. \\
+\code{RM-2F} & Exact producer/consumer profiles, reproducible fixture and
+diagnostic, artifact inventory, recoverability, population, recurrence, and
+documented negative or promoted result. \\
+\code{RM-2G} & Ciphertext/metadata inspection, unauthorized-open and partial-I/O
+tests, protected key inventory, backup/restore, and successful key-loss recovery. \\
+\code{RM-2H} & Defined corpus and completeness attestation; per-file manifest;
+self-contained/external-view classification; absent-dependency tests; dated
+owner disposition; provenance, license-review, integrity, and reconstruction
+evidence for retained runtime artifacts. \\
+\code{RM-3A} & Versioned invariants, code mapping, checked primitives, migration
+inventory, single-invariant rejection in both build modes, and proof that no
+declared invariant relies only on an assertion. \\
+\code{RM-3B} & Per-component decode/validate/construct boundary; no native
+object before validation; valid/malformed corpus plus build-mode sanitizer and
+fuzz evidence. Closure names migrated components only. \\
+\code{RM-3C} & PR/nightly/weekly/release/CVE-closure jobs, minimized seeds,
+structure coverage, review records, metrics, build-mode parity, and a test
+showing an assertion-only file predicate fails the gate. \\
+\code{RM-3D} & Plugin manifest/policy, protected allowlist or keystore, rejection
+of unsigned/untrusted/writable-path/over-budget/wrong-profile plugins, and
+extension documentation/introspection tests. \\
+\code{RM-3E} & SBOMs, checksums, signatures, verified provenance, pinned
+automation, dependency scans, feature report, finite profile catalog, fixtures,
+CI results, and deterministic disposition for each unsupported pair. \\
+\code{RM-3F} & Tests showing minimized extension metadata/caches, secure
+temporary handling, enforced retention/deletion, and, where needed, ciphertext
+inspection plus key recovery. \\
+\code{RM-3G} & Distinguishable storage-exhaustion errors per supported VFD/
+buffering profile; tested suspect-state lifecycle; published layout/driver
+guarantee; writer-kill outcomes and read-back divergence. Reported success
+followed by inconsistency blocks acceptance. \\
+\code{RM-3H} & Generated per-file dependency reports verified by absence tests;
+archival-profile files readable with non-core plugins disabled; deposit
+classifications; independent codec reproduction from archived specification
+and vectors. \\
+\code{RM-3I} & Declared machine-readable subset and generated fixtures;
+divergences classified as library defect, description/specification defect, or
+explicit implementation-defined behavior with documented consequence;
+adjudication procedure, decision on normative status, and current dispute
+ledger. An unruled dispute remains open. \\
+\code{RM-4A} & Production-equivalent cadenced results, trends, updated mappings,
+expired-exception report, and signed point-in-time residual decisions. \\
 \end{longtable}
 \endgroup
 
 \subsection{Finding and Evidence-Action Coverage}
 
-The mapping below prevents a roadmap phase from being declared complete while
-an in-scope register record has silently disappeared. A formal finding closes
-only after its stated affected scope is treated or shown not applicable and its
-current residual risk is reassessed. Closing a work package does not change the
-historical inherent rating. The package column distinguishes the minimum
-treatment needed to reassess the concrete finding from continuing class-
-prevention and sustainment work. A later architectural package does not hold a
-finding open unless it is selected and credited as that finding's treatment;
-its own program commitment remains open independently. Evidence records are
-complete only after the bounded study is dispositioned; they are not assigned a
-tier merely because the investigation is scheduled, and an inconclusive study
-remains open and is re-planned.
+A formal finding-and-scope child closes only when the affected population is
+treated or shown inapplicable, its applicable package evidence passes, and
+\code{GOV} records current residual risk. This never changes the historical
+inherent rating. Structural work stays open independently unless explicitly
+credited. An evidence record closes only with a bounded positive, negative, or
+promoted disposition; inconclusive work is re-planned. Table entries are ID-only
+indexes into the authoritative package and acceptance tables.
 
 \begingroup
-\small
+\normalsize
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.23\widetablewidth}>{\raggedright\arraybackslash}p{0.30\widetablewidth}p{0.41\widetablewidth}@{}}
+\renewcommand{\arraystretch}{1.18}
+\setlength{\LTleft}{-0.8in}
+\setlength{\LTright}{-0.8in}
+\begin{longtable}{@{}p{0.20\widetablewidth}p{0.36\widetablewidth}p{0.38\widetablewidth}@{}}
 \caption{Register-to-roadmap coverage}
 \label{tab:roadmap-finding-coverage}\\
 \hline
-\textbf{Register record} & \textbf{Treatment; continuing prevention} &
-\textbf{Record-level completion condition} \\
+\textbf{Record} & \textbf{Bounded treatment or evidence} &
+\textbf{Continuing prevention / boundary} \\
 \hline
 \endfirsthead
-
 \caption[]{Register-to-roadmap coverage, continued}\\
 \hline
-\textbf{Register record} & \textbf{Treatment; continuing prevention} &
-\textbf{Record-level completion condition} \\
+\textbf{Record} & \textbf{Bounded treatment or evidence} &
+\textbf{Continuing prevention / boundary} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
 \hline
 \endlastfoot
-
-\code{CORE-SEC-001} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1B}.
-\textbf{Prevention:} \code{RM-2A}, \code{RM-3A}--\code{RM-3C},
-\code{RM-4A}. & Affected populations are patched or contained and residual
-scope and risk are recorded. Credited structural tranches pass separately;
-unimplemented components are not claimed as covered. \\
-
-\code{CORE-SEC-002} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1B}.
-\textbf{Prevention:} \code{RM-2A}, \code{RM-2C},
-\code{RM-3A}--\code{RM-3C}, \code{RM-4A}. & Affected populations are patched,
-contained, or shown to reject or bound file-controlled work; the residual
-decision states whether compatibility-policy work is credited or remains open. \\
-
-\code{CORE-SEC-003} & \textbf{Evidence:} \code{RM-1A}, \code{RM-1E}.
-\textbf{Conditional treatment:} \code{RM-1B}.
-\textbf{Prevention:} \code{RM-3A}--\code{RM-3C}, \code{RM-4A}. & The supported
-source and build perimeter is bounded and each candidate has a verified guard,
-reachability, build-mode result, consequence, and disposition. Every supported
-adverse path is promoted and routed without waiting for global migration; an
-inconclusive site remains open, and the staged prevention program closes only
-its named tranches. \\
-
-\code{CORE-TOOL-001} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1B}.
-\textbf{Prevention:} \code{RM-2A}, \code{RM-3C}, \code{RM-4A}. & Affected tools
-are patched or isolated and reject the fixture without sanitizer findings;
-continuing tool gates remain tracked independently. \\
-
-\code{CORE-PRIV-001} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1D};
-conditional \code{RM-2G}. \textbf{Sustain:} \code{RM-4A}. & The actual metadata
-population and recipients are bounded; minimization and recipient controls pass
-API and raw-byte inspection; when policy requires encryption, key recovery also
-passes; remaining disclosure is accepted or further treated. \\
-
-\code{CORE-SAFE-001} & \textbf{Scope:} \code{RM-1A}.
-\textbf{Operational containment:} \code{RM-1F}.
-\textbf{Evidence and treatment:} \code{RM-2D}, \code{RM-3G}. & Affected
-deployments have headroom monitoring, checkpoint discipline, rehearsed
-recovery, and a validated independent copy recorded; the fault-injection
-study establishes the failure and recovery distribution; the notification path
-and suspect state pass their acceptance tests; residual risk is reassessed. An
-inconclusive study remains open and re-planned. \\
-
-\code{CORE-SAFE-002} & \textbf{Scope:} \code{RM-1A}.
-\textbf{Operational containment:} \code{RM-1F}.
-\textbf{Evidence and treatment:} \code{RM-2D}, \code{RM-3G}. & Containment
-is implemented and rehearsed for the named deployment; the crash-consistency
-guarantee is published per layout and driver;
-the writer-kill matrix runs and its results are published per supported
-release; any acknowledged-versus-read-back divergence is tracked as a defect.
-Structural crash-proofing closes only its named, delivered mechanism. \\
-
-\code{LONG-SAF-001} & \textbf{Bounded treatment:} \code{RM-2H}.
-\textbf{Structural prevention:} \code{RM-3H}.
-\textbf{Sustainment support:} \code{RM-2C}, \code{RM-3E}, \code{RM-4A}. &
-Within the Planned clock, the defined corpus has verified dependency manifests,
-dependency-absence tests, and an accountable disposition for every unavailable
-or removable dependency. That can close the bounded finding-and-scope child;
-the automated reporter, archival profile, and reproducible retained-codec work
-remain separately tracked under \code{RM-3H}. Closure applies only to the
-defined corpus and never to ``archived HDF5 data'' generally. \\
-
-\code{APP-SEC-001} & \textbf{Treatment:} \code{RM-0A}, \code{RM-1A},
-\code{RM-1C}. \textbf{Prevention:} \code{RM-2A}, \code{RM-2B},
-\code{RM-4A}. & The defined census boundary has a completeness attestation;
-every equivalent deployment found within it is contained, external-resource
-tests pass, and current residual risk is recorded. Closure of one instance does
-not close other or unscoped populations; the
-historical incident tier remains unchanged and later shared architecture stays
-open independently. \\
-
-\code{APP-SEC-002} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1C}.
-\textbf{Sustain:} \code{RM-4A}. & Affected loader versions are removed or
-contained and safe-mode negative tests pass in each deployed boundary. \\
-
-\code{APP-SEC-003} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1C};
-\code{RM-0A} when a Critical-equivalent service exposure is confirmed.
-\textbf{Prevention:} \code{RM-2A}, \code{RM-2B}, \code{RM-4A}. & Affected
-loaders reject or sandbox all supported external-resource forms and deployment
-evidence supports the residual decision. \\
-
-\code{APP-SEC-004} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1C}.
-\textbf{Prevention:} \code{RM-2A}, \code{RM-2B}, \code{RM-4A}. & Affected
-loaders enforce tested overflow-safe per-object and aggregate budgets before
-allocation; later reusable APIs remain independent program work. \\
-
-\code{APP-SEC-005} & \textbf{Treatment:} \code{RM-1A}, \code{RM-1C}.
-\textbf{Prevention:} \code{RM-3D}, \code{RM-4A}. & Affected versions are fixed
-or contained; startup state and planted CWD, environment-path, and writable-path
-canaries prove that untrusted plugins do not load or execute. \\
-
-\code{FMT-SAF-001} & \textbf{Evidence and administrative adjudication:}
-\code{RM-2C}. \textbf{Governance:} \code{RM-3I}, \code{RM-4A}. & Every
-identified dispute has
-a recorded ruling naming the authoritative artifact and the change made; the
-declared subset is machine-readable and its divergences are classified without
-an unexplained residual category; the adjudication procedure is adopted and its ledger is
-current. Closure applies to the declared subset only, never to the format as a
-whole. The 90-day adjudication target is administrative and does not assign an
-inherent-risk route to this unrated record. \\
-
-\code{IND-SAF-001} & \textbf{Treatment:} \code{RM-1A}, \code{RM-2C}.
-\textbf{Prevention:} \code{RM-3A}, \code{RM-4A}. & Exact supported
-release/backport artifacts accept the sufficient nonminimal fixture and
-predictably reject the undersized invalid comparator. \\
-
-\code{IND-SAF-002} & \textbf{Treatment:} \code{RM-1A}, \code{RM-2C}.
-\textbf{Prevention:} \code{RM-3A}, \code{RM-4A}. & Corrected writer output
-round-trips; the complete defined legacy population is inventoried; and repaired
-files preserve recorded checksums and provenance and pass supported readers, or
-have an accountable deterministic disposition. \\
-
-\code{EXT-PRIV-001} & \textbf{Evidence:} \code{RM-2E}.
-\textbf{Conditional treatment:} \code{RM-3D}, \code{RM-3F}. & The bounded study is completed;
-a negative disposition identifies its tested method, scope and population, an
-inconclusive result remains open, and a formal rating and treatment follow only
-if a concrete affected population and harm are supported. \\
-
-\code{SUP-SAFE-001} & \textbf{Evidence:} \code{RM-1A}, \code{RM-2F}.
-\textbf{Conditional treatment:} \code{RM-3E}. & The bounded mismatch study is
-completed and routed or records a documented negative result over the tested
-profile population; an inconclusive result remains open and re-planned. \\
-
+\code{CORE-SEC-001} & \code{RM-1A}, \code{RM-1B} &
+\code{RM-2A}, \code{RM-3A}--\code{RM-3C}, \code{RM-4A}; only named tranches close. \\
+\code{CORE-SEC-002} & \code{RM-1A}, \code{RM-1B} &
+\code{RM-2A}, \code{RM-2C}, \code{RM-3A}--\code{RM-3C}, \code{RM-4A}. \\
+\code{CORE-TOOL-001} & \code{RM-1A}, \code{RM-1B} &
+\code{RM-2A}, \code{RM-3C}, \code{RM-4A}. \\
+\code{CORE-PRIV-001} & \code{RM-1A}, \code{RM-1D}; conditional \code{RM-2G} &
+\code{RM-4A}; closure states the tested disclosure boundary. \\
+\code{CORE-SAFE-001} & \code{RM-1A}, \code{RM-1F}, \code{RM-2D} &
+\code{RM-3G}; closure applies only to the named deployment and measured profile. \\
+\code{CORE-SAFE-002} & \code{RM-1A}, \code{RM-1F}, \code{RM-2D} &
+\code{RM-3G}; structural closure names the delivered mechanism/layout/driver. \\
+\code{LONG-SAF-001} & \code{RM-2H} &
+\code{RM-3H}, \code{RM-2C}, \code{RM-3E}, \code{RM-4A}; closure is corpus-specific. \\
+\code{APP-SEC-001} & \code{RM-0A}, \code{RM-1A}, \code{RM-1C} &
+\code{RM-2A}, \code{RM-2B}, \code{RM-4A}; each governed service closes separately. \\
+\code{APP-SEC-002} & \code{RM-1A}, \code{RM-1C} & \code{RM-4A}. \\
+\code{APP-SEC-003} & \code{RM-1A}, \code{RM-1C}; \code{RM-0A} for a confirmed
+Critical-equivalent service & \code{RM-2A}, \code{RM-2B}, \code{RM-4A}. \\
+\code{APP-SEC-004} & \code{RM-1A}, \code{RM-1C} &
+\code{RM-2A}, \code{RM-2B}, \code{RM-4A}. \\
+\code{APP-SEC-005} & \code{RM-1A}, \code{RM-1C} & \code{RM-3D}, \code{RM-4A}. \\
+\code{IND-SAF-001} & \code{RM-1A}, \code{RM-2C} & \code{RM-3A}, \code{RM-4A}. \\
+\code{IND-SAF-002} & \code{RM-1A}, \code{RM-2C} & \code{RM-3A}, \code{RM-4A}. \\
+\code{CORE-SEC-003} & Evidence \code{RM-1A}, \code{RM-1E}; conditional
+\code{RM-1B} & \code{RM-3A}--\code{RM-3C}, \code{RM-4A}; each supported
+adverse path is promoted and routed. \\
+\code{FMT-SAF-001} & Administrative adjudication \code{RM-2C} &
+\code{RM-3I}, \code{RM-4A}; closure is dispute/subset-specific and assigns no urgency. \\
+\code{EXT-PRIV-001} & Evidence \code{RM-2E} & Conditional \code{RM-3D},
+\code{RM-3F}; rate only after population and harm are supported. \\
+\code{SUP-SAFE-001} & Evidence \code{RM-1A}, \code{RM-2F} & Conditional
+\code{RM-3E}; rate only after a bounded adverse scenario is supported. \\
 \end{longtable}
 \endgroup
 
 \subsection{Change Control and Residual Risk}
 \label{sec:roadmap-change-control}
 
-Each implementation record should contain the package identifier, named
-accountable person, responsible implementer, independent verifier, release or
-deployment approver, affected scope, linked findings and recommendations,
-linked finding-and-scope SLA child records, trigger event, trigger owner, actual
-trigger date, recommended maximum horizon, approved committed date or release,
-hard and coordination dependencies with
-their owner and state, effort estimate and assumptions, status, evidence links,
-target residual tier and status with its scope and assumptions, named risk-
-tolerance authority, exception identifier, reassessment trigger, and the last
-decision date. Status
-should use
-\emph{Proposed}, \emph{Accepted}, \emph{In progress}, \emph{Blocked},
-\emph{Implemented pending verification}, \emph{Verified},
-\emph{Deferred under exception}, \emph{Risk accepted}, or
-\emph{Superseded}. A missed due-date event is recorded immutably as
-\emph{Overdue}; a later active exception may add \emph{Deferred under
-exception} for the exact scope but does not erase the miss. Blocked, deferred,
-accepted, or superseded work requires an explanatory decision record.
+Each implementation record contains package, accountable owner, implementer,
+verifier, rollout approver, scope, linked records and SLA children, trigger and
+T0, route and due date, dependencies and owners, effort assumptions, status,
+evidence, target and verified residual tier/status, risk authority, exception,
+reassessment trigger, and decision date. Status is \emph{Proposed},
+\emph{Accepted}, \emph{In progress}, \emph{Blocked}, \emph{Implemented pending
+verification}, \emph{Verified}, \emph{Deferred under exception}, \emph{Risk
+accepted}, or \emph{Superseded}. A missed date remains immutably
+\emph{Overdue}; later exception does not erase it.
 
-Any horizon, gate, control, compatibility, or residual-risk exception requires
-a named \code{GOV} approver, rationale, affected scope and unmet requirement,
-interim or compensating controls with evidence, monitoring owner and cadence,
-issue date, expiration date, and automatic reopen or reassessment triggers.
-Exceptions do not revise inherent risk and cannot be indefinite. No exception
-permits a known, uncontained Critical-equivalent external-resource path to
-continue untrusted processing: the path is contained or the job is stopped;
-an exception may govern only later treatment or architecture.
+Every exception names \code{GOV}, rationale, exact scope and unmet requirement,
+tested interim controls, monitoring owner/cadence, issue and expiry dates, and
+automatic reopen triggers. It neither revises inherent risk nor permits a
+known uncontained Critical-equivalent path to keep processing untrusted input.
+Exceptions are finite.
 
-After acceptance testing, the implementer supplies the artifacts,
-\code{ASSURE} verifies them, the package owner attests readiness, and the
-release or deployment approver authorizes rollout. The named \code{GOV} risk
-authority then reassesses current residual risk using
-Section~\ref{sec:risk-rubric}, identifies the controls actually credited, and
-records a decision to accept, further reduce, avoid, or transfer the remaining
-risk. Target residual risk is not marked achieved before that review, and the
-verified current residual is recorded as the later result.
-Each reassessment is a dated, immutable snapshot with its scope, assumptions,
-verifier, and evidence; it does not overwrite the original inherent assessment.
-
-The roadmap authority should review Phases~0--2 at least weekly while open,
-Phase~3 at each planned release gate, and Phase~4 at its stated cadence. New
-findings enter the response route first and are then mapped to the earliest
-work package capable of meeting that route; they are not assigned a phase from
-recommendation numbering or implementation convenience.
-Event-driven reassessment is also required after a control failure, new
-incident or reproducer, materially changed HDF5 or downstream release/default,
-changed trust boundary, privilege, automation, data sensitivity or dependency,
-fuzz or telemetry regression, and exception expiry.
-For recurring \code{RM-4A} work, each review produces a dated point-in-time
-verification snapshot rather than a permanent completion claim. A later gate
-failure, event trigger, or affected release reopens the scoped record and
-creates a new SLA child and reassessment snapshot while preserving the prior
-history.
+After verification and rollout, \code{GOV} reassesses current residual risk
+under Section~\ref{sec:risk-rubric}, records credited controls and a decision to
+accept, reduce, avoid, transfer, or escalate, and preserves the inherent rating.
+The result is a dated immutable snapshot, not a permanent closure claim.
+Phases~0--2 are reviewed at least weekly while open, Phase~3 at release gates,
+and Phase~4 at its cadence. Control failure, new incident/reproducer, changed
+release/default/trust/privilege/automation/sensitivity/dependency, test or
+telemetry regression, and exception expiry trigger reassessment and a new SLA
+child while preserving history.
 
 \end{document}

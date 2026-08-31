@@ -51,8 +51,6 @@
 \setminted[bash]{fontsize=\scriptsize,breaklines}
 \setminted[toml]{fontsize=\scriptsize,breaklines}
 
-\usepackage{svg}
-
 % Short URLs
 \DeclareFieldFormat{url}{\href{#1}{\mkbibacro{URL}}}
 
@@ -60,6 +58,8 @@
 
 \title{HDF5 Audit Report}
 \author{Gerd Heber\footnote{The HDF Group, \code{gheber@hdfgroup.org}} and Elena Pourmal\footnote{Lifeboat, LLC, \code{elena.pourmal@lifeboat.llc}}}
+% Keep presentation-only footnotes and URL formatting out of PDF metadata.
+\hypersetup{pdfauthor={Gerd Heber and Elena Pourmal}}
 \date{\today}
 \rfcversion{2026-001}
 \organization{HDFG}
@@ -92,6 +92,9 @@
 
 % Table of Contents
 \newpage
+% Keep the decision document navigable without listing paragraph-level
+% implementation detail.  Deeper headings remain available through PDF links.
+\setcounter{tocdepth}{3}
 \tableofcontents
 
 % Main text of RFC
