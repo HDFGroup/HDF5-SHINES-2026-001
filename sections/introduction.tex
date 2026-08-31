@@ -25,27 +25,13 @@ the front matter.
 \subsection{Objectives and Intended Audience}
 \label{sec:engagement-objectives}
 
-The objectives of the assessment are to:
-
-\begin{enumerate}
-    \item identify important assets, interfaces, capabilities, trust boundaries,
-          and failure modes across the HDF5 ecosystem;
-    \item distinguish accidental safety and data-integrity failures from
-          adversarial security failures and privacy harms arising during
-          authorized operation;
-    \item identify recurring root-cause classes rather than treating individual
-          crashes, CVEs, disclosures, and interoperability failures as
-          unrelated events;
-    \item examine how risk propagates between the file format, core library,
-          tools, extensions, bindings, applications, supply chain, and
-          independent implementations;
-    \item distinguish file-format conformance, acceptance by a particular
-          implementation, and safe use in a particular deployment;
-    \item recommend mitigations attributable to the actors able to implement
-          and enforce them; and
-    \item identify lessons applicable to comparable open-source scientific data
-          ecosystems.
-\end{enumerate}
+The assessment maps HDF5 assets, capabilities, trust boundaries, and failure
+modes; distinguishes non-adversarial safety failures, adversarial security
+failures, and privacy harms during authorized operation; groups evidence by
+recurring root cause; separates conformance, reader acceptance, and deployment
+safety; and assigns mitigations to actors able to enforce them. It considers
+the format, core library and tools, extensions, bindings, applications, supply
+chain, independent implementations, and data lifecycle.
 
 The primary audience is The HDF Group's maintainers, security responders,
 release engineers, and technical governance bodies. Additional audiences
@@ -62,80 +48,51 @@ involved.
 \subsection{Scope}
 \label{sec:assessment-scope}
 
-Component scope is not binary in this report. The assessment distinguishes the
-following levels of coverage:
+The assessment uses three coverage levels:
 
 \begin{description}
     \item[Primary assessment objects.]
-    These are the HDF5 on-disk format; the core C library, with emphasis on its
-    handling of file-controlled metadata; HDF5 command-line tools; the capability,
-    trust, and privacy characteristics of VOL connectors, filter plugins, and
-    Virtual File Drivers as extension classes; and HDF5 build, release, and
-    dependency configuration. The report states findings and mitigations for
-    these objects.
+    The HDF5 on-disk format; the core C library and command-line tools; VOL,
+    filter, and VFD extension classes; and HDF5 build, release, and dependency
+    configuration. The report states findings or evidence actions for these
+    objects where the record supports them.
 
     \item[Boundary case studies.]
-    Selected downstream incidents and interoperability disputes are examined to
-    determine how HDF5 capabilities interact with application authority,
-    deployment policy, or independent implementations. The cases include model
-    and dataset ingestion, external-resource resolution, plugin loading, and
-    conformance disputes involving files produced by independent writers. The
-    referenced projects are not audited as products.
+    Selected incidents and interoperability disputes show how HDF5 capabilities
+    interact with application authority, deployment policy, or independent
+    writers. The referenced projects are not audited as products.
 
     \item[Contextual references.]
-    Other components are identified to describe ecosystem reach, dependency
-    relationships, compatibility consequences, or potential exposure. A
-    contextual reference does not constitute an assessment or assurance
-    conclusion about that component.
+    Other components appear only to explain ecosystem reach, dependencies,
+    compatibility, or potential exposure; their inclusion is not an assessment.
 \end{description}
 
-Case studies and samples are selected purposively according to exposure to
-untrusted input or ambient authority, evidence of a recurring failure class,
-interoperability or archival consequence, and relevance to cross-cutting
-mitigations. They are not a statistical sample and do not support prevalence or
-frequency estimates.
-
-In this report, \emph{ecosystem-wide} describes the breadth of surfaces
-considered. It does not mean that every implementation, configuration, or
-downstream product was examined exhaustively.
+Cases were selected purposively for untrusted-input or ambient-authority
+exposure, recurring failure classes, interoperability or archival consequence,
+and cross-cutting controls. They are not a statistical sample; ``ecosystem-wide''
+describes breadth of surfaces, not exhaustive coverage or prevalence.
 
 \paragraph{Out of scope.}
-The following are outside the engagement:
+Outside the engagement are:
 
 \begin{itemize}
-    \item HSDS source code, client behavior, REST endpoints, authentication and
-          authorization, tenant isolation, deployment configuration, storage
-          backends, and service availability;
-    \item a complete safety, security, or privacy assessment of HDFView, Keras,
-          TensorFlow, Hugging Face, PureHDF, or any other application, service,
-          framework, or independent implementation cited as a case study or
-          ecosystem dependency;
-    \item general AI or machine-learning safety, model behavior, training,
-          inference, and framework functionality unrelated to an HDF5
-          integration boundary;
-    \item detailed assessment of MPI semantics, collective-I/O correctness,
-          concurrency, fault tolerance, performance, or parallel-filesystem
-          security in Parallel HDF5;
-    \item exhaustive review or testing of every HDF5 release, platform, build
-          configuration, compiler, filter, connector, binding, application,
-          package, or independent implementation;
-    \item penetration testing of production services, exploit development, or
-          proof that every defect or vulnerability class has been identified;
-    \item assessment of a particular organization's production infrastructure,
-          credentials, identity systems, network controls, or operational
-          procedures, except as context for a cited incident or mitigation; and
-    \item legal, regulatory, contractual, research-ethics, or functional-safety
+    \item HSDS implementation and operations (it appears only in ecosystem
+          context);
+    \item product-wide assessment of HDFView, Keras, TensorFlow, Hugging Face,
+          PureHDF, or other cited downstream or independent projects;
+    \item AI/ML behavior unrelated to an HDF5 integration boundary, and detailed
+          MPI, collective-I/O, concurrency, performance, or parallel-filesystem
+          analysis;
+    \item exhaustive testing of releases, platforms, configurations, extensions,
+          bindings, applications, and packages, or penetration testing and
+          exploit development; and
+    \item organization-specific infrastructure assessment or any legal,
+          regulatory, contractual, research-ethics, or functional-safety
           certification.
 \end{itemize}
 
-References to HDFView identify downstream exposure or reader behavior, not an
-HDFView finding. References to machine-learning frameworks or services concern
-only their handling of HDF5-controlled inputs. References to Parallel HDF5 are
-limited to the configuration, dependency, extension, or trust-boundary
-characteristics expressly discussed.
-
-HSDS may appear in ecosystem diagrams for context, but no conclusion about
-HSDS should be inferred.
+References to these systems are limited to the expressly discussed HDF5
+boundary and do not create findings about the product as a whole.
 
 \subsection{Assessment Dimensions}
 \label{sec:assessment-dimensions}
@@ -179,13 +136,34 @@ governance controls. It does not determine compliance with privacy statutes,
 regulations, contracts, consent requirements, institutional policies, or
 research-ethics obligations.
 
+\subsection{Assessment Surfaces}
+\label{sec:assessment-surfaces}
+
+Figure~\ref{fig:hdf5-assessment-surfaces} maps the principal components and
+interfaces considered when identifying HDF5 risk. Inclusion in the figure
+provides ecosystem context and does not override the scope levels and
+limitations defined in Section~\ref{sec:assessment-scope}. In particular, HSDS
+is shown for context but remains outside the engagement.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/HDF5_Surfaces.png}
+    \caption{HDF5 assessment surfaces.}
+    \label{fig:hdf5-assessment-surfaces}
+\end{figure}
+
 \subsection{Temporal Boundary and Evidence Basis}
 \label{sec:evidence-boundary}
 
 The evidence cutoff for this revision is August 27, 2026. Public evidence
-available on or before that date is eligible for consideration. Later
-developments are outside this revision unless expressly incorporated as
-subsequent-event updates.
+available on or before that date is eligible for consideration. A retrieval,
+archive-capture, or citation-access date after the cutoff may document an
+artifact or event that existed on or before August 27, provided that the cited
+record identifies that earlier artifact or event and the assessment does not
+rely on a later substantive change. A measurement, reproduction, fix, issue
+update, decision, or other substantive evidence first generated after the
+cutoff is a subsequent-event update and is outside this revision unless
+expressly incorporated and labelled as such.
 
 The historical analysis has no fixed lower date and includes earlier releases
 where necessary to examine cited vulnerabilities, compatibility behavior, and
@@ -206,45 +184,14 @@ from representative downstream and independent projects.
 \subsection{Methodology}
 \label{sec:assessment-methodology}
 
-The engagement uses a qualitative, risk-informed technical-assessment method:
-
-\begin{enumerate}
-    \item \textbf{Surface and trust-boundary mapping.}
-          The ecosystem is decomposed into format, parser, tool, extension,
-          binding, application, supply-chain, independent-implementation, and
-          data-lifecycle surfaces.
-
-    \item \textbf{Asset and harm analysis.}
-          The assessment identifies relevant data, metadata, code, credentials,
-          compute and storage resources, availability, interoperability, and
-          interpretability, together with plausible safety, security, and
-          privacy consequences.
-
-    \item \textbf{Document and artifact examination.}
-          Specifications, documentation, public source artifacts, vulnerability
-          records, fixes, issue records, build configuration, and representative
-          ecosystem documentation are examined.
-
-    \item \textbf{Root-cause and pattern analysis.}
-          Defects and incidents are grouped by the earliest violated invariant
-          or trust-boundary failure supported by the evidence, rather than only
-          by crash type, CVE identifier, or affected application.
-
-    \item \textbf{Conformance and interoperability analysis.}
-          Acceptance by one HDF5 reader is not treated as proof that a file
-          conforms to the applicable specification, and rejection by another
-          reader is not treated as proof that it does not. Where implementations
-          disagree, the analysis distinguishes the normative requirement,
-          writer behavior, reader validation, and compatibility policy.
-
-    \item \textbf{Risk and mitigation analysis.}
-          Adverse-event scenarios are evaluated under the report-wide inherent-
-          risk method in Section~\ref{sec:risk-rubric}. Recommendations are then
-          analyzed separately for control coverage, enforcing actor, response
-          urgency, implementation dependencies, effort, sequence, and acceptance
-          evidence. Cross-cutting controls and prerequisite protections are
-          distinguished from local remediations.
-\end{enumerate}
+The qualitative method combines: (1) surface, asset, and trust-boundary mapping;
+(2) examination of specifications, source and build artifacts, vulnerability
+records, fixes, tests, and issue records; (3) grouping by the earliest evidenced
+invariant or authority-boundary failure; (4) separate analysis of normative
+conformance, writer behavior, reader validation, and compatibility policy; and
+(5) scenario rating under Section~\ref{sec:risk-rubric}, followed by separate
+implementation planning. Acceptance by one reader is not proof of conformance,
+and rejection by another is not proof of non-conformance.
 
 For incidents involving multiple components, the analysis distinguishes the
 HDF5 mechanism, the authority supplied by the host application, the failed
@@ -252,17 +199,15 @@ control or policy boundary, and the resulting impact. The presence of HDF5 in
 an exploit chain is not, without additional evidence, classified as a parser or
 file-format defect.
 
-The report distinguishes, where practicable, among:
+Evidence is labelled, where practicable, as:
 
 \begin{description}
-    \item[Documented observation:] directly supported by a cited specification,
-          source artifact, test, advisory, incident record, or maintainer
-          diagnosis; the applicable discussion distinguishes source-reported
-          evidence from independent reproduction;
-    \item[Reasoned inference:] a conclusion drawn from observations, with
-          material assumptions and uncertainty identified; and
-    \item[Recommendation:] a proposed control to be validated through
-          implementation and acceptance evidence.
+    \item[Documented observation:] supported by a cited primary artifact, with
+          source-reported evidence distinguished from independent reproduction;
+    \item[Reasoned inference:] a conclusion whose material assumptions and
+          uncertainty are identified; or
+    \item[Recommendation:] a proposed control awaiting implementation and
+          acceptance evidence.
 \end{description}
 
 Unless a finding expressly records an independent reproduction or test, it
@@ -450,12 +395,13 @@ the controlling assumptions rather than silently lowering the rating.
 A rating record also states one of the following statuses:
 
 \begin{description}
-    \item[Rated.] Both axes and the resulting tier are supported by the cited
-          evidence.
-    \item[Provisional.] Both axes can be estimated, but material uncertainty
-          remains and is expressly stated.
-    \item[NE---not evaluated.] At least one axis lacks sufficient evidence. An
-          NE finding is not implicitly Low risk.
+    \item[Rated.] The impact and exposure levels and the resulting inherent-risk
+          tier are supported by the cited evidence.
+    \item[Provisional.] The impact and exposure levels can be estimated, but
+          material uncertainty remains and is expressly stated.
+    \item[NE---not evaluated.] At least one required rating input --- impact or
+          exposure --- lacks sufficient evidence. An NE finding is not implicitly
+          Low risk.
     \item[N/A---not applicable.] The item is not a risk-bearing finding, such as
           a recommendation, implementation task, or program theme.
 \end{description}
@@ -537,7 +483,10 @@ further reduce, avoid, or transfer it. \\
 Unless a stricter stated risk tolerance applies, the default response-urgency
 rule maps Critical current residual risk to \emph{Immediate}, High to
 \emph{Near-term}, Moderate to \emph{Planned}, and Low to
-\emph{Monitor}. Active exploitation or recurrence, imminent harm, or a
+\emph{Monitor}. A finding whose rating is expressed as a tier range is routed
+at the upper bound of that range; the report refers to such a case as
+\emph{upper-bound-High} when the range is Moderate--High. Routing at the upper
+bound does not collapse the range, which remains the stated rating. Active exploitation or recurrence, imminent harm, or a
 credible irreversible consequence can raise urgency. When current residual risk
 has not been assessed, inherent risk is the conservative provisional baseline.
 Dependencies and effort may shape the delivery plan or require an interim
@@ -571,6 +520,194 @@ gates, acceptance evidence, and residual-risk decision requirements. Those
 planning fields do not revise the register's inherent ratings or represent
 stakeholder-approved commitments until adopted and assigned.
 
+\subsection{Identifier Scheme and Relationship to SSP SIG Artifacts}
+\label{sec:identifier-scheme}
+
+This report and the HDF5 Safety, Security \& Privacy (SSP) SIG repositories are
+separate programme artifacts with separate namespaces. Report-local findings
+use component/dimension forms such as \code{CORE-SEC-nnn}; recommendations use
+forms such as \code{CORE-Sn}; and roadmap packages use \code{RM-nX}. Outside
+this document they should be prefixed with \code{SHINES-2026-001:}.
+
+SSP SIG policy controls use \code{HDF5-SHINES-FAMILY-nn}; its threat, hazard,
+and exposure registries use \code{ATK-nnn}, \code{HAZ-nnn}, and
+\code{EXP-nnn}~\cite{hdf5-ssp-controls,hdf5-ssp-atk,hdf5-ssp-haz,hdf5-ssp-exp}.
+Those records are not findings or recommendations of this report. The OpenSSF
+coverage matrix scores SSP controls, not this report's findings
+~\cite{hdf5-ssp-osps-matrix}. Appendices~\ref{app:findings-register} and
+\ref{app:recommendation-register} contain editorial crosswalks; a mapping
+claims neither adoption, control satisfaction, nor agreement between ratings.
+
+\subsection{Reconciliation with the SSP SIG Risk Registries}
+\label{sec:rubric-reconciliation}
+
+The two rating methods are incompatible. SSP SIG multiplies 1--5 severity by
+1--5 likelihood and bands the resulting score; this report resolves ordinal
+I1--I4 impact and E1--E4 exposure through
+Table~\ref{tab:inherent-risk-matrix}. Scores and tiers cannot be converted or
+merged: SSP entries rate ecosystem mechanisms, whereas this report rates
+bounded adverse-event scenarios and withholds a tier when population or
+consequence evidence is insufficient. Table~\ref{tab:ssp-divergence} records
+the material reconciliations; the full record-level crosswalk remains in
+Appendix~\ref{app:findings-register}.
+
+\iffalse
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.15\widetablewidth}>{\raggedright\arraybackslash}p{0.17\widetablewidth}>{\raggedright\arraybackslash}p{0.17\widetablewidth}>{\raggedright\arraybackslash}p{0.47\widetablewidth}@{}}
+\caption{Known rating divergences between the SSP SIG registries and this
+report}
+\label{tab:ssp-divergence}\\
+\hline
+\textbf{SSP SIG entry} & \textbf{Their rating} & \textbf{This report} &
+\textbf{Why they differ} \\
+\hline
+\endfirsthead
+
+\caption[]{Known rating divergences between the SSP SIG registries and this
+report, continued}\\
+\hline
+\textbf{SSP SIG entry} & \textbf{Their rating} & \textbf{This report} &
+\textbf{Why they differ} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\code{ATK-001} metadata size and address fields corrupt parser memory &
+25, Critical (likelihood ``almost certain'') &
+\code{CORE-SEC-001}, High, Provisional &
+The registry rates the mechanism's recurrence across the CVE history. This
+report rates a bounded population --- deployments on an affected
+version-and-path pair processing untrusted files --- and holds exposure at
+E2--E3 because installed-population prevalence is not established. Closing the
+version-and-path gap in Appendix~\ref{app:cve-history-summary} is what would
+let the exposure axis move. \\
+
+\code{ATK-009} malformed files exhaust memory or CPU &
+16, Very High &
+\code{CORE-SEC-002}, Moderate &
+Impact, not exposure. This report assigns I2 because the evidenced consequence
+is a recoverable process or workflow interruption; a mission-level outage
+requires a separate deployment-specific record. The registry's severity
+reflects service-denial in a hostile deployment. \\
+
+\code{ATK-011} malicious plugin resolution executes untrusted extension code &
+20, Very High &
+no core finding; \code{APP-SEC-005} High at the application boundary &
+A genuine methodological disagreement, not an evidence gap. Decision rule 3 of
+Section~\ref{sec:risk-rubric} rates a scenario at the boundary where authority
+resides, and the evidenced instance is a downstream search-path policy failure.
+The registry rates the library capability itself. Both agree the capability
+requires a distinct control domain (\code{CORE-S10}). \\
+
+\code{ATK-013} trojanized packages or binaries &
+15, High &
+no finding; \code{SUP-SAFE-001} unrated &
+Scope. This report registers a build-and-feature \emph{mismatch} observation
+and never developed a distribution-compromise scenario. The registry entry is
+the better starting point, and \code{RM-2F} should adopt it rather than
+re-derive one. \\
+
+\code{HAZ-005} out-of-space during write or close &
+15, High, with a full accident chain and three safety constraints &
+\code{CORE-SAFE-001}, Moderate--High, Provisional, Low confidence &
+The two methods are not numerically convertible even though their bands overlap.
+This report bounds impact at I2--I3 and exposure at E2: finite storage must fill
+during an active write and the deployment must lack a control preserving a
+known-good recoverable state. Ordinary operation reports an I/O failure, but
+the cited interface defines no recovery, safe-abandonment, or poisoned-file
+contract. Low confidence records the absence of measured failure sequences,
+recoverability outcomes, recurrence, and population evidence. \code{RM-2D} therefore
+supplies acceptance and residual-risk evidence rather than gating whether the
+scenario receives a rating. The registry's safety constraints SC-1 to SC-3
+should be adopted as that study's hypotheses. \\
+
+\code{EXP-001} no standard whole-file encryption by default &
+20, Very High &
+no finding; \code{CORE-PRIV-S4}, conditional \code{RM-2G} &
+A framing difference. This report does not rate the absence of a feature as a
+scenario, and treats encryption as one partial control whose credit depends on
+tested recovery. The registry rates the resulting exposure directly. \\
+
+\code{EXP-002} metadata leakage despite encrypted payload &
+12, High &
+\code{CORE-PRIV-001}, Moderate--High &
+\textbf{Consistent.} The two records describe the same mechanism and land in
+comparable bands. \\
+
+\code{EXP-004}, \code{EXP-005}, \code{EXP-006}, \code{EXP-007} extension and
+storage-boundary exposures &
+12, 12, 10, 9 &
+\code{EXT-PRIV-001}, unrated backlog &
+This report requires a named deployment, sensitive-data population, recipient,
+and harm before rating, and has none. The registry rates the mechanisms.
+\code{RM-2E} should take these four entries as its enumeration rather than
+starting from a blank scenario. \\
+
+\end{longtable}
+\endgroup
+\fi
+
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\LTleft}{-0.55in}
+\setlength{\LTright}{-0.55in}
+\begin{longtable}{@{}p{0.20\widetablewidth}p{0.25\widetablewidth}p{0.51\widetablewidth}@{}}
+\caption{Material reconciliations with SSP SIG ratings}
+\label{tab:ssp-divergence}\\
+\hline
+\textbf{SSP record} & \textbf{This report} & \textbf{Reconciliation} \\
+\hline
+\endfirsthead
+\hline
+\textbf{SSP record} & \textbf{This report} & \textbf{Reconciliation} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\code{ATK-001}, \code{ATK-009} &
+\code{CORE-SEC-001} High, Provisional; \code{CORE-SEC-002} Moderate &
+The registry rates recurrence or service denial at mechanism level. This report
+bounds affected version/path prevalence and the evidenced recoverable-workflow
+impact; a deployment-specific mission outage would be a separate scenario. \\
+
+\code{ATK-011}, \code{ATK-013} &
+\code{APP-SEC-005} High; \code{SUP-SAFE-001} backlog &
+Plugin execution is rated where the evidenced search-path authority resides.
+The supply-chain record concerns feature mismatch, not the registry's distinct
+trojanized-package scenario. \\
+
+\code{HAZ-005} &
+\code{CORE-SAFE-001} Moderate--High, Provisional, Low confidence &
+The scenario is bounded to finite storage filling during active write without a
+known-good recovery control. \code{RM-2D} measures failure sequences and
+recoverability; it does not gate the provisional rating. \\
+
+\code{EXP-001}, \code{EXP-002}, \code{EXP-004}--\code{EXP-007} &
+\code{CORE-PRIV-001} Moderate--High; \code{EXT-PRIV-001} backlog &
+This report rates a bounded plaintext-metadata disclosure, not the absence of
+whole-file encryption. Extension mechanisms remain unrated until a deployment,
+sensitive population, recipient, and harm are established. \\
+
+\end{longtable}
+\endgroup
+
+Where this report is silent and a registry entry exists, the registry entry
+stands as the SSP SIG's own assessment. Silence here is not disagreement, and
+Section~\ref{sec:assessment-limitations} applies.
+
 \subsection{Limitations and Assurance}
 \label{sec:assessment-limitations}
 
@@ -601,66 +738,18 @@ acceptance criteria, and residual-risk decision.
 \subsection{Privacy Context}
 \label{sec:privacy-context}
 
-The National Institute of Standards and Technology (NIST) defines privacy as “a condition that safeguards 
-human autonomy and dignity through various means, including confidentiality, predictability, manageability, 
-and disassociability.” Historically, privacy was interpreted as preventing unauthorized access to or 
-disclosure of Personally Identifiable Information (PII). However, NIST emphasizes that contemporary 
-privacy risks extend far beyond traditional notions of confidentiality. Modern privacy concerns increasingly 
-arise from inference, aggregation, behavioral profiling, secondary use of data, context changes, and 
-surveillance effects~\cite{nist_privacy_framework_2020}. NIST emphasizes that privacy risks are distinct from cybersecurity risks and 
-may emerge even when systems are secure, lawful, and functioning exactly as intended~\cite{brooks2017privacy}. 
-HDF5 inherits many of the same classes of privacy risks identified by NIST, although these risks manifest 
-differently in scientific and engineering environments. 
+NIST treats privacy as broader than confidentiality: inference, aggregation,
+secondary use, context change, and surveillance can create harm even when a
+system is secure and functioning as intended
+~\cite{nist_privacy_framework_2020,brooks2017privacy}. HDF5's self-describing
+metadata, object structure, extension architecture, provenance, caches, and
+workflow artifacts can therefore reveal information beyond the stored payload.
 
-HDF5 was designed to maximize data shareability, extensibility, portability, and long-term usability, 
-and doesn’t enforce data privacy or provide data protection mechanisms. Its rich metadata model, 
-self-describing structure, plugin architecture, and interoperability layers can expose information 
-extending beyond the raw data stored within the file. Sensitive information in HDF5 ecosystems may emerge 
-through HDF5 internal and user-defined metadata, for example, HDF5 attributes, object names, 
-file organization, and object properties. It may be exposed during the HDF5 data lifecycle through 
-provenance records, workflow artifacts, and correlations across multiple datasets and files. 
-
-A common misconception in scientific computing is that privacy concerns are resolved once 
-data access is restricted or datasets are anonymized. However, privacy risks often persist even 
-when traditional security mechanisms are correctly implemented. Restricting access does not prevent 
-inference from metadata. Anonymization may remove direct identifiers while leaving contextual 
-information sufficient for re-identification. Similarly, data reduction or aggregation does not 
-eliminate the possibility that sensitive information may be reconstructed through correlations 
-across files, workflows, or external repositories. In modern scientific ecosystems, privacy 
-exposure frequently results from accumulation of data and metadata over time rather than disclosure 
-of a single sensitive piece of raw data or metadata.
-
-The privacy risks are amplified by current scientific practice of data openness and shareability.  
-HDF5 datasets increasingly move across organizations, systems, cloud platforms, workflows, and public 
-and private repositories. Data are routinely repurposed beyond their original intent and analyzed by 
-users who were not involved in their creation. Machine learning systems further amplify these concerns 
-by discovering hidden relationships across data stored in HDF5 and enabling new forms of inference 
-that may not have been anticipated when data were originally collected. As a result, data stored in 
-the HDF5 files may experience evolving privacy characteristics through its lifecycle.
-
-Therefore, privacy exposure in HDF5 is not limited to unauthorized access, data breaches,
-unsafe use, or malicious behavior; it is distinct from, but can overlap with, data security and safety.
-By design, the HDF5 file format and library do not guarantee data privacy. In addition, privacy risks may 
-emerge during legitimate scientific workflows, through data sharing, reuse, and analysis.
-In this document, we audit privacy assets and different privacy exposure mechanisms (or surfaces) 
-in HDF5 with the goal of raising awareness about privacy risks when using HDF5. 
-
-
-
-\section{Assessment Surfaces}
-\label{sec:assessment-surfaces}
-
-Figure~\ref{fig:hdf5-assessment-surfaces} maps the principal components and
-interfaces considered when identifying HDF5 risk. Inclusion in the figure
-provides ecosystem context and does not override the scope levels and
-limitations defined in Section~\ref{sec:assessment-scope}. In particular, HSDS
-is shown for context but remains outside the engagement.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=\textwidth]{images/HDF5_Surfaces.png}
-    \caption{HDF5 assessment surfaces (interfaces: rounded rectangles)}
-    \label{fig:hdf5-assessment-surfaces}
-\end{figure}
+Access control, anonymization, and aggregation do not by themselves prevent
+re-identification or inference from metadata and correlations. The risk can
+change as files move between organizations and repositories, are repurposed,
+or are combined with external data and machine-learning analysis. This report
+therefore examines privacy exposure throughout the HDF5 data lifecycle; it does
+not claim that the format or library supplies a general privacy guarantee.
 
 \end{document}

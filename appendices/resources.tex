@@ -1,0 +1,49 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section{Resources and Supporting Tooling}
+\label{app:resources}
+
+The artifacts below are referenced by recommendations in this report as
+existing starting points. Listing a project here identifies a resource; it is
+not an assessment of that project, and none was audited.
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+    \item[HDF5 Safety, Security \& Privacy (SSP) Special Interest
+    Group~\cite{hdf5-ssp-sig}.]
+    Governance, process, and artifact home for the work this report feeds.
+    It is the natural venue for the roadmap adoption decision described in
+    Appendix~\ref{app:phased-roadmap}, and for publishing the
+    \code{CORE-S12} metrics dashboard.
+
+    \item[HDF5 CVE test suite~\cite{cve_hdf5}.]
+    An existing collection of vulnerability-triggering inputs. It is the
+    obvious seed for the permanent corpus proposed in \code{CORE-S6}, which
+    additionally requires per-case expected-outcome metadata and execution in
+    both assertion-enabled and \code{-DNDEBUG} builds. It also contributed to
+    the CVE enumeration in Appendix~\ref{app:cve-history-summary}.
+
+    \item[\code{hdf5-pickles}: a machine-readable specification of the HDF5
+    file format~\cite{hdf5-pickles}.]
+    Directly relevant to three recommendations. It is a candidate source of
+    truth for the invariant registry in \code{CORE-S1}; a generator for the
+    positive and negative fixtures required by \code{IND-S1}; and the origin
+    of issue~\#87, the assert-masking observation tracked as
+    \code{CORE-SEC-003}.
+
+    \item[HDF5 extension skeletons~\cite{hdf5-boneyard}.]
+    Templates for VOL connectors, filters, and VFDs. A natural place to
+    embed the privacy-documentation template required by \code{FILTER-S5} and
+    the trust and search-path defaults required by \code{VOL-S3},
+    \code{FILTER-S1}, and \code{VFD-S4}, so that new extensions inherit them
+    rather than retrofitting them.
+
+    \item[HDF5 plugins~\cite{hdf5_plugins}.]
+    The filter-plugin project whose options govern the dependency set
+    discussed in Section~\ref{sec:supply-chain} and
+    Appendix~\ref{app:supply-chain}. It is the scope boundary for the plugin
+    manifest and allowlist proposed in \code{CORE-S10}.
+\end{description}
+
+\end{document}

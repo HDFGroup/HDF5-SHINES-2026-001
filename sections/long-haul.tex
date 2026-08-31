@@ -11,24 +11,162 @@
 Long-term accessibility depends on more than preservation of the primary file
 bytes. It can also depend on format bounds, required filters and extensions,
 external resources, application schema and provenance, and the continued
-availability of readers that implement the relevant interpretation. Community
-discussion illustrates the operational importance of preserving plugin and
-reader knowledge with archived data~\cite{forum-plugin}. This assessment did
-not inventory an archive or test a representative preservation horizon.
+availability of readers that implement the relevant interpretation. A file
+whose bytes are perfectly preserved and whose required filter no longer exists
+has been archived in the same sense that a sealed envelope with no known
+language inside has been archived.
+
+\subsection{How Extension Dependencies Affect Preservation}
+
+HDF5 extension mechanisms can make interpretation depend on software or storage
+outside the preserved bytes, but the evidence is not equivalent across the
+three classes. Missing filter plugins have documented short-horizon access
+failures. The VFD and VOL observations below are architectural extrapolations
+that identify questions for further study; they are not included in the formal
+rated scenario in this revision.
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+    \item[Filter plugins.]
+    A filtered dataset records its filter by numeric identifier, so the
+    dependency is at least \emph{discoverable} from the file, and a reader can
+    in principle re-implement a sufficiently specified codec. This is the
+    evidenced failure mode: users report being unable to read data because a
+    required filter was missing from their build or unavailable on their
+    platform, across a fifteen-year span and several filter families
+    \cite{forum-filter-compressed-2756,forum-filter-h5dump-3396,
+    forum-filter-dynamic-4047,forum-filter-lzo-4102}. Registered filter
+    identifiers help; an unregistered or private identifier removes even
+    discoverability.
+
+    \item[Virtual file drivers.]
+    A VFD determines whether the bytes can be reached at all. If a file was
+    written through a driver with a non-trivial storage mapping, preserving
+    ``the file'' may not preserve every object needed to reconstruct the
+    mapping. This assessment did not identify a bounded archive population or a
+    realized VFD-dependent preservation failure, so this remains an unrated
+    extension of the analysis.
+
+    \item[VOL connectors.]
+    A VOL connector can service the HDF5 API from a store that is not an HDF5
+    file. The preservation object may therefore include an external store,
+    connector semantics, and configuration rather than a self-contained HDF5
+    file. This report did not identify a bounded population, realized loss, or
+    preservation horizon for that condition. It is an unrated evidence question,
+    not part of \code{LONG-SAF-001}.
+\end{description}
+
+Community discussion has long recorded the operational importance of preserving
+plugin and reader knowledge alongside archived data~\cite{forum-plugin}. For
+this revision, \code{LONG-SAF-001} is limited to archived files that require a
+non-core filter which is unavailable to the later reader. The broader VFD and
+VOL questions should be carried into a future evidence backlog with a defined
+archive population, preservation object, dependency inventory, and measured
+read outcome before any rating is assigned. This assessment did not inventory
+an archive or test a representative preservation horizon, which is why the
+formal missing-filter scenario remains Provisional with Low confidence.
 
 \subsection{Audit Findings and Mitigation Planning}
 
-The present chapter does not yet define an affected archive, time horizon,
-failure condition, impact, or exposure sufficient for a separate formal
-finding. The bounded reader/writer compatibility cases that bear on long-term
-access are registered as \code{IND-SAF-001} and \code{IND-SAF-002} in
-Appendix~\ref{app:findings-register}.
+The evidenced missing-filter scenario is registered as \code{LONG-SAF-001} in
+Appendix~\ref{app:findings-register}, rated \textbf{I2/E2, Moderate,
+Provisional, Low confidence} at a stated assessment horizon of
+ten years or more. Because that horizon is material, decision rule 7 of
+Section~\ref{sec:risk-rubric} forbids ordering this rating directly against
+ratings that state no horizon. The VFD and VOL observations above have no
+impact or exposure axes, tier, confidence, or response urgency in this chapter.
+
+The bounded reader/writer compatibility cases in Section~\ref{sec:indie},
+\code{IND-SAF-001} and \code{IND-SAF-002}, remain separately registered. They
+demonstrate a related consequence --- loss of access when reader expectations
+change --- but arise from different mechanisms and require different controls.
+They are not evidence for the frequency or horizon of filter-plugin
+unavailability and are not used to rate \code{LONG-SAF-001}.
 
 \paragraph{Priority reconciliation.}\mbox{}\\
-This chapter therefore creates no additional response route. Treatment of the
-two bounded compatibility cases follows their Planned clock and the acceptance
-criteria in \code{RM-2C}; broader archival concerns require a defined archive,
-failure condition, consequence, and exposure before they can be rated or
-prioritized.
+\code{LONG-SAF-001} follows the default \emph{Planned} route for its Moderate
+rating. Within 90 days, \code{RM-2H} defines a bounded corpus, inventories each
+file's filter dependencies, and records an accountable availability,
+reproducibility, migration, or acceptance disposition. The longer structural
+work remains effective at \emph{write and deposit} time: once an archive holds
+a file whose required filter is unavailable, treatment may require recovering
+or rebuilding the filter, re-implementing it from a specification, or migrating
+the data with an older environment. If an archive is already failing, that
+present-tense instance is separately scoped and routed without the horizon
+qualifier.
+
+The following identifier names a recommendation only; its number expresses no
+risk, urgency, effort, dependency, or implementation order.
+
+\subsubsection*{Recommendation LONG-S1: Make extension dependencies discoverable, then removable}
+
+For a defined archival corpus, generate one machine-readable report of filters,
+format bounds, external resources, and relevant VFD/VOL dependencies. Prefer a
+tested core-only or widely specified archival copy; where a filter cannot be
+removed, preserve its identifier, specification, test vectors, source/build
+provenance, and a reproducible environment. A deposit must also say whether it
+is a self-contained HDF5 file or a view onto an external system.
+
+Acceptance for \code{LONG-SAF-001} requires every file in the defined corpus to
+have a complete dependency report; the archival profile to open and read with
+all non-core plugins disabled; and every retained filter to be independently
+reproducible from preserved evidence at least once. VFD/VOL inventory results
+remain evidence only until a separate bounded study establishes consequence
+and population. Owners, work packages, and closure records are in
+Appendix~\ref{app:phased-roadmap}.
+
+\iffalse
+\subsubsection*{Recommendation LONG-S1: Make extension dependencies discoverable, then removable}
+
+Treat an extension dependency as something a file must declare, a depositor
+must justify, and an archive must be able to satisfy without the original
+environment.
+
+For filter plugins, this recommendation treats \code{LONG-SAF-001}. Its VFD and
+VOL provisions are proactive and evidence-generating: implementing them does not
+assign a tier to those observations or establish residual-risk reduction for an
+unmeasured population.
+
+\begin{enumerate}
+    \item \textbf{Declare.} Provide a supported way to enumerate every non-core
+          dependency of a file --- filter identifiers and versions, VFD, VOL
+          connector, external resources, and format bounds --- as a single
+          machine-readable report. A depositor cannot manage a dependency that
+          cannot be listed. This reuses the reporting proposed in
+          \code{APP-S6} and \code{CORE-S11}, applied to a file rather than to a
+          build.
+    \item \textbf{Prefer removable dependencies at deposit.} Where an archival
+          copy is being produced, rewriting to core-only features --- or to a
+          filter that is registered, widely implemented, and specified --- is
+          one available control, and \code{h5repack} can perform the mechanical
+          rewrite for supported filter conversions. Make the selected archival
+          profile explicit and test it rather than assuming that rewriting
+          removed every dependency.
+    \item \textbf{Preserve reimplementation evidence, not only a binary.} Where
+          a dependency cannot be removed, archive the codec specification, test
+          vectors with known inputs and outputs, identifier registration,
+          source and build information, and any runnable environment retained
+          by the archive. A preserved binary can remain useful, but it is not a
+          substitute for evidence sufficient to rebuild or re-implement the
+          dependency.
+    \item \textbf{Say what a VOL-backed dataset actually is.} Require that a
+          deposit record state whether the archived artifact is a
+          self-contained HDF5 file or a view onto an external system, because
+          those are different preservation objects with different custodians.
+\end{enumerate}
+
+\noindent\textbf{Acceptance evidence.}
+For a defined corpus: every file has a generated dependency report, and the
+report is confirmed complete by opening the file in an environment where each
+declared dependency is deliberately absent and checking that no undeclared
+dependency is discovered. Files in the archival profile open and read
+correctly in a reference build with \emph{all} non-core plugins disabled ---
+that is the test that demonstrates removal for the defined corpus rather than
+merely local satisfaction. For each retained filter dependency, the archived
+specification and test vectors are sufficient for an independent party to
+reproduce the codec output, demonstrated at least once rather than assumed.
+VFD and VOL reporting is accepted as an inventory result only; a separate
+bounded study is required before it supports a formal risk or preservation
+claim.
+\fi
 
 \end{document}

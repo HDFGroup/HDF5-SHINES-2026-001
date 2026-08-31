@@ -10,24 +10,222 @@
 
 \subsection{HDF5 Safety Observations and Evidence Gaps}
 
-\begin{itemize}
-    \item Disk full~\cite{forum-11714}
-    \item File corruption~\cite{forum-file-corruption}
-    \item Long-term data accessibility and interpretability; see section~\ref{sec:long-haul}
-\end{itemize}
+Safety in this chapter means robustness and data integrity in the absence of a
+malicious actor, as defined in Section~\ref{sec:assessment-dimensions}. This
+revision examines four condition families and registers five formal findings:
+two write-side findings, one filter-dependent archival finding, and two
+reader/writer compatibility findings. A separate format-governance observation
+remains in the evidence backlog because its adverse consequence and exposure
+are not yet bounded.
 
-These observations do not establish response urgency. The bounded
-storage-exhaustion scenario remains \code{CORE-SAFE-001} (NE) pending the
-evidence study in \code{RM-2D}; the long-term-access discussion creates no
-additional formal finding in this revision.
+The first three condition families are write-side and lifecycle risks and were the least developed part of
+an earlier revision of this report; the discussion below states each as a
+distinct trigger, because conflating them --- as an earlier draft did by
+merging storage exhaustion and abrupt termination into one observation ---
+obscures that they need different containment and different structural
+treatment.
 
-\subsection{Verify and Verify -- HDF5 Security}
+\begin{description}[leftmargin=1.5em,style=nextline]
+    \item[Storage exhaustion during write or close.]
+    Storage fills during a write, flush, or close, and the operation reports
+    failure through the ordinary HDF5 error path. The library offers no
+    structured VFD-level notification at the failure point, defined recovery
+    procedure, or supported way to mark the file suspect and abandon it safely.
+    The controlling evidence is a maintainer statement that there is no HDF5
+    recovery story for the condition and no VFD callback for it, together with
+    four candidate treatments and a documented cache workaround used in its
+    place~\cite{forum-enospc-11714}. Registered as
+    \code{CORE-SAFE-001}, \textbf{Moderate--High}. An earlier revision recorded
+    this as NE for want of a bounded recovery path; the recovery path is in
+    absent at the cited architectural boundary. That establishes a control gap;
+    it does not establish how often storage exhaustion occurs or what durable
+    state follows it.
 
-\begin{itemize}
-    \item Integer arithmetic
-    \item File format parsing issues
-    \item Malicious plugins, see section~\ref{sec:extensions}
-\end{itemize}
+    \item[Corruption from abrupt termination.]
+    A writer is killed, crashes, or loses power with metadata updates in
+    flight, and in-memory and durable state diverge with no journal or
+    write-ahead log to reconcile them. Community reports recur across sixteen
+    years, and The HDF Group's own 2024 discussion states that a crash ``can
+    lead to data loss or corruption of the file'' and describes restarting
+    crash-proofing work
+    \cite{forum-recover-1146,forum-crash-state-1598,forum-crash-prevent-2462,
+    forum-flush-crash-3481,forum-flush-corrupt-4958,forum-recover-5441,
+    forum-crash-corruption-7581,forum-crashproofing-12003}. Registered as
+    \code{CORE-SAFE-002}, \textbf{Moderate--High}. This condition had no record
+    of any kind in an earlier revision.
+
+    \item[Extension-dependent loss of interpretability.]
+    An archived dataset requires a non-core filter that is later unavailable.
+    Registered as \code{LONG-SAF-001}, \textbf{Moderate} at
+    a stated ten-year-or-more horizon, and developed in
+    Section~\ref{sec:long-haul}. Because the horizon is material, decision
+    rule 7 forbids ordering this rating directly against ratings that state no
+    horizon. VFD and VOL archival dependencies remain a reasoned extension of
+    the inquiry, not part of this rated scenario.
+
+    \item[Reader/writer disagreement.]
+    The two 2026 chunk-layout cases in Section~\ref{sec:indie}, registered as
+    \code{IND-SAF-001} and \code{IND-SAF-002}. They share an unreadability
+    outcome with \code{LONG-SAF-001}, but not its mechanism: these are
+    specification and metadata-conformance failures, whereas the archival
+    finding concerns an unavailable runtime dependency.
+\end{description}
+
+\noindent\textbf{The shape of the gap this closes.}
+It is worth naming why safety was the thinnest dimension. The rest of this
+report is organised around \emph{read-side hostile input} --- the rubric's
+principal threat scenario, the CVE analysis, the invariant registry, the parser
+boundary, the fuzzing programme, and the security profiles all answer the
+question ``a malicious file has arrived.'' The three findings above answer a
+different question, ``my file did not survive,'' and no structural
+recommendation in the security track addresses it. That asymmetry, rather than
+any judgment that the write path is sound, is why these conditions were
+previously unregistered or unrated.
+
+\noindent\textbf{Coverage limitation, stated against an existing hazard
+analysis.}
+Safety is the least developed dimension in this revision. The
+extent of the gap can be stated precisely rather than vaguely, because the SSP
+SIG has already published a sixteen-entry safety hazard registry built on a
+control-system hazard model with unsafe control actions, derived safety
+constraints, and per-entry
+ratings~\cite{hdf5-ssp-haz,hdf5-safety-hazard-model}.
+
+Table~\ref{tab:haz-crosswalk} maps that registry to this report.
+\textbf{Of sixteen hazards, this revision registers a corresponding formal
+finding for four, an unrated evidence record for two, and nothing at all for
+ten.} An earlier revision covered one. That is the honest measure of this chapter's safety coverage. The
+registry entries are not reproduced or re-rated here --- their method is
+incompatible with Section~\ref{sec:risk-rubric}, as
+Section~\ref{sec:rubric-reconciliation} explains --- and where this report is
+silent, the registry entry stands as the SSP SIG's own assessment. Silence
+here is not disagreement and is emphatically not a Low-risk conclusion.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.09\widetablewidth}>{\raggedright\arraybackslash}p{0.31\widetablewidth}>{\raggedright\arraybackslash}p{0.11\widetablewidth}>{\raggedright\arraybackslash}p{0.45\widetablewidth}@{}}
+\caption{SSP SIG safety hazard registry mapped to this report's coverage}
+\label{tab:haz-crosswalk}\\
+\hline
+\textbf{ID} & \textbf{Hazard} & \textbf{Their rating} &
+\textbf{Coverage in this report} \\
+\hline
+\endfirsthead
+
+\caption[]{SSP SIG safety hazard registry mapped to this report's coverage,
+continued}\\
+\hline
+\textbf{ID} & \textbf{Hazard} & \textbf{Their rating} &
+\textbf{Coverage in this report} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\code{HAZ-001} & Crash during metadata update & 20, Very High &
+\textbf{Covered.} \code{CORE-SAFE-002}, Moderate--High, Near-term containment
+with structural treatment under \code{CORE-SAFE-S2}. Registered in this
+revision; absent from the previous one. \\
+
+\code{HAZ-002} & Concurrent access without safe coordination & 15, High &
+\textbf{Not assessed.} No concurrency scenario was developed. \\
+
+\code{HAZ-003} & Extension boundary violates core invariants & 15, High &
+\textbf{Partially covered as an unrated record.} The privacy aspect is
+\code{EXT-PRIV-001}; the \emph{safety} aspect --- an extension breaking an
+invariant the core relies on --- has no counterpart here. \\
+
+\code{HAZ-004} & Metadata and artifacts leak sensitive information & 12, High &
+\textbf{Covered.} \code{CORE-PRIV-001}, Moderate--High, Near-term. This is the
+one hazard with a corresponding rated finding. \\
+
+\code{HAZ-005} & Out-of-space during write or close & 15, High &
+\textbf{Covered.} \code{CORE-SAFE-001}, Moderate--High, Near-term containment
+with structural treatment under \code{CORE-SAFE-S1}. The registry's accident
+chain and safety constraints SC-1 to SC-3 are adopted as the \code{RM-2D}
+hypotheses. \\
+
+\code{HAZ-006} & False sense of durability from flush & 12, High &
+\textbf{Not separately assessed}, but within the evidence base for
+\code{CORE-SAFE-002}: the community record includes reports that flushing
+itself can leave a file corrupted. A distinct durability-signaling finding is
+still warranted. \\
+
+\code{HAZ-007} & SWMR deployment misfit & 12, High &
+\textbf{Not assessed.} \\
+
+\code{HAZ-008} & File-locking pitfalls or disabling via environment variable &
+12, High &
+\textbf{Not assessed.} File locking appears only as one item in the
+\code{SUP-SAFE-001} mismatch list, which is itself unrated. \\
+
+\code{HAZ-009} & Thread-safe build uses a global lock & 12, High &
+\textbf{Not assessed.} \\
+
+\code{HAZ-010} & Chunk size too small & 12, High &
+\textbf{Not assessed as a safety hazard.} Pathological chunk shapes appear
+here only as an adversarial resource-consumption mechanism under
+\code{CORE-SEC-002}; the non-adversarial operational hazard is absent. \\
+
+\code{HAZ-011} & Deleting data does not shrink files by default & 12, High &
+\textbf{Not assessed.} Note the privacy adjacency: the registry separately
+rates data remanence after deletion as \code{EXP-003}. \\
+
+\code{HAZ-012} & Recovery tooling limits & 12, High &
+\textbf{Not separately assessed.} Recovery capability is a controlling
+assumption of the \code{CORE-SAFE-002} impact range --- whether the file
+reopens after \code{h5clear} is what separates I2 from I3 --- so the limits of
+that tooling bear directly on the rating. The evidence-gated repair planner in
+H5Lens is relevant prior art (Section~\ref{sec:core-prior-art}). \\
+
+\code{HAZ-013} & High-level API thread-safety gaps & 9, Moderate &
+\textbf{Not assessed.} \\
+
+\code{HAZ-014} & Portability hazard from missing filter plugins & 9, Moderate &
+\textbf{Covered.} \code{LONG-SAF-001} rates the missing-filter archival
+scenario at a stated decadal horizon. VFD and VOL archival dependencies are
+identified as unmeasured extensions of the inquiry, not as part of the rating. \\
+
+\code{HAZ-015} & Misuse of metadata-cache flush controls & 8, Moderate &
+\textbf{Not assessed.} \\
+
+\code{HAZ-016} & Chunk cache mis-sizing & 6, Moderate &
+\textbf{Not assessed.} \\
+
+\end{longtable}
+\endgroup
+
+\noindent\textbf{Consequence for the reader and for the roadmap.}
+Three things follow. First, a reader must not treat this report's small number
+of safety findings as evidence that HDF5's safety surface is small; it is
+evidence that this engagement examined it least. Second, the natural next
+revision of this report should adopt the hazard registry as its safety
+enumeration and work through it scenario by scenario, rather than re-deriving a
+list. Third, \code{RM-2D} is currently scoped to storage exhaustion alone; the
+registry shows at least \code{HAZ-001}, \code{HAZ-006}, \code{HAZ-012}, and
+\code{HAZ-015} share its evidence apparatus --- fault injection at write,
+flush, and close boundaries, followed by durable-state and recovery inspection
+--- and it has accordingly been widened to cover the whole cluster, including
+the abrupt-termination trigger behind \code{CORE-SAFE-002}. Ten hazards remain
+with no record here; that number, not the four now covered, is the honest
+measure of what a safety-focused revision would still have to do.
+
+\subsection{Malformed Input as a Security Boundary}
+
+Three mechanisms recur across the security evidence for the core library and
+official tools: arithmetic on file-derived quantities that is not checked for
+overflow or zero denominators; file-format parsing that constructs internal
+objects before validating the bytes that describe them; and executable
+extension code reached through plugin loading, which is treated in
+Section~\ref{sec:extensions}. The first two are examined here.
 
 A CVE history summary is included in Appendix~\ref{app:cve-history-summary}.
 The list mixes real HDF5-library issues, removed-tool issues,
@@ -48,8 +246,65 @@ the self-referential continuation-message fix checks expected versus actual
 deserialized object-header chunks; and the cache-image fix added buffer-size
 arguments, overflow checks, input validation, and cleanup.)
 
+An August 2026 source-review observation exposes a related but distinct control
+gap. HDF5 Pickles issue~\#87 records candidate deserializer invariants whose
+truth depends on in-file bytes but whose checks are masked inside
+\code{assert(...)} expressions; those expressions provide no runtime validation
+when assertions are disabled with \code{-DNDEBUG}. The open catalog task names
+version-2 B-trees, dataset chunk records, extensible arrays, fractal heaps,
+free-space managers, shared object-header messages, and metadata-cache images,
+with a cursory estimate of 50--100 instances
+~\cite{hdf5-pickles-issue-87}. A fixed August 25 develop snapshot corroborates
+the mechanism: its build configuration notes that CMake adds \code{NDEBUG} for
+Release builds, while representative source sites assert a decoded filtered-
+chunk address and byte count before returning success, assert extensible-array
+parameters before geometry and allocation calculations, and assert a
+reverse-filter output size before copying the expected fractal-heap block size
+~\cite{hdf5-assert-build-config-2026,hdf5-assert-chunk-record-2026,
+hdf5-assert-extensible-array-2026,hdf5-assert-fractal-heap-2026}. This static
+sample confirms a source-level assurance gap, but the 50--100 estimate is not a
+verified site count, and the available evidence does not establish that every
+candidate is a sole guard, release-reachable in a supported version, or capable
+of a particular adverse outcome. This report therefore tracks the condition as
+evidence record \code{CORE-SEC-003}, not as a separately rated formal finding.
+
+One member of that population has been carried further, and it is worth stating
+precisely because it illustrates both the mechanism and the remaining evidence
+boundary. A version-2 B-tree header declaring a zero record size reaches an
+integer division while the leaf record capacity is derived; the sole guard is
+an assertion in \code{H5B2hdr.c}, absent under \code{-DNDEBUG}. The cited case
+record reports \code{SIGFPE} from a locally built \code{h5dump -H} and the
+public \code{H5Fopen}/\code{H5Gopen2}/\code{H5Gget\_info} path using a
+release-configured HDF5 2.3.0 development source tree
+~\cite{h5policy-case-v2btree-recordsize}. It expressly records no 32-bit
+measurement and does not establish an affected supported release or version
+range. The case therefore corroborates an adverse \code{-DNDEBUG} path but
+does not satisfy this report's supported-version condition for promotion into
+a formal finding. It remains evidence under \code{CORE-SEC-003}. A second
+candidate, the cache-image LRU rank relation, is reported without a measured
+release-build consequence~\cite{h5policy-case-mdci-lru}. This bounded
+reproduction is a reason to complete the supported-release catalog, not a
+substitute for it.
+Regardless of the final count, a predicate whose validity depends on file bytes
+must have an always-active runtime check; an assertion may duplicate that check
+for diagnostics but must not enforce it alone.
+
 The observed root-cause categories are more compact than a CVE-by-CVE list and
-are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}.
+are summarized in Table~\ref{tab:hdf5-cve-root-cause-categories}. They were
+derived independently in this assessment, and they are consistent with the SSP
+SIG security threat model, which decomposes the same evidence into thirteen
+mechanism entries~\cite{hdf5-security-threat-model,hdf5-ssp-atk}; that
+decomposition is the finer-grained one and is the better basis for the
+invariant tranches proposed in \code{CORE-S1}.
+
+Table~\ref{tab:root-cause-cwe} maps each category to the standard weakness
+vocabulary, using the SSP SIG's top-CWE list for HDF5
+contexts~\cite{hdf5-top-cwe}. The mapping is worth stating explicitly because
+it makes the report's central security claim checkable against an external
+taxonomy rather than only against its own categories: nearly every entry
+resolves to \code{CWE-20} and its children as the \emph{cause}, with the
+memory-safety CWEs appearing as \emph{consequences}. Per-CVE tags are in
+Appendix~\ref{app:cve-history-summary}.
 
 \begingroup
 \small
@@ -108,6 +363,90 @@ as reviewed HDF5 fixes without qualification. \\
 \end{longtable}
 \endgroup
 
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.28\widetablewidth}>{\raggedright\arraybackslash}p{0.24\widetablewidth}>{\raggedright\arraybackslash}p{0.44\widetablewidth}@{}}
+\caption{Observed root-cause categories mapped to standard weaknesses}
+\label{tab:root-cause-cwe}\\
+\hline
+\textbf{Root-cause category} & \textbf{Cause (CWE)} &
+\textbf{Consequence (CWE) and note} \\
+\hline
+\endfirsthead
+\caption[]{Observed root-cause categories mapped to standard weaknesses,
+continued}\\
+\hline
+\textbf{Root-cause category} & \textbf{Cause (CWE)} &
+\textbf{Consequence (CWE) and note} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+
+unchecked file-derived sizes, counts, offsets &
+\code{CWE-20}, \code{CWE-1284}, \code{CWE-1285} &
+\code{CWE-787}, \code{CWE-125}. The single largest group. A quantity or an
+offset taken from the file is used before it is validated. \\
+
+inconsistent internal bookkeeping &
+\code{CWE-20}, \code{CWE-1284} &
+\code{CWE-787}, \code{CWE-908}. Allocated capacity and actual count are
+conflated, so a validated bound does not describe the buffer actually held. \\
+
+decode/encode asymmetry &
+\code{CWE-20}, \code{CWE-1286} &
+\code{CWE-787}. Decode accepts a structure that encode or flush later assumes
+is well-formed; the syntactic check that was never made surfaces on the write
+path. \\
+
+arithmetic precondition failures &
+\code{CWE-20}, \code{CWE-1284} &
+\code{CWE-369}, \code{CWE-190}. Divisors and multiplications derived from file
+bytes without a zero or overflow precondition. \\
+
+unsafe cleanup and lifetime paths &
+\code{CWE-20} &
+\code{CWE-416}, \code{CWE-415}, \code{CWE-476}, \code{CWE-401}. Distinctive in
+that the unwinding path, not the decode path, is what malformed input breaks. \\
+
+unbounded traversal, recursion, and resource limits &
+\code{CWE-20}, \code{CWE-1284} &
+\code{CWE-400}, \code{CWE-674}. File-controlled graphs and counts drive work
+with no structural progress rule or explicit budget. \\
+
+legacy tool attack surface &
+\code{CWE-20} &
+\code{CWE-787}, \code{CWE-125}. Not a distinct weakness class; a distinct
+\emph{exposure} class, since these are the programs users run first on
+untrusted files. \\
+
+type-confusion on message and datatype flags &
+\code{CWE-20}, \code{CWE-1287} &
+\code{CWE-787}. A message or datatype is cast to a structure its declared type
+does not support --- validation of a specified \emph{type}, distinct from
+validating a quantity or an index. \\
+
+triage and fix-completeness metadata &
+\emph{n/a} &
+\emph{n/a}. A records-quality category, not a weakness. It affects what can be
+concluded from the history, not what the library does. \\
+
+\end{longtable}
+\endgroup
+
+Read together, the two tables state the report's core security claim in
+standard terms: the memory-safety weaknesses that dominate the CVE history are
+consequences, and the cause they share is \code{CWE-20}. That is why
+\code{CORE-S1} through \code{CORE-S3} target validation and checked arithmetic
+rather than the individual crash classes, and why closing a \code{CWE-787}
+instance does not close the class that produced it.
+
 \subsection{HDF5 Privacy: Assets and Exposure}
 
 \subsubsection{Introduction} 
@@ -154,30 +493,16 @@ through which sensitive information may be exposed, and potential approaches for
 
 \subsubsection{HDF5 Assets and their Exposure}
 
-The primary assets requiring protection are the scientific data themselves.
-In HDF5, these include data stored in HDF5 objects, such as files, groups, datasets, datatypes,
-and dataspaces, which represent experimental observations, measurements, simulations, images,
-sensor outputs, and computational results.
+This subsection identifies five classes of asset that may require protection
+in an HDF5 deployment: the scientific data themselves, user-defined metadata,
+structural metadata, information derived or reconstructed from combinations of
+the former, and artifacts produced by the surrounding tools and workflows.
+Each is treated in turn below. The classes are cumulative rather than
+alternative --- a single sharing boundary can disclose through all five --- and
+the enumeration in \code{CORE-PRIV-S1} expects a disposition for every class,
+including a positive statement where a class was examined and found empty.
 
-Scientific data may be exposed through direct access using HDF5-based software,
-including command-line utilities, graphical viewers, and programming interfaces such as Python.
-However, privacy-sensitive information may also be inferred through examination of the 
-low-level storage organization and auxiliary metadata embedded within the file to support 
-portability, interoperability, and efficient data access. For example, string attributes 
-visible through standard operating system utilities (e.g., the Unix strings command) may 
-disclose dataset names, experimental identifiers, or other descriptive information. 
-Similarly, inspection of dataset headers may reveal storage layout, chunk organization, 
-compression methods, or data acquisition patterns (e.g., frame-based acquisition stored 
-as chunked datasets). Examination of embedded strings may also disclose the use of 
-external storage or references to datasets located in other HDF5 files.
-
-It is important to distinguish between protecting access to data values and protecting information 
-about data representation. Even when raw data are protected through mechanisms such as 
-compression or encryption, information describing their storage organization, layout, or 
-access methods may remain accessible and reveal sensitive contextual information about the 
-underlying data or the processes that generated them.
-
-\paragraph{Data Assets}\mbox{}\\ 
+\paragraph{Data Assets}\mbox{}\\
 The primary assets requiring protection are the scientific data themselves. In HDF5, these 
 include data stored in HDF5 objects, such as files, groups, datasets, datatypes, and dataspaces, 
 which represent experimental observations, measurements, simulations, images, 
@@ -467,21 +792,33 @@ the broader HDF5 ecosystem.
 
 Formal core and official-tool findings are registered as
 \code{CORE-SEC-001}, \code{CORE-SEC-002}, \code{CORE-TOOL-001},
-\code{CORE-PRIV-001}, and \code{CORE-SAFE-001} in
+\code{CORE-PRIV-001}, \code{CORE-SAFE-001}, and \code{CORE-SAFE-002} in
 Appendix~\ref{app:findings-register}. The two shared-event security findings
 are provisional historical parser-boundary scenarios; they do not assert that
 every current HDF5 release contains every represented defect.
+The assert-masking observation is separately registered as evidence record
+\code{CORE-SEC-003} until exact source sites, supported release paths, and
+consequences are established.
 
 \paragraph{Priority reconciliation.}\mbox{}\\
 The response order comes from Table~\ref{tab:findings-response-routing}, not
 from the order of recommendations in this chapter. Confirmed affected scope for
 \code{CORE-SEC-001}, \code{CORE-TOOL-001}, and \code{CORE-PRIV-001} receives
-Near-term treatment; \code{CORE-SEC-002} receives Planned treatment; and
-\code{CORE-SAFE-001} requires the bounded evidence study in \code{RM-2D}
-before a tier or urgency can be assigned. Phase~1 patching, isolation, and
-privacy controls treat concrete populations. Phases~2--4 provide reusable
-guardrails, class prevention, and sustainment; that structural work may begin
-in parallel but does not extend an earlier response clock.
+Near-term treatment; \code{CORE-SEC-002} receives Planned treatment. \code{CORE-SAFE-001} and
+\code{CORE-SAFE-002} receive Near-term \emph{containment} --- capacity
+headroom and monitoring, flush and checkpoint discipline, a rehearsed recovery
+procedure, and independent copies of unregenerable data --- with their
+structural treatment in \code{CORE-SAFE-S1} and \code{CORE-SAFE-S2} on the
+Planned and Phase~3 horizons; \code{RM-2D} produces their acceptance evidence
+rather than deciding whether they can be rated. The \code{CORE-SEC-003} catalog and
+release-build differential study has a 30-day Phase~1 assurance target under
+\code{RM-1E}; this scheduling choice does not assign it a risk tier. A
+confirmed case is routed by its supported consequence and affected scope,
+including under \code{CORE-SEC-001} for a memory-unsafe path or
+\code{CORE-SEC-002} for termination or resource exhaustion. Phase~1 patching,
+isolation, and privacy controls treat concrete populations. Phases~2--4 provide
+reusable guardrails, class prevention, and sustainment; that structural work
+may begin in parallel but does not extend an earlier response clock.
 
 \subsubsection{Security and Safety}
 
@@ -532,777 +869,434 @@ B-tree nodes, object headers, global heaps, local heaps, and
 free-space metadata. That means the library is parsing a dense graph
 of mutually referential, \textit{attacker-controlled} metadata.
 
-\subsubsection*{Recommendation CORE-S0: Separate defect closure from recurring-class closure}
+\subsubsection{Prior Art and the Remaining Work}
+\label{sec:core-prior-art}
 
-Adopt the following rule:
+H5Lens / \code{hdf5-pickles} already provides machine-readable format
+definitions, \code{h5policy} preflight profiles and a regression corpus, a
+versioned invariant registry, the evidence-gated \code{h5patch} repair planner,
+and differential measurements against selected libhdf5 builds
+\cite{hdf5-pickles,h5policy,h5policy-invariant-registry,h5patch}. Its strategy
+and bounded-decoder work also define the decode--validate--construct
+architecture~\cite{hdf5-cve-strategy,hdf5-bounded-raw-decode}. Two refinements
+are material: validation occurs at record-local, aggregate-object, and
+reference-graph scope; and materialization must remain separate from activation
+(cache publication, ID registration, plugin loading, decompression, callbacks,
+and external-file access). Locally valid metadata can fail only at a wider
+scope, and successful parsing must not authorize a side effect. The latter is
+the core-library counterpart of \code{APP-SEC-001}.
 
-\textit{A verified local repair may close the affected defect, but it must not
-be represented as elimination of the recurring class without structural
-evidence.}
-
-For every new CVE or crash:
+Table~\ref{tab:core-prior-art-rescope} distinguishes reuse from remaining
+implementation. Effort is separate from inherent risk and is subject to the
+licensing boundary in Section~\ref{sec:roadmap-licensing}: identifiers,
+boundaries, fixtures, and measurements may be usable after provenance, licence,
+and, where needed, legal review; GPLv3 implementation source is not directly
+consumable into the BSD-licensed library.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.10\widetablewidth}>{\raggedright\arraybackslash}p{0.35\widetablewidth}>{\raggedright\arraybackslash}p{0.41\widetablewidth}>{\raggedright\arraybackslash}p{0.12\widetablewidth}@{}}
+\caption{Recommendations re-scoped against existing H5Lens work}
+\label{tab:core-prior-art-rescope}\\
+\hline
+\textbf{Rec.} & \textbf{Existing asset} & \textbf{Remaining work} & \textbf{Effort} \\
+\hline
+\endfirsthead
+\caption[]{Recommendations re-scoped against existing H5Lens work, continued}\\
+\hline
+\textbf{Rec.} & \textbf{Existing asset} & \textbf{Remaining work} & \textbf{Effort} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+\code{CORE-S1} & Versioned per-family invariant registry with finding, test,
+fuzz, enforcement, and migration mappings. & Adopt the vocabulary; implement
+always-active enforcement inside libhdf5 and prove debug/release parity. &
+\textbf{Medium} \\
+\code{CORE-S2} & Three validation scopes, materialization/activation rule,
+seven-phase migration design, and bounded-decoder demonstration. & Migrate the
+library; design reuse does not reduce that work. & \textbf{Large} \\
+\code{CORE-S4} & Four exercised profiles with feature policy and resource
+budgets. & Port semantics to the \code{H5P} API and enforce defaults and policy
+inside libhdf5. & \textbf{Medium} \\
+\code{CORE-S5} & Per-family mutation recipes, truncation sweeps, and a
+boundary-value coverage inventory. & Add OSS-Fuzz integration and the missing
+per-family targets. & \textbf{Medium} \\
+\code{CORE-S6} & Manifested malformed-input and valid-control corpus with
+per-fixture outcomes. & Review specimen provenance; integrate HDF5 CI and
+debug/\code{-DNDEBUG} parity. & \textbf{Small} \\
+\code{APP-S2} & Working profile-based preflight validator with structured
+results. & Bind the verdict to the same handle or verified identity used at
+load time; otherwise preflight remains advisory. & \textbf{Medium} \\
+\end{longtable}
+\endgroup
 
-\begin{longtable}{@{}p{0.30\linewidth}p{0.66\linewidth}@{}}
+H5Lens does not supply this report's application-boundary findings,
+independent-implementation analysis, inherent/residual-risk separation,
+response clocks, accountable owners, or ecosystem attribution; those are
+complementary governance contributions. One loop also remains open: many
+tracked divergences are reported as oracle-rejected but libhdf5-unfixed. Two
+concern external-file-list handling, including an uninvestigated case in which
+an external file is opened before its wrapped segment is validated
+\cite{h5policy-case-efl-open}. If substantiated, it is an
+activation-before-validation instance relevant to \code{APP-SEC-001}; this
+report did not evaluate it. \code{RM-1E} therefore takes the full
+oracle-hardened set as triage input.
+
+\subsubsection{Core Security Control Programme}
+
+The objective is controlled rejection of any hostile byte stream: no crash,
+assertion, leak, undefined behaviour, unbounded work, or late encode/flush
+failure caused by an invalid decode. The authoritative ownership, finding
+mapping, effort, package, and acceptance evidence for \code{CORE-S0} through
+\code{CORE-S12} are in Appendix~\ref{app:recommendation-register} and
+Appendix~\ref{app:phased-roadmap}. The synthesis below preserves the control
+logic without duplicating repository layouts, sample APIs, YAML, or checklists.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\LTleft}{-0.9in}
+\setlength{\LTright}{-0.9in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.09\widetablewidth}>{\raggedright\arraybackslash}p{0.25\widetablewidth}>{\raggedright\arraybackslash}p{0.45\widetablewidth}>{\raggedright\arraybackslash}p{0.17\widetablewidth}@{}}
+\caption{Core security recommendations: strategic synthesis}
+\label{tab:core-security-synthesis}\\
+\hline
+\textbf{ID} & \textbf{Control} & \textbf{Required outcome} & \textbf{Roadmap} \\
+\hline
+\endfirsthead
+\caption[]{Core security recommendations: strategic synthesis, continued}\\
+\hline
+\textbf{ID} & \textbf{Control} & \textbf{Required outcome} & \textbf{Roadmap} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+\code{CORE-S0} & Separate defect and class closure. & A local repair may close
+the affected defect, including under embargo, but the paired class-prevention
+record stays open until sibling paths are structurally covered. & \code{RM-1B},
+\code{RM-3C}, \code{RM-4A} \\
+\code{CORE-S1} & Adopt the invariant registry. & Each declared on-disk
+condition maps to an always-active libhdf5 check, expected error, test, fuzz
+target, and migration state. Issue~\#87's seven families are the first audit
+perimeter; consequence and supported-release reachability, not candidate count,
+set tranche order. & \code{RM-3A} \\
+\code{CORE-S2} & Enforce the parser boundary. & Bounded decode precedes
+record-local, object-wide, and graph validation; construction precedes a
+separately authorized activation step. No raw file quantity becomes a trusted
+pointer or side effect. & \code{RM-3B} \\
+\code{CORE-S3} & Centralize checked arithmetic. & File-derived addition,
+multiplication, address ranges, allocation, copying, cursor movement, and graph
+traversal use checked wrappers or recorded exemptions. & \code{RM-2A},
+\code{RM-3A} \\
+\code{CORE-S4} & Make open policy explicit. & \code{legacy},
+\code{trusted-fast}, \code{untrusted-strict}, and \code{forensic} profiles bind
+validation, external access, plugins, traversal, metadata, allocation, and
+filter-expansion budgets to tested defaults. & \code{RM-2A} \\
+\code{CORE-S5} & Fuzz structures and invariants. & Whole-file, structure-aware,
+and single-invariant mutation cover object headers, datatypes, dataspaces,
+layouts, heaps, filters, cache images, and tool rendering; coverage is reported
+per component. & \code{RM-3C} \\
+\code{CORE-S6} & Make regression permanent and cheap. & Every closed case has
+a minimized, provenance-reviewed seed, expected controlled outcome, invariant
+mapping, and identical assertion-enabled/\code{-DNDEBUG} rejection. &
+\code{RM-1B}, \code{RM-2C}, \code{RM-3C} \\
+\code{CORE-S7} & Block unsafe parser changes. & Review and automated gates
+require explicit bounds, checked arithmetic and copies, bounded traversal,
+partial-initialization cleanup, policy-aware plugin use, malformed-input tests,
+and always-active counterparts to file-derived assertions. & \code{RM-1E},
+\code{RM-3C} \\
+\code{CORE-S8} & Separate compatibility from safety. & Valid legacy files
+remain readable, but tolerated corruption does not become compatibility and
+repair never occurs silently during normal open. & \code{RM-2C}, \code{RM-4A} \\
+\code{CORE-S9} & Treat tools as attack surfaces. & Inspection and conversion
+tools use forensic or strict profiles; rendering is bounded; legacy converters
+are explicit opt-ins; plugin-dependent tools require warning or approval. &
+\code{RM-1B}, \code{RM-2A}, \code{RM-3C} \\
+\code{CORE-S10} & Govern executable extensions. & A protected manifest and
+allowlist bind identity, profile, capability, and resource limits; signatures
+prove provenance, not resource safety. & \code{RM-3D} \\
+\code{CORE-S11} & Coordinate supply-chain controls. & Independently owned
+Scorecard, CodeQL, pinned-action, SBOM, signing, checksum, and SLSA controls run
+in parallel with parser work; only concrete dependencies affect sequence. &
+\code{RM-3E}, \code{RM-4A} \\
+\code{CORE-S12} & Measure class elimination. & A public dashboard reports a
+versioned denominator and named, expiring exceptions; metrics are coverage
+evidence, not defect closure. & \code{RM-1B}, \code{RM-3C}, \code{RM-4A} \\
+\end{longtable}
+\endgroup
+
+The defect/class distinction requires the seven artifacts in
+Table~\ref{tab:cve-closure-artifacts}. Recent fixes illustrate the intended
+direction: the file-space page-size fix converted an assertion into a
+corrupted-file error and reused its fuzzer, while cache-image reconstruction
+added buffer-size tracking, overflow checks, validation, and safe cleanup
+\cite{commit_804f3ba,commit_3914bb7}. The 2024 dataset-storage fix similarly
+added multiplication-overflow and file-bound checks~\cite{commit_ce53bc0}.
+These local repairs should become programme-wide invariants and primitives.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{@{}p{0.27\linewidth}p{0.69\linewidth}@{}}
 \caption{Required artifacts for defect closure and recurring-class tracking}
 \label{tab:cve-closure-artifacts}\\
 \hline
-\textbf{Required artifact} & \textbf{Purpose} \\
+\textbf{Artifact} & \textbf{Purpose} \\
 \hline
 \endfirsthead
-
-\caption[]{Required artifacts for defect closure and recurring-class tracking, continued}\\
 \hline
-\textbf{Required artifact} & \textbf{Purpose} \\
+\textbf{Artifact} & \textbf{Purpose} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
-\hline
-\endlastfoot
-
-crashing input & becomes a permanent corpus seed \\
-minimized input & used in quick PR regression \\
-root-cause category & maps to a known invariant class \\
-invariant update & records and advances prevention of sibling bugs \\
-sanitizer regression & proves no crash, no leak, no UAF \\
-negative test & checks controlled failure code \\
-reviewer checklist update & prevents reintroduction \\
+crashing input & permanent corpus seed \\
+minimized input & fast PR regression \\
+root-cause category & invariant-class mapping \\
+invariant update & sibling-defect prevention record \\
+sanitizer regression & no crash, leak, or use-after-free \\
+negative test & same controlled result with assertions enabled and disabled \\
+reviewer-checklist update & reintroduction gate \\
 \end{longtable}
 \endgroup
 
-Variant closure requires evidence that the affected path is repaired or
-contained and that its negative and sanitizer regressions pass. A local
-\texttt{if} may therefore be a valid treatment, including for an embargoed
-fix, while the corresponding \textbf{class-prevention record} remains open
-until the invariant framework and related gates cover sibling cases.
-
-Recent commits show the right direction, but too locally. One fix
-added a sanity check immediately after reading file-space page size
-from the file and used the same fuzzer to verify that the previous
-assertion became a corrupted-file error.~\cite{commit_804f3ba}
-Another hardened \texttt{H5C\_\_reconstruct\_cache\_entry()} by adding
-buffer-size tracking, overflow checks, input validation, and safe cleanup.~\cite{commit_3914bb7}
-Those are exactly the moves to systematize.
-
-\subsubsection*{Recommendation CORE-S1: Build an invariant registry for the file format}
-
-Create a versioned document and machine-readable metadata file, for example:
-
-\begin{verbatim}
-security/invariants/
-  superblock.yml
-  object_header.yml
-  dataspace.yml
-  datatype.yml
-  layout.yml
-  filters.yml
-  heaps.yml
-  free_space.yml
-  links.yml
-  cache_image.yml
-\end{verbatim}
-
-Each entry should define:
-
-\begin{minted}{yaml}
-id: H5O-CONT-001
-component: object_header
-structure: continuation_message
-condition: continuation_chunk_size > 0
-failure: H5E_CORRUPT
-checked_at:
-  - H5O__cont_decode
-  - H5O__chunk_deserialize
-fuzz_targets:
-  - fuzz_object_header
-cves:
-  - CVE-2025-6856
-  - CVE-2025-6816
-\end{minted}
-
-The following are candidate initial invariant-registry families. Tranche order
-must be recorded in the implementation plan from affected scope, coverage gaps,
-and concrete enabling dependencies; this list is not a risk rank.
+Structure-aware fuzzing supplements whole-file mutation; OSS-Fuzz supplies
+long-running public execution and CI supplies fast feedback. These cadences are
+acceptance gates, not risk priorities.
 
 \begingroup
 \small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.7in}
-\setlength{\LTright}{-0.7in}
-
-\begin{longtable}{@{}p{0.16\widetablewidth}p{0.80\widetablewidth}@{}}
-\caption{Candidate initial invariant-registry families}
-\label{tab:invariant-families-first}\\
-\hline
-\textbf{Area} & \textbf{Candidate invariants} \\
-\hline
-\endfirsthead
-
-\caption[]{Candidate initial invariant-registry families, continued}\\
-\hline
-\textbf{Area} & \textbf{Candidate invariants} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-superblock &
-offset size and length size are valid; base address, EOF address, driver info
-address, and root object address are inside the file or explicitly undefined;
-EOF does not wrap \\
-object headers &
-message length fits inside chunk; continuation chunks are nonzero; continuations
-do not self-reference; continuations are acyclic; message flags match message
-type; unknown messages cannot be cast into known message structures \\
-free-space metadata &
-page size is nonzero and below max; section size fits page/file bounds;
-serialized section count matches decoded section count \\
-heaps &
-heap object offset and size are inside heap; free-list blocks do not overlap;
-free-block list is acyclic; no allocation uses unchecked \code{count * size} \\
-dataspaces &
-rank is bounded; dimension product is checked; selected point count is checked;
-hyperslab stride, count, block, and start do not overflow \\
-datatypes &
-storage size is nonzero; precision fits storage size; member offsets fit
-compound size; string length is bounded; vlen/ref types cannot escape validation \\
-layouts &
-compact data size equals \code{dataspace elements * datatype size}; chunk
-dimensions are nonzero; chunk product is checked; chunk index references are
-inside file bounds \\
-filters &
-parameter count is bounded; decompressed size is bounded; scale-offset precision
-is validated; filter output ratio cannot exceed configured resource limits \\
-cache image &
-cache-entry count, address, size, and alignment are bounded; decoding consumes
-exactly the expected number of bytes; cleanup is safe after partial decode \\
-tools &
-string rendering is length-bounded; conversion tools never trust input
-dimensions; tool-only parsers use the same checked arithmetic wrappers as the
-library \\
-\end{longtable}
-\endgroup
-
-This registry becomes the source of truth for code review, tests, fuzzing, and documentation.
-
-\subsubsection*{Recommendation CORE-S2: Introduce a two-phase parser boundary}
-
-Right now, too many paths appear to do this:
-\begin{verbatim}
-file bytes -> native internal object
-           -> later code assumes validity
-\end{verbatim}
-
-Change the architecture to:
-\begin{verbatim}
-file bytes -> bounded raw decode
-           -> semantic validation
-           -> native object construction
-\end{verbatim}
-
-Concrete rule: \textit{No public or internal runtime object is constructed from
-file metadata until the corresponding validator has passed.}
-
-Implement the pattern by component:
-
-\begin{minted}{c}
-herr_t H5O_msg_decode_raw(const uint8_t *buf, size_t buf_size, H5O_msg_raw_t *raw);
-herr_t H5O_msg_validate(const H5F_t *f, const H5O_msg_raw_t *raw, H5O_validation_ctx_t *ctx);
-herr_t H5O_msg_construct(const H5O_msg_raw_t *raw, H5O_msg_t *out);    
-\end{minted}
-
-Do not let decode functions allocate complex structures before basic
-bounds are known. A raw decoded object should hold values, offsets,
-and spans, not trusted pointers into long-lived internal state.
-
-All decode functions that consume file bytes should take one of these forms:
-\begin{minted}{c}
-herr_t decode(const H5F_t *f, const uint8_t *buf, size_t buf_size, out_t *out);
-
-herr_t decode_cursor(H5_decode_cursor_t *cur, out_t *out);
-\end{minted}
-
-Ban this pattern in security-sensitive decode code:
-\begin{minted}{c}
-const uint8_t **pp
-\end{minted}
-unless there is also an explicit \texttt{p\_end} or remaining-size counter. The cache-image fix already moved in this direction
-by adding a buffer-size argument and bounds checks.~\cite{commit_3914bb7}
-
-\subsubsection*{Recommendation CORE-S3: Centralize checked arithmetic and allocation}
-
-Most parser bugs become exploitable when metadata reaches allocation, copy, or pointer arithmetic. Add a small, mandatory checked-arithmetic layer.
-
-Example API:
-\begin{minted}{c}
-herr_t H5_checked_add_hsize(hsize_t a, hsize_t b, hsize_t *out);
-herr_t H5_checked_mul_hsize(hsize_t a, hsize_t b, hsize_t *out);
-herr_t H5_checked_addr_add(haddr_t base, hsize_t len, haddr_t eoa, haddr_t *end);
-herr_t H5_checked_alloc_size(size_t count, size_t elem_size, size_t *bytes);
-\end{minted}
-
-Then make these rules review-blocking:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.48\widetablewidth}p{0.48\widetablewidth}@{}}
-\caption{Review-blocking parser arithmetic and allocation patterns}
-\label{tab:review-blocking-parser-patterns}\\
-\hline
-\textbf{Ban} & \textbf{Replacement} \\
-\hline
-\endfirsthead
-
-\caption[]{Review-blocking parser arithmetic and allocation patterns, continued}\\
-\hline
-\textbf{Ban} & \textbf{Replacement} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-\code{malloc(n * size)} & \code{H5MM_calloc_checked(n, size)} \\
-\code{addr + size} & \code{H5_checked_addr_add(addr, size, eoa, \&end)} \\
-\code{memcpy(dst, src, n)} from file-derived size &
-\code{H5_checked_memcpy(dst, dst_size, src, src_size, n)} \\
-pointer increment without \code{p_end} & cursor-based decode \\
-raw recursion through object graph & bounded traversal context \\
-\end{longtable}
-\endgroup
-
-The 2024 security commit added multiplication-overflow checks for
-dataset storage size and checks against file bounds.~\cite{commit_ce53bc0}
-That pattern should become a library-wide rule, not a local repair.
-
-\subsubsection*{Recommendation CORE-S4: Create security profiles for file opening}
-
-Add explicit modes. Do not rely on users to infer safe behavior.
-\begin{minted}{c}
-typedef enum {
-    H5_SECURITY_PROFILE_LEGACY,
-    H5_SECURITY_PROFILE_TRUSTED_FAST,
-    H5_SECURITY_PROFILE_UNTRUSTED_STRICT,
-    H5_SECURITY_PROFILE_FORENSIC
-} H5_security_profile_t;
-\end{minted}
-
-Suggested semantics:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.24\linewidth}p{0.72\linewidth}@{}}
-\caption{Security profile semantics}
-\label{tab:security-profile-semantics}\\
-\hline
-\textbf{Profile} & \textbf{Behavior} \\
-\hline
-\endfirsthead
-
-\caption[]{Security profile semantics, continued}\\
-\hline
-\textbf{Profile} & \textbf{Behavior} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-\code{legacy} & current compatibility bias \\
-\code{trusted_fast} & normal validation, generous resource limits \\
-\code{untrusted_strict} & strict metadata validation, plugin loading disabled unless allowlisted, resource limits enforced \\
-\code{forensic} & never repairs silently, reports all structural anomalies, best-effort inspection without unsafe traversal \\
-\end{longtable}
-\endgroup
-
-Expose it through file-access property lists:
-\begin{minted}{c}
-H5Pset_security_profile(fapl, H5_SECURITY_PROFILE_UNTRUSTED_STRICT);
-H5Pset_max_metadata_bytes(fapl, 256 * 1024 * 1024);
-H5Pset_max_object_header_chunks(fapl, 1024);
-H5Pset_max_btree_depth(fapl, 64);
-H5Pset_max_filter_expansion_ratio(fapl, 100);
-H5Pset_plugin_policy(fapl, H5_PLUGIN_POLICY_DISABLED);
-\end{minted}
-
-This matters because HDF5 supports dynamically loaded plugins, and the
-runtime API can enable or disable plugin classes; the docs also state
-that \texttt{HDF5\_PLUGIN\_PRELOAD=::} disables all dynamic plugins.
-Turn that capability into a first-class security policy, not an
-environment-variable trick.
-
-\subsubsection*{Recommendation CORE-S5: Fuzz by structure, not just by whole-file crashes}
-
-Whole-file fuzzing is necessary but insufficient. It finds symptoms. Structure-aware fuzzing finds families.
-
-Treat the following as an initial harness-investment portfolio, not a finding
-rank or response order. Known finding fixtures and changed paths enter
-regression immediately; new harnesses may proceed in parallel, with tranche
-order recorded from shared-enablement and coverage evidence.
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.38\widetablewidth}p{0.58\widetablewidth}@{}}
-\caption{Candidate structure-aware fuzzing portfolio}
-\label{tab:structure-aware-fuzzing-sequence}\\
-\hline
-\textbf{Candidate target} & \textbf{Coverage rationale} \\
-\hline
-\endfirsthead
-
-\caption[]{Candidate structure-aware fuzzing portfolio, continued}\\
-\hline
-\textbf{Candidate target} & \textbf{Coverage rationale} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-object-header message decoder & shared decode paths and continuation structures \\
-datatype decoder and converter & complex nested metadata and conversion operations \\
-dataspace and selection decoder & rank, count, hyperslab, and point arithmetic \\
-layout and chunk index decoder & storage-size, address, and chunk-product checks \\
-free-space and local/global heap decoders & historical overflow and list-corruption variants \\
-filter pipeline and scale-offset filter & compression and decompression boundaries \\
-metadata cache image reconstruction & complex bounds, lifecycle, and cleanup paths \\
-\code{h5dump}/\code{h5repack} rendering paths & tool paths that add handling and rendering behavior \\
-\end{longtable}
-\endgroup
-
-Use three fuzzing layers:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.28\widetablewidth}p{0.68\widetablewidth}@{}}
-\caption{Fuzzing layers}
-\label{tab:fuzzing-layers}\\
-\hline
-\textbf{Layer} & \textbf{Description} \\
-\hline
-\endfirsthead
-
-\caption[]{Fuzzing layers, continued}\\
-\hline
-\textbf{Layer} & \textbf{Description} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-byte-level fuzzing & current randomized mutation against APIs \\
-structure-aware mutation & valid superblock with corrupted object headers, valid object header with bad continuation, valid datatype with bad member offset \\
-invariant-guided generation & generate files that violate exactly one invariant at a time \\
-\end{longtable}
-\endgroup
-
-OSS-Fuzz already supports libFuzzer, AFL++, Honggfuzz, Centipede, sanitizers,
-and distributed execution for C/C++ projects. Use OSS-Fuzz for long-running
-public coverage and ClusterFuzzLite or local CI for PR-level checks.
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.24\linewidth}p{0.72\linewidth}@{}}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{@{}p{0.22\linewidth}p{0.74\linewidth}@{}}
 \caption{Fuzzing acceptance criteria}
 \label{tab:fuzzing-acceptance-criteria}\\
 \hline
 \textbf{Stage} & \textbf{Gate} \\
 \hline
 \endfirsthead
-
-\caption[]{Fuzzing acceptance criteria, continued}\\
 \hline
 \textbf{Stage} & \textbf{Gate} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
-\hline
-\endlastfoot
-
-PR & run minimized CVE corpus under \code{ASan}/\code{UBSan}/\code{LSan} \\
-nightly & run structure fuzzers for core parsers \\
-weekly & report coverage by component, not just total line coverage \\
-release candidate & 72-hour fuzz soak on changed parser areas \\
-CVE closure & crashing input added to corpus and mapped to invariant \\
+PR & minimized CVE corpus under \code{ASan}/\code{UBSan}/\code{LSan} \\
+nightly & structure fuzzers for core parsers \\
+weekly & component-level coverage report \\
+release candidate & 72-hour soak on changed parser areas \\
+CVE closure & crashing input added and mapped to an invariant \\
 \end{longtable}
 \endgroup
 
-\subsubsection*{Recommendation CORE-S6: Make malformed-input regression cheap}
-
-Create this repository layout:
-\begin{verbatim}
-test/security/
-  corpus/
-    cve/
-      CVE-2025-7069/
-        input.h5
-        expected.yml
-      CVE-2025-6269/
-        input.h5
-        expected.yml
-    invariants/
-      H5O-CONT-001/
-      H5T-SIZE-002/
-  harnesses/
-    fuzz_object_header.c
-    fuzz_datatype.c
-    fuzz_dataspace.c
-    fuzz_layout.c
-    fuzz_filters.c
-  expected_errors/
-    corrupt_file.yml
-\end{verbatim}
-
-Each expected.yml should include:
-\begin{minted}{yaml}
-expected:
-  exit: controlled_error
-  allowed_errors:
-    - H5E_CORRUPT
-    - H5E_BADVALUE
-    - H5E_OVERFLOW
-forbidden:
-  - SIGSEGV
-  - SIGABRT
-  - leak
-  - use_after_free
-  - timeout
-invariant:
-  - H5FS-PAGE-001
-\end{minted}
-
-This gives maintainers a fast way to prove that old crashes remain dead.
-
-\subsubsection*{Recommendation CORE-S7: Add a security-review checklist that blocks risky parser changes}
-
-Every PR touching decode, encode, object lifecycle, filters, tools, or plugin
-loading should answer:
+Backward compatibility does not authorize malformed metadata. The profile
+contract is therefore:
 
 \begingroup
 \small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.9in}
-\setlength{\LTright}{-0.9in}
-
-\begin{longtable}{@{}p{0.58\widetablewidth}p{0.38\widetablewidth}@{}}
-\caption{Security-review checklist for parser-adjacent changes}
-\label{tab:security-review-checklist}\\
-\hline
-\textbf{Question} & \textbf{Required answer} \\
-\hline
-\endfirsthead
-
-\caption[]{Security-review checklist for parser-adjacent changes, continued}\\
-\hline
-\textbf{Question} & \textbf{Required answer} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-Does this read file-derived bytes? & list buffer and bounds source \\
-Does this allocate using file-derived values? & show checked multiplication \\
-Does this copy memory using file-derived sizes? & show source and destination bounds \\
-Does this traverse links, chunks, heaps, B-trees, or continuations? & show cycle and depth bounds \\
-Does this construct native objects before validation? & explain why or refactor \\
-Does this add or change cleanup paths? & show partial-init safety \\
-Does this invoke plugins or filters? & show policy interaction \\
-Does this alter error handling? & show malformed-input test \\
-\end{longtable}
-\endgroup
-
-Add automated enforcement where possible:
-
-\begin{verbatim}
-fail PR if new decode function lacks size parameter
-fail PR if malloc(count * size) appears outside checked wrapper
-fail PR if memcpy appears in parser code without checked wrapper annotation
-fail PR if new parser file lacks fuzz target registration
-fail PR if new object traversal lacks max-depth or visited-set logic
-\end{verbatim}
-
-This will annoy contributors at first. Good. That friction is cheaper than post-release CVEs.
-
-\subsubsection*{Recommendation CORE-S8: Separate compatibility from safety}
-
-HDF5’s backward compatibility is valuable, but it creates a security trap: old,
-permissive parsing keeps malformed legacy structures alive.
-
-Implement this policy:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.7in}
-\setlength{\LTright}{-0.7in}
-
-\begin{longtable}{@{}p{0.42\widetablewidth}p{0.54\widetablewidth}@{}}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{@{}p{0.38\linewidth}p{0.58\linewidth}@{}}
 \caption{Compatibility and safety profile policy}
 \label{tab:compatibility-safety-profile-policy}\\
 \hline
-\textbf{Case} & \textbf{Behavior} \\
+\textbf{Case} & \textbf{Required behaviour} \\
 \hline
 \endfirsthead
-
-\caption[]{Compatibility and safety profile policy, continued}\\
 \hline
-\textbf{Case} & \textbf{Behavior} \\
+\textbf{Case} & \textbf{Required behaviour} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
-\hline
-\endlastfoot
-
-valid legacy file & accepted \\
-ambiguous legacy construct & accepted only in \code{legacy} or \code{trusted_fast}; warning in \code{forensic}; rejected in \code{untrusted_strict} \\
-structurally invalid file that old versions tolerated & rejected in all non-legacy profiles \\
-parser repair needed & repair only through explicit tool, never silently during normal open \\
-unknown message with unsafe flags & rejected unless profile explicitly allows preservation \\
+valid legacy file & accept \\
+ambiguous legacy construct & accept only in \code{legacy}/\code{trusted-fast};
+warn in \code{forensic}; reject in \code{untrusted-strict} \\
+formerly tolerated structural invalidity & reject in every non-legacy profile \\
+repair required & explicit repair tool only; never silent normal-open repair \\
+unknown message with unsafe flags & reject unless the profile explicitly
+allows preservation \\
 \end{longtable}
 \endgroup
 
-The point is not to break legitimate archives. The point is to stop treating
-corrupted metadata as compatibility.
-
-\subsubsection*{Recommendation CORE-S9: Harden tools as separate attack surfaces}
-
-Do not assume \code{h5dump}, \code{h5repack}, converters, and test utilities are
-less important. They are often the first thing users run on untrusted files.
-
-Actions:
+Finally, the dashboard denominator must make declared coverage auditable:
 
 \begingroup
 \small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.30\linewidth}p{0.66\linewidth}@{}}
-\caption{Tool hardening actions}
-\label{tab:tool-hardening-actions}\\
-\hline
-\textbf{Tool class} & \textbf{Change} \\
-\hline
-\endfirsthead
-
-\caption[]{Tool hardening actions, continued}\\
-\hline
-\textbf{Tool class} & \textbf{Change} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-inspection tools & use \code{H5_SECURITY_PROFILE_FORENSIC} by default \\
-conversion tools & use \code{H5_SECURITY_PROFILE_UNTRUSTED_STRICT} by default \\
-rendering paths & bounded strings only \\
-legacy converters & disable by default; build behind explicit \code{HDF5_ENABLE_LEGACY_UNSAFE_TOOLS=ON} \\
-plugin-dependent tools & warn or require allowlist \\
-\end{longtable}
-\endgroup
-
-A dangerous file should not become more dangerous because the user tried to
-inspect it.
-
-\subsubsection*{Recommendation CORE-S10: Plugin policy and signed extensions}
-
-Plugins are executable extension code requiring a distinct control domain; this
-statement is not a risk rating. They are loaded at runtime.
-HDF5’s plugin system supports dynamically loaded filter plugins and lets users
-implement custom filters. That is useful, but it must not be invisible in
-untrusted mode.
-
-Implement:
-\begin{verbatim}
-default profile:
-  trusted_fast: existing plugin behavior
-  untrusted_strict: plugins disabled unless allowlisted
-  forensic: plugins disabled; report missing filter
-\end{verbatim}
-
-Add a plugin manifest:
-\begin{minted}{yaml}
-plugin_id: 32008
-name: blosc
-version: 1.0.0
-sha256: ...
-signer: ...
-allowed_profiles:
-  - trusted_fast
-  - untrusted_strict
-capabilities:
-  - filter_decode
-limits:
-  max_expansion_ratio: 100
-  max_alloc_bytes: 1073741824
-\end{minted}
-
-For affected deployments, disable plugins or restrict loading to protected,
-explicitly approved paths and artifacts within the applicable response clock.
-Hash allowlists may be an interim control; supported signature verification and
-resource budgets should be configured and tested independently when applicable.
-Neither waits for a complete PKI nor extends a finding's response horizon, and
-a valid signature does not make a buggy plugin resource-safe.
-
-\subsubsection*{Recommendation CORE-S11: Coordinate supply-chain controls with parser hardening}
-
-Supply-chain work can proceed in parallel with parser hardening. Assign it an
-owner and scope independently, and record any concrete cross-track dependency
-rather than inferring order from an unscored comparison of the risk areas.
-
-Minimum controls:
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.32\linewidth}p{0.64\linewidth}@{}}
-\caption{Minimum supply-chain controls}
-\label{tab:minimum-supply-chain-controls}\\
-\hline
-\textbf{Control} & \textbf{Target} \\
-\hline
-\endfirsthead
-
-\caption[]{Minimum supply-chain controls, continued}\\
-\hline
-\textbf{Control} & \textbf{Target} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-OpenSSF Scorecard & weekly scheduled run, alerts in security tab \\
-CodeQL & required for PRs touching C/C++ parser surfaces \\
-pinned GitHub Actions & no floating third-party action refs \\
-SBOM & release artifacts include source and binary SBOMs \\
-signed release artifacts & signatures plus checksums \\
-SLSA provenance & release builds produce verifiable provenance \\
-\end{longtable}
-\endgroup
-
-OpenSSF Scorecard has an official GitHub Action, and public repositories can use
-it without cost. The SLSA GitHub generator provides tooling for SLSA provenance
-on GitHub Actions, including provenance that users can verify to understand how
-an artifact was built.
-
-\subsubsection*{Recommendation CORE-S12: Metrics that force the right behavior}
-
-Use metrics that measure class elimination, not activity.
-
-\begingroup
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\begin{longtable}{@{}p{0.70\linewidth}p{0.26\linewidth}@{}}
-\caption{Security program metrics}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.04}
+\begin{longtable}{@{}p{0.72\linewidth}p{0.24\linewidth}@{}}
+\caption{Security programme metrics}
 \label{tab:security-program-metrics}\\
 \hline
 \textbf{Metric} & \textbf{Target} \\
 \hline
 \endfirsthead
-
-\caption[]{Security program metrics, continued}\\
 \hline
 \textbf{Metric} & \textbf{Target} \\
 \hline
 \endhead
-
 \hline
 \endfoot
-
-\hline
-\endlastfoot
-
-CVE corpus pass rate under ASan/UBSan/LSan & 100\% \\
-parser decode functions with explicit buffer size or cursor & 100\% \\
+CVE corpus clean under ASan/UBSan/LSan & 100\% \\
+decoders with explicit buffer size or cursor & 100\% \\
 parser allocations through checked wrappers & 100\% \\
-parser memcpy/memmove through checked wrappers or reviewed exemption & 100\% \\
-structures in the versioned declared tranche with invariant files & 100\% \\
-structures in the versioned declared tranche with registered fuzz targets & 100\% \\
-new CVEs that add invariant updates & 100\% \\
-time from new crash to minimized corpus seed & under 48 hours \\
-time from minimized seed to invariant classification & under 5 business days \\
-sanitizer-clean nightly fuzz runs & sustained \\
-untrusted profile test coverage & every release \\
+file-derived copies through checked wrappers or reviewed exemption & 100\% \\
+declared-tranche structures with invariant files and fuzz targets & 100\% \\
+catalogued file-derived assertions classified by dominance, reachability, and consequence & 100\% \\
+declared invariants enforced with \code{-DNDEBUG} & 100\% \\
+new CVEs with invariant updates & 100\% \\
+new crash to minimized seed & under 48 hours \\
+minimized seed to invariant classification & under 5 business days \\
+sanitizer-clean nightly fuzzing & sustained \\
+untrusted-profile tests & every release \\
 \end{longtable}
 \endgroup
 
-Track the versioned tranche denominator and results in a public dashboard. The
-dashboard does not fix defects; it makes declared coverage and gaps auditable.
+\subsubsection{Safety: Durability and Recovery}
+
+The security track above answers ``a hostile file arrived.'' The two
+recommendations here answer ``my file did not survive.'' They address
+\code{CORE-SAFE-001} and \code{CORE-SAFE-002}, and neither has a counterpart
+elsewhere in this report. The \code{CORE-SAFE-S} identifiers name
+recommendations only; their numbers express no risk, urgency, effort,
+dependency, or implementation order.
+
+Both findings are routed Near-term for \emph{containment} and Planned or later
+for \emph{structural treatment}. The containment obligations are operational
+and available today: capacity headroom with free-space monitoring, flush and
+checkpoint discipline, a rehearsed recovery procedure, and an independent copy
+of anything that cannot be regenerated. Nothing below is a prerequisite for
+those.
+
+\subsubsection*{Recommendation CORE-SAFE-S1: Give HDF5 an \code{ENOSPC} story}
+
+Today an application can receive an HDF5 write, flush, or close failure, but it
+has no structured callback identifying the VFD's \code{ENOSPC} event, no
+supported protocol for choosing retry versus abandonment at that boundary, and
+no library state that marks the resulting file as untrustworthy. Four candidate
+mechanisms have already been proposed in the public design discussion; they are
+complementary rather than alternatives, and they differ sharply in
+cost~\cite{forum-enospc-11714}.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.26\linewidth}>{\raggedright\arraybackslash}p{0.44\linewidth}>{\raggedright\arraybackslash}p{0.24\linewidth}@{}}
+\caption{Candidate \code{ENOSPC} mechanisms}
+\label{tab:enospc-mechanisms}\\
+\hline
+\textbf{Mechanism} & \textbf{What it provides} & \textbf{Cost and caveat} \\
+\hline
+\endfirsthead
+\caption[]{Candidate \code{ENOSPC} mechanisms, continued}\\
+\hline
+\textbf{Mechanism} & \textbf{What it provides} & \textbf{Cost and caveat} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+
+VFD-level error callback &
+The caller is told the driver hit \code{ENOSPC} and chooses retry, fail fast,
+or panic. This is the load-bearing item: it converts a silent unsafe state into
+an application decision. &
+Small to medium. Deliverable as a pass-through VFD wrapper first, without a
+public API commitment. \\
+
+Poisoned-file state &
+A file that suffered a write failure is durably marked suspect, so a later open
+cannot silently treat it as sound. &
+Medium; needs a format-visible flag and a defined clearing procedure. Pairs
+with \code{h5clear}. \\
+
+Space reservation (\code{posix\_fallocate}) &
+Capacity is claimed before the write, converting a mid-write failure into an
+up-front one. &
+Medium; filesystem-dependent, and not available or meaningful on every backing
+store. \\
+
+Pre-flush capacity check (\code{statvfs}) &
+A watchdog refuses to begin a flush that plainly cannot complete. &
+Small, but advisory only --- it narrows the window and does not close it. A
+check that passes does not guarantee the flush succeeds. \\
+
+\end{longtable}
+\endgroup
+
+Sequence them by that cost profile: the callback and the pre-flush check first,
+because they are small and independently useful; reservation and the poisoned
+state after, because they touch the format and the VFD contract. The public
+design discussion proposes a pass-through VFD wrapper as a low-friction proving
+ground before any public API change, and this report endorses that route.
+
+\noindent\textbf{Acceptance evidence.}
+Fault injection returns \code{ENOSPC} at each of write, flush, and close, for
+each supported VFD and buffering profile. For every injected point: the
+application receives a distinguishable \code{ENOSPC}-class error rather than a
+generic failure or a success; the last durable state is recorded; a subsequent
+open either succeeds, fails with a diagnostic naming the condition, or reports
+the file as suspect --- never silently returns wrong data; and the documented
+recovery procedure is executed and its result recorded. A run in which the
+library reports success and the file is later found inconsistent is a failure
+of this recommendation regardless of the error codes returned.
+
+\subsubsection*{Recommendation CORE-SAFE-S2: State, then improve, the crash-consistency guarantee}
+
+The immediate deliverable is not a mechanism. It is a written statement of what
+HDF5 guarantees today when a writer dies mid-update --- for each of the default
+single-file layout, SWMR, and the split and multi drivers --- and, explicitly,
+what it does not. Practitioners currently infer this from forum threads and
+folklore, which is why the same questions recur across sixteen
+years~\cite{forum-crash-state-1598,forum-flush-crash-3481,
+forum-crash-corruption-7581}. A documented weak guarantee is more useful than
+an undocumented one, because it lets an application decide whether it needs
+checkpointing, an external journal, or a different store.
+
+The structural work is a multi-release programme and is already under
+investigation: metadata journaling, write-ahead logging, mechanisms derived
+from SWMR, and checkpointing~\cite{forum-crashproofing-12003}. This report does
+not select among them. It records three constraints on whichever is chosen.
+
+\begin{enumerate}
+    \item \textbf{Recovery tooling is part of the guarantee, not an
+          afterthought.} Whether a file reopens after \code{h5clear} is the
+          difference between I2 and I3 in \code{CORE-SAFE-002}. Improving
+          crash consistency without improving diagnosis and repair moves files
+          from one failure class to another rather than reducing harm.
+    \item \textbf{Silent wrong data is the outcome to design against.} A file
+          that fails to open is a bounded operational problem. A file that
+          opens and returns data from an inconsistent state is a scientific
+          integrity problem, and it is the one that will not be noticed.
+    \item \textbf{The guarantee must be testable by fault injection,} and its
+          test must run in the release build configuration, not only under
+          assertions --- the same discipline \code{CORE-S7} applies to parser
+          invariants.
+\end{enumerate}
+
+\noindent\textbf{Acceptance evidence.}
+Published documentation states the crash-consistency guarantee per layout and
+driver, including its limits. A fault-injection harness kills the writer at a
+matrix of points across metadata update, flush, and close, and for every point
+records whether the file opens, opens after repair, or does not open, and
+whether any data read back differs from what was acknowledged as written. The
+last case is reported separately and treated as a defect, never as expected
+behaviour. Results are published per supported release so that the guarantee
+can be seen to hold or to change.
 
 \subsubsection{Privacy}
 
@@ -1312,7 +1306,7 @@ It then describes corresponding mitigation strategies.
 
 \paragraph{Overview of Privacy Threat Categories}\mbox{}\\
 
-The HDF5 Privacy Exposure Model ~\cite{PVEM} identifies 
+The HDF5 Privacy Exposure Model ~\cite{hdf5-privacy-exposure-model} identifies 
 seven exposure families that describe mechanisms through which sensitive
 information may be unintentionally exposed in HDF5. These mechanisms can arise
 during normal scientific data creation, processing, sharing, and preservation;
@@ -1388,13 +1382,37 @@ still requires whole-file or equivalent all-metadata protection.
 \code{CORE-PRIV-001}.
 
 \paragraph{Recommendation CORE-PRIV-S1: \emph{Privacy exposure awareness}}\mbox{}\\*
-Scientists, software developers, data stewards, and infrastructure providers should 
-recognize that HDF5's self-describing nature inherently exposes contextual 
-information in many ways. Privacy reviews should therefore evaluate not only 
-scientific datasets, but also metadata, structural organization, workflow artifacts, 
-derived products, and information that may be inferred through aggregation or 
-correlation. Reviews should also take into consideration possible privacy 
-exposure during data lifecycle. 
+Scientists, software developers, data stewards, and infrastructure providers should
+recognize that HDF5's self-describing nature inherently exposes contextual
+information in many ways. Privacy reviews should therefore evaluate not only
+scientific datasets, but also metadata, structural organization, workflow artifacts,
+derived products, and information that may be inferred through aggregation or
+correlation. Reviews should also take into consideration possible privacy
+exposure during data lifecycle.
+
+Awareness is not itself a control, so this recommendation is written to
+produce an artifact rather than a disposition of mind.
+
+\noindent\textbf{Acceptance evidence.}
+A dated privacy review record exists for the defined data population and
+sharing boundary, and it contains, at minimum:
+
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+    \item the named data owner and the intended recipient set for each
+          disclosure boundary;
+    \item an enumeration of sensitive items found in each asset class
+          identified in Section~\ref{sec:core-lib-format} --- data,
+          user-defined metadata, structural metadata, derived or reconstructed
+          information, and workflow artifacts --- or a positive statement that
+          the class was examined and found empty;
+    \item the lifecycle stages examined, with the stages not examined named
+          rather than omitted; and
+    \item a disposition for every enumerated item: retain, minimize,
+          tokenize, restrict recipients, or accept with a recorded rationale.
+\end{enumerate}
+
+A review that examines datasets only, or that records no negative findings for
+the metadata and artifact classes, does not satisfy this recommendation.
 
 \paragraph{Recommendation CORE-PRIV-S2: \emph{Privacy exposure through HDF5 tools and plugins awareness}}\mbox{}\\*
 The HDF5 ecosystem extends beyond the core HDF5 software (i.e., file format and the library), 
@@ -1405,20 +1423,62 @@ messages, temporary files, metadata snapshots, converted datasets, and cached
 intermediate results that may expose sensitive information beyond the contents of the 
 original HDF5 file. Furthermore, plugins may introduce new metadata, or transform 
 data in ways that alter their privacy characteristics. Consequently, privacy 
-assessments should evaluate not only HDF5 files but also the behavior of the 
-software ecosystem that processes them. Developers should document the privacy 
-implications of their tools, minimize unnecessary generation of sensitive artifacts, 
-and provide users with mechanisms to control logging, metadata generation, and 
+assessments should evaluate not only HDF5 files but also the behavior of the
+software ecosystem that processes them. Developers should document the privacy
+implications of their tools, minimize unnecessary generation of sensitive artifacts,
+and provide users with mechanisms to control logging, metadata generation, and
 retention of intermediate products.
+
+\noindent\textbf{Acceptance evidence.}
+For each in-scope tool, connector, filter, and VFD:
+
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+    \item published documentation lists the outputs it can generate --- stdout
+          and stderr, redirected files, logs, temporary files, caches,
+          snapshots, converted or derived files --- and the option, property,
+          or environment control that suppresses or bounds each one;
+    \item the list is confirmed by a reproducible trace of a representative
+          invocation rather than asserted from the source, and the trace is
+          retained; and
+    \item any output observed in the trace but absent from the documentation
+          is recorded as a defect against that component.
+\end{enumerate}
+
+Table~\ref{tab:hdf5-tools-privacy} is the starting inventory for the official
+command-line tools, not a completed trace. This recommendation supports the
+unrated \code{EXT-PRIV-001} evidence track and inherits no response urgency
+from \code{CORE-PRIV-001}.
 
 \paragraph{Recommendation CORE-PRIV-S3: \emph{Privacy-aware system design}}\mbox{}\\*
 HDF5 software systems should be built with data privacy in mind. Applications should 
 minimize collection and retention of unnecessary metadata, avoid embedding sensitive 
-information in object names or descriptive attributes, remove temporary processing 
-artifacts when they are no longer needed, and carefully evaluate automatically 
-generated metadata introduced during data conversion or interoperability. 
-Workflow designers should review intermediate products, logs, cached datasets, and 
-derived files before publication or long-term archival. 
+information in object names or descriptive attributes, remove temporary processing
+artifacts when they are no longer needed, and carefully evaluate automatically
+generated metadata introduced during data conversion or interoperability.
+Workflow designers should review intermediate products, logs, cached datasets, and
+derived files before publication or long-term archival.
+
+\noindent\textbf{Acceptance evidence.}
+The claim to be tested is that minimization actually removed the information,
+not that it was removed from the API view:
+
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+    \item before-and-after inspection of a representative file through
+          \emph{both} the HDF5 API and a raw-byte search --- at minimum
+          \code{strings}-class extraction over the whole file, including the
+          user block and any free or unreferenced space --- shows that each
+          item marked \emph{minimize} or \emph{tokenize} in the
+          \code{CORE-PRIV-S1} review is absent from both views;
+    \item metadata introduced automatically during conversion is enumerated
+          for the tested pipeline and each item is dispositioned; and
+    \item temporary artifacts are removed under a stated retention rule, and
+          the rule is verified by inspecting the working area after both
+          normal and abnormal termination.
+\end{enumerate}
+
+An item that disappears from \code{h5dump} output but is still recoverable
+from the raw bytes has not been minimized. Where the file is rewritten to
+achieve this, record pre- and post-checksums and preserve provenance.
 
 \paragraph{Recommendation CORE-PRIV-S4: \emph{Data encryption as privacy control}}\mbox{}\\*
 Encryption represents an important but limited privacy control. 
@@ -1446,10 +1506,35 @@ encryption keys become unavailable.
 
 Therefore, encryption should be viewed as one component of a comprehensive 
 privacy strategy rather than as a complete solution. Effective protection 
-requires combining encryption with careful metadata management, lifecycle-aware 
-data governance, privacy-aware application design, access controls provided by 
-the underlying computing environment, and education of users regarding the 
+requires combining encryption with careful metadata management, lifecycle-aware
+data governance, privacy-aware application design, access controls provided by
+the underlying computing environment, and education of users regarding the
 unique privacy characteristics of HDF5-based scientific data systems.
+
+\noindent\textbf{Acceptance evidence.}
+Encryption is credited only for the boundaries actually tested, and only when
+recoverability is demonstrated alongside confidentiality:
+
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+    \item ciphertext and metadata inspection shows that the items the
+          \code{CORE-PRIV-S1} review marked as requiring protection are not
+          observable at the protected boundary, tested through both the HDF5
+          API and raw-byte search;
+    \item an unauthorized-open test fails closed, and a partial-I/O workflow
+          test confirms the protected file remains usable for its intended
+          access pattern;
+    \item a protected key inventory names a key custodian per key, and
+          backup/restore evidence exists; and
+    \item a loss-and-recovery exercise is performed and passes.
+\end{enumerate}
+
+Item (d) is not optional. Encryption without a tested recovery path converts a
+disclosure risk into a durable data-loss risk, which is a different harm and
+not an improvement. Until all four pass, the affected sharing boundary is
+avoided or a tested access restriction is maintained within the
+\code{CORE-PRIV-001} Near-term clock. This recommendation is the conditional
+branch \code{RM-2G}, reached only where \code{RM-1D} minimization and
+recipient controls cannot meet the disclosure policy.
 
 
 \end{document}

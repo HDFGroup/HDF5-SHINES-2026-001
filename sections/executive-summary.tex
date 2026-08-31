@@ -1,0 +1,244 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+%% ======================================================================
+%%  Executive Summary
+%% ======================================================================
+\section*{Executive Summary}
+\phantomsection
+\addcontentsline{toc}{section}{Executive Summary}
+\label{sec:executive-summary}
+
+\subsection*{What this report is}
+
+This is a targeted, ecosystem-level technical assessment of safety, security,
+and privacy risk in the HDF5 software and data ecosystem, with an evidence
+cutoff of August 27, 2026. It is not a certification, attestation, penetration
+test, or exhaustive source review, and it expresses no assurance opinion. The
+full engagement type, scope, and limitations are stated in
+Sections~\ref{sec:engagement-purpose}--\ref{sec:assessment-limitations}.
+
+Ratings apply to specific adverse-event scenarios at specific boundaries, never
+to HDF5 as a technology. The rating method is defined once, in
+Section~\ref{sec:risk-rubric}, and Appendix~\ref{app:findings-register} is
+authoritative for every formal rating in this revision.
+
+\subsection*{Four ecosystem-level judgments}
+
+\begin{enumerate}
+    \item \textbf{Historically affected core and official-tool paths repeatedly
+          failed to validate file-derived values} --- sizes, counts, offsets,
+          message state, layout state, filter and datatype parameters ---
+          before using them in trusted C operations. Local fixes can treat a
+          known variant; eliminating the class requires invariant-driven
+          parsing and continuing regression evidence.
+    \item \textbf{Applications can turn documented HDF5 capabilities into
+          attack mechanisms} when they process untrusted files while holding
+          filesystem, plugin-loading, deserialization, or resource authority
+          that the file's originator does not have. The defect is in the
+          authority boundary, not necessarily in the parser.
+    \item \textbf{Reader acceptance, format conformance, and safe deployment
+          are three separate decisions.} Permissive historical acceptance is
+          not proof that a file is consistent, and stricter rejection is not
+          automatically a regression.
+    \item \textbf{Privacy harm can arise during correct, authorized
+          operation}, because protecting the payload does not protect
+          metadata, structure, derived information, caches, logs, or workflow
+          artifacts.
+\end{enumerate}
+
+\subsection*{Registered findings at a glance}
+
+Table~\ref{tab:exec-findings-at-a-glance} is a navigation aid. The controlling
+records --- scenario statements, scope, evidence, and rating bases --- are in
+Appendix~\ref{app:findings-register}; the proposed owners come from
+Appendix~\ref{app:phased-roadmap} and are role labels, not present
+assignments. Counts here describe bounded scenarios only. They are not
+prevalence estimates and must not be aggregated into a score.
+
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.7in}
+\setlength{\LTright}{-0.7in}
+\begin{longtable}{@{}p{0.145\widetablewidth}>{\raggedright\arraybackslash}p{0.305\widetablewidth}p{0.055\widetablewidth}p{0.095\widetablewidth}p{0.085\widetablewidth}>{\raggedright\arraybackslash}p{0.19\widetablewidth}p{0.065\widetablewidth}@{}}
+\caption{Registered findings, ratings, and response routes at a glance}
+\label{tab:exec-findings-at-a-glance}\\
+\hline
+\textbf{ID} & \textbf{Scenario shorthand} & \textbf{Dim.} & \textbf{Tier} &
+\textbf{Status} & \textbf{Response route} & \textbf{Owner} \\
+\hline
+\endfirsthead
+
+\caption[]{Registered findings, ratings, and response routes at a glance,
+continued}\\
+\hline
+\textbf{ID} & \textbf{Scenario shorthand} & \textbf{Dim.} & \textbf{Tier} &
+\textbf{Status} & \textbf{Response route} & \textbf{Owner} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+\hline
+\endlastfoot
+
+\code{APP-SEC-001} &
+Affected dataset service followed attacker-selected external raw-storage paths
+with worker authority and returned local files. & Sec. & Critical & Rated &
+Immediate (24 h from identification) & \code{APP} \\
+
+\code{CORE-SEC-001} &
+Malformed on-disk metadata reaches memory-unsafe core-library paths in
+historically affected releases. & Sec. & High & Provisional &
+Near-term (30 d) & \code{CORE} \\
+
+\code{APP-SEC-002} &
+Affected Keras legacy-HDF5 model loading executes embedded code despite
+\code{safe_mode=True}. & Sec. & High & Rated & Near-term (30 d) & \code{APP} \\
+
+\code{APP-SEC-003} &
+Affected Keras model loading follows attacker-controlled external dataset
+references and discloses local files. & Sec. & High & Rated &
+Near-term (30 d) & \code{APP} \\
+
+\code{APP-SEC-005} &
+TensorFlow 2.17.0 loads HDF5 plugins from an uncontrolled search location,
+enabling local privilege escalation. & Sec. & High & Rated &
+Near-term (30 d) & \code{APP} \\
+
+\code{CORE-TOOL-001} &
+A malicious file triggers the reported \code{h5dump} use-after-free in HDF5
+1.14.1-2 and earlier. & Sec. & Mod.--High & Provisional &
+Near-term (30 d) & \code{CORE} \\
+
+\code{CORE-PRIV-001} &
+Sensitive plaintext metadata is disclosed when a file is shared under
+payload-only protection. & Priv. & Mod.--High & Provisional &
+Near-term (30 d) & \code{PRIV} \\
+
+\code{CORE-SAFE-001} &
+Storage exhaustion during write or close leaves an incomplete or corrupted
+file after the operation reports failure; the library defines no recovery or
+poisoned-file protocol. & Safety & Mod.--High & Provisional & Near-term
+(containment) & \code{APP}/\code{CORE} \\
+
+\code{CORE-SAFE-002} &
+Abrupt process or host termination during write leaves a file corrupted or not
+reopenable. & Safety & Mod.--High & Provisional & Near-term (containment) &
+\code{APP}/\code{CORE} \\
+
+\code{LONG-SAF-001} &
+An archived dataset becomes unreadable because a required non-core filter is
+gone. Decadal horizon. & Safety & Moderate & Provisional & Planned (90 d) &
+\code{INTEROP} \\
+
+\code{CORE-SEC-002} &
+File-controlled work, allocation, traversal, or error paths terminate or
+exhaust an affected reader. & Sec. & Moderate & Provisional &
+Planned (90 d) & \code{CORE} \\
+
+\code{APP-SEC-004} &
+Affected Keras weight loading allocates from an extreme file-declared shape
+and exhausts memory. & Sec. & Moderate & Rated & Planned (90 d) & \code{APP} \\
+
+\code{IND-SAF-001} &
+HDF5 2.0/2.1 exact-width validation rejects a sufficient but nonminimal chunk
+encoding permitted by the specification. & Safety & Moderate & Rated &
+Planned (90 d) & \code{INTEROP} \\
+
+\code{IND-SAF-002} &
+Older permissive readers accept contradictory PureHDF 2.1.2 chunk metadata
+that HDF5 2.0 rejects after upgrade. & Safety & Moderate & Rated &
+Planned (90 d) & \code{INTEROP} \\
+
+
+
+\hline
+
+\code{CORE-SEC-003} &
+Candidate deserializer invariants derived from in-file bytes are enforced only
+inside \code{assert(...)} and may be absent from \code{-DNDEBUG} builds. One
+development-tree instance has a source-reported adverse result; supported-
+release scope and population remain unverified. &
+Sec. & \emph{None} & Backlog &
+Evidence action (\code{RM-1E}, 30 d target) & \code{CORE} \\
+
+\code{FMT-SAF-001} &
+The specification and reference library disagree on one open group-info rule;
+the affected population and adverse consequence are not yet bounded. & Safety &
+\emph{None} & Backlog & Administrative adjudication and evidence action
+(90 d target) & \code{INTEROP} \\
+
+\code{EXT-PRIV-001} &
+Extensions can move data and metadata across storage, cache, logging, network,
+and executable-plugin boundaries. & Priv. & \emph{None} & Backlog &
+Evidence action (\code{RM-2E}) & \code{PRIV} \\
+
+\code{SUP-SAFE-001} &
+Downstream builds and workflows can disagree about ABI, linkage, filters,
+plugins, VFDs, parallel features, or file locking. & Safety & \emph{None} &
+Backlog & Evidence action (\code{RM-2F}) & \code{REL} \\
+
+\end{longtable}
+\endgroup
+
+Fourteen formal findings are registered: seven Rated and seven Provisional.
+Their tiers comprise one Critical, four High, four Moderate--High ranges, and
+five Moderate. Four observations remain in the evidence backlog; backlog means
+insufficient evidence to rate, not Low risk. \code{FMT-SAF-001} carries an
+administrative adjudication but no inherent-risk urgency. The registered
+write-side and lifecycle findings ensure that non-adversarial data survival is
+considered alongside hostile-input risk; this is not a prevalence claim.
+
+\subsection*{Where the priority actually falls}
+
+Response urgency comes from Table~\ref{tab:findings-response-routing} and
+nowhere else. Chapter order, recommendation numbering, CVE counts, publicity,
+effort, and dependencies do not create or revise it.
+
+\begin{itemize}
+    \item \textbf{The single Immediate route belongs to downstream service
+          operators, not to the reference-library maintainers.} It is
+          conditional: it applies to any service that still automatically
+          follows file-selected external resources while holding access to
+          sensitive local files. The affected July 2026 deployment is
+          reported remediated, and this report assigns no current residual
+          tier to it.
+    \item \textbf{For The HDF Group specifically, there is no Immediate
+          action in this revision.} The near-term core obligations are the
+          deployment census (\code{RM-1A}), the affected-version treatment of
+          \code{CORE-SEC-001} and \code{CORE-TOOL-001} (\code{RM-1B}), and the
+          30-day assert-site catalog (\code{RM-1E}).
+    \item \textbf{Deployment and storage operators own the write-side
+          containment clock.} Within 30 days of identifying applicable scope,
+          \code{RM-1F} requires tested capacity monitoring, checkpoint and
+          recovery discipline, and a validated independent copy; \code{RM-1A}
+          supplies scope evidence but is not itself containment.
+    \item \textbf{Two response clocks are distinct.} A finding's clock starts
+          when an affected deployment or equivalent exposure is
+          \emph{identified}. The census and assert-catalog clocks start when
+          the roadmap is \emph{adopted}. Adoption must set due dates for both
+          inventories, so that a response clock cannot stay latent through
+          unbounded non-discovery.
+\end{itemize}
+
+\subsection*{If only a few things can be funded}
+
+Section~\ref{sec:roadmap-minimum-viable} identifies a capacity-constrained
+subset that preserves response clocks. It is a funding aid, not a risk rank or
+quantitative efficiency claim.
+
+\subsection*{What this report does not establish}
+
+No proposed mitigation is shown adopted or effective; every package remains
+\emph{Proposed / implementation not verified}, with no residual-risk
+acceptance. Population, fix-coverage, and deployment-control evidence remain
+incomplete, and findings rely on document, artifact, or architecture review
+unless independent reproduction is expressly stated. Silence is not evidence
+of absence.
+
+\end{document}

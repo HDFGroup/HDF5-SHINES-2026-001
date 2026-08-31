@@ -22,6 +22,46 @@ third-party plugins and application-level usage are usually
 triaged or referred to their maintainers.
 
 \begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.21\linewidth}p{0.22\linewidth}p{0.51\linewidth}@{}}
+\caption{Representative application-level HDF5 mechanisms}
+\label{tab:application-hdf5-failure-families}\\
+\hline
+\textbf{Mechanism} & \textbf{Consequence} & \textbf{Boundary evidence} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Mechanism} & \textbf{Consequence} & \textbf{Boundary evidence} \\
+\hline
+\endhead
+\hline
+\endfoot
+Malformed metadata in C paths & Memory faults or termination &
+Recurring core/tool records; the bounded official-tool example is
+\code{CORE-TOOL-001}~\cite{cve-2026-34734,hdf5-ghsa-w7v2-9cmr-pwwj}. \\
+Application deserialization & Code execution &
+Legacy Keras HDF5 loading bypassed \code{safe_mode}; application objects, not
+the format, supplied execution~\cite{cve-2025-9905,keras-ghsa-36rr-ww3j-vrjv}. \\
+External resources & File disclosure or traversal &
+File-selected paths were resolved with application authority in Keras and the
+Hugging Face service~\cite{cve-2026-1669,keras-ghsa-3m4q-jmj6-r34q,
+huggingface-agent-intrusion-2026}. \\
+Declared size or shape & Memory exhaustion &
+Keras allocated from an extreme HDF5-declared shape before enforcing a budget
+~\cite{cve-2026-0897,keras-ghsa-mgx6-5cf9-rr43}. \\
+Dynamic plugin search & Unintended code loading &
+TensorFlow searched an unsecured plugin location
+~\cite{cve-2026-2492,zdi-26-116,tensorflow-commit-46e7f7f}. \\
+Vendored/stale copies & Inherited defects and ambiguous applicability &
+Downstreams may statically link or lag HDF5, as illustrated by matio and an
+Apple removal~\cite{cve-2021-36977,cve-2021-31009}. \\
+\end{longtable}
+\endgroup
+
+\iffalse
+\begingroup
 \scriptsize
 \setlength{\tabcolsep}{2pt}
 \renewcommand{\arraystretch}{1.15}
@@ -99,6 +139,7 @@ Applications often call \code{h5dump}, \code{h5repack}, or converters as
 ``safe inspection'' tools on untrusted files. \\
 \end{longtable}
 \endgroup
+\fi
 
 \subsection{Boundary Case Study: External Raw Storage and the Hugging Face Incident}
 \label{sec:huggingface-external-storage-case}
@@ -129,6 +170,70 @@ resolution across raw storage, external links, and virtual-dataset sources. The
 discussion records policy and API proposals, including use of the external
 \code{h5policy} prototype as a proving ground; this report does not treat those
 proposals as delivered controls~\cite{h5py-gh-issue-2891,hdf5-gh-issue-6618}.
+
+Table~\ref{tab:huggingface-authority-chain} separates the observed incident
+record from the control inference. That separation matters because the file was
+not reported to exploit memory corruption, and the service's authority --- not
+the input's authority --- made the disclosure possible.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}p{0.17\linewidth}p{0.47\linewidth}p{0.30\linewidth}@{}}
+\caption{Authority and control chain in the Hugging Face incident}
+\label{tab:huggingface-authority-chain}\\
+\hline
+\textbf{Stage} & \textbf{Evidence and boundary} & \textbf{Audit consequence} \\
+\hline
+\endfirsthead
+\caption[]{Authority and control chain in the Hugging Face incident, continued}\\
+\hline
+\textbf{Stage} & \textbf{Evidence and boundary} & \textbf{Audit consequence} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+Resource selection &
+The remote party supplied a valid HDF5 file whose external raw-storage metadata
+named local paths. The originator selected the resource but did not bring the
+worker's filesystem authority. &
+Validity and parser correctness do not answer whether the application may honor
+a file-selected resource. External access needs an explicit policy decision. \\
+
+Authority-bearing resolution &
+The dataset worker resolved the paths with its own permissions and read
+\code{/proc/self/environ} and source files. The intentional HDF5 mechanism
+carried the request across the service boundary. &
+Deny or constrain resolution before the read; independently reduce worker
+authority, isolate credentials, and confine filesystem access. \\
+
+Observable consequence &
+The service returned the bytes as dataset rows. Hugging Face distinguishes this
+file disclosure from the separate Jinja2 injection that supplied code
+execution~\cite{huggingface-agent-intrusion-2026}. &
+Rate the demonstrated disclosure, not an unreported HDF5-code-execution path.
+Constrain output and retain resolution logs so attempted access is observable. \\
+
+Reusable-control gap &
+The affected renderer was changed, while h5py and HDF5 discussions sought a
+less laborious detection or enforcement surface spanning raw storage, external
+links, and virtual-dataset sources~\cite{h5py-gh-issue-2891,hdf5-gh-issue-6618}. &
+Service containment and reusable library support are different closure claims.
+Until enforcement ships and is integrated, sandboxing and application policy
+remain necessary. \\
+
+Closure evidence &
+A preflight result can become stale if the file, path environment, or opened
+object changes before use. A detector alone also cannot decide which worker
+authority is acceptable. &
+Bind the decision to the same handle or immutable file identity, recheck at
+resolution, and test denial across every enabled external-resource family. \\
+
+\end{longtable}
+\endgroup
+
 Formal finding \code{APP-SEC-001} in
 Appendix~\ref{app:findings-register} rates the
 incident at the affected service boundary. The similar Keras external-dataset
@@ -136,28 +241,17 @@ failure is separately registered as \code{APP-SEC-003}; recurrence of a
 mechanism does not erase the differences in product, version, and deployment
 scope.
 
-\paragraph{The unifying root cause:} The repeated mistake is \textit{trust-boundary confusion}.
-HDF5 sits at the boundary between a file and the process.
-Downstream frameworks often add another boundary: model loading,
-dataset ingestion, scientific workflow execution, browser upload,
-cloud service processing, or plugin resolution. Many CVEs happen
-because those layers collapse into one assumption: “This is just an HDF5 file, so reading it is safe.”
-That assumption is false. An HDF5 file can influence:
-
-\begin{itemize}
-    \item memory allocation size
-    \item dataset rank and shape
-    \item chunk count and cache pressure
-    \item filter/plugin loading
-    \item external file lookup
-    \item link traversal
-    \item datatype conversion
-    \item application-level model reconstruction
-    \item tool output rendering
-\end{itemize}
-
-The common issue is \textbf{unsafe interpretation of HDF5-controlled
-metadata at the application boundary.}
+\paragraph{The unifying root cause.}
+The repeated mistake is \emph{trust-boundary confusion}: treating HDF5 as inert
+data even though it can influence allocation, shape, traversal, codec/plugin
+loading, external-file lookup, conversion, object reconstruction, and tool
+output. The SSP SIG separately names the same family as I9 in its
+independent-implementation model and W8 in its Python-wrapper model
+~\cite{hdf5-indie-model,hdf5-python-wrapper-model}. That is internal
+consistency between programme artifacts, not independent validation. The
+failure occurs when a model loader, ingestion service, workflow, viewer, or
+plugin resolver interprets file-controlled metadata with authority the file's
+originator did not possess.
 
 \subsection{Audit Findings and Mitigation Planning}
 
@@ -186,6 +280,88 @@ The \code{APP-S} identifiers below identify recommendations in the downstream-
 application track. Their numbers do not express risk, urgency, effort,
 dependency, or implementation order.
 
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{longtable}{@{}p{0.12\linewidth}p{0.26\linewidth}p{0.56\linewidth}@{}}
+\caption{Application-boundary control set}
+\label{tab:downstream-hdf5-safe-policies}\\
+\hline
+\textbf{ID} & \textbf{Outcome} & \textbf{Minimum control} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Outcome} & \textbf{Minimum control} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\code{APP-S1} & Untrusted-HDF5 profile &
+Default-deny dynamic plugins and external resources; cap rank, objects,
+metadata, traversal, logical bytes, allocation, and filter expansion. \\
+\code{APP-S2} & Enforcement-coupled preflight &
+Return machine-readable reasons before allocation or deserialization, bind the
+decision to the same handle or immutable file identity, and recheck targets at
+runtime. Existing validator prior art does not supply that coupling. \\
+\code{APP-S3} & Safe ML-loader defaults &
+Reject executable legacy reconstruction, external datasets, dynamic plugins,
+and allocation beyond aggregate and per-object budgets. \\
+\code{APP-S4} & External resources opt-in &
+Reject absolute paths, traversal, and working-directory lookup; require an
+explicit sandbox root or allowlist and log each resolution. \\
+\code{APP-S5} & Plugins governed as code &
+Set loading policy explicitly; use protected allowlisted directories and
+provenance; isolate and minimize privilege where a plugin is indispensable. \\
+\code{APP-S6} & Downstream provenance &
+Report HDF5 version and linkage, enabled filters/connectors, plugin-path and
+external-resource policy, and loader safe-mode behavior. \\
+\code{APP-S7} & Advisory scope tags &
+Distinguish core parser, official or legacy tool, plugin loading, external
+resource, downstream deserialization/resource policy, vendored library,
+non-HDF5, and duplicate/rejected records. Tags support triage but do not rate
+risk. \\
+\end{longtable}
+\endgroup
+
+\paragraph{Preflight must remain bound to enforcement.}
+A metadata scan is advisory unless its decision is attached to the same open
+handle or a verified immutable file identity and the runtime fails closed when
+the file, policy, or external-resource target changes. The validator should
+report reasons such as an out-of-sandbox path, an excessive logical size, a
+required plugin, or executable application metadata before the loader allocates
+arrays or constructs application objects. Runtime hooks must then enforce the
+same limits at external resolution, traversal, filter activation, and object
+construction.
+
+\paragraph{Use current controls while shared APIs mature.}
+Applications can already disable dynamic plugins with
+\code{H5PLset_loading_state(0)} or \code{HDF5_PLUGIN_PRELOAD=::}; service
+launchers can clear or constrain \code{HDF5_PLUGIN_PATH} and
+\code{HDF5_EXTFILE_PREFIX}; and process isolation can remove filesystem,
+credential, and network authority. Those controls should be published as
+deployment recipes now. The Phase~2 profile and external-resource APIs make the
+policy cohesive and binding-friendly; they do not justify waiting to contain an
+identified deployment.
+
+\paragraph{Deployment minimum.}
+Unknown-file viewers and upload services require sandboxing, external-resource
+denial, plugin denial, and metadata/output budgets. Model loaders additionally
+reject executable reconstruction and enforce aggregate tensor budgets. HPC and
+desktop workflows separate trusted internal files from imports, pin protected
+plugin directories, and make any external-resource opt-in explicit. Bindings
+must expose these controls through APIs rather than environment variables alone.
+
+Viewers, model loaders, upload services, HPC workflows, desktop applications,
+bindings, and distributors apply this set differently, but the common rule is
+the same: isolate unknown files, disable unneeded authority, enforce resource
+budgets before allocation, and publish the exact HDF5 boundary in use. The
+authoritative owner, work package, effort, and acceptance evidence are in
+Appendices~\ref{app:recommendation-register} and
+\ref{app:phased-roadmap}.
+
+\iffalse
 \subsubsection*{Recommendation APP-S1: Define an “untrusted HDF5” profile}
 
 HDF5 should offer, and downstreams should use, a strict profile
@@ -214,6 +390,10 @@ can be disabled with \code{H5PLset_loading_state(0)} or \code{HDF5_PLUGIN_PRELOA
 But this needs to become a cohesive security profile, not a set of hidden knobs.
 
 \subsubsection*{Recommendation APP-S2: Ship a preflight validator}
+
+\noindent\emph{Prior art:} a working preflight validator already exists; see
+Table~\ref{tab:core-prior-art-rescope}. The open work is the enforcement
+coupling described below, not the validator itself.
 
 Create a validator that reads metadata before the application allocates large
 arrays or deserializes model objects. Preflight is not a stand-alone
@@ -437,5 +617,6 @@ h5validate --profile untrusted --json file.h5
 
 Maintain downstream recipes for Keras, TensorFlow, h5py, netCDF, MATLAB, R,
 Java, and cloud services as current controls and standardized APIs evolve.
+\fi
 
 \end{document}

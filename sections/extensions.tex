@@ -8,760 +8,399 @@
 \section{HDF5 Library Extensions}
 \label{sec:extensions}
 
-\subsection{Overview}
+\subsection{Assessment Boundary}
 
-Supply chain-related issues are discussed in more detail in Section~\ref{sec:supply-chain}.
+Supply-chain issues are treated in Section~\ref{sec:supply-chain}. This
+chapter addresses a different question: how VOL connectors, filter plugins,
+and Virtual File Drivers (VFDs) can extend a deployment's privacy boundary
+beyond the logical HDF5 file.
 
-\paragraph{Taxonomy and rating boundary.}
-The labels P1--P7 in this chapter use the exposure families defined by the
-HDF5 Privacy Exposure Model and summarized in the core chapter: P1 semantic
-metadata exposure, P2 structural or on-disk leakage, P3 raw-data pattern
-leakage, P4 unintended inclusion during processing, P5 aggregation,
-correlation, or inference, P6 persistence beyond intended lifetime, and P7
-misplaced trust in privacy by format. \code{EXT}, \code{OPS}, \code{TCD}, and
-\code{SCD} are separate SSP category tags for extensions, operations,
-toolchains, and distribution;
-they are not additional P-numbered families. These labels classify possible
-exposure mechanisms, not inherent risk or response urgency. The chapter-wide
-observation remains the unrated \code{EXT-PRIV-001} evidence record unless a
-bounded deployment supports a formal finding.
+The P1--P7 labels use the HDF5 Privacy Exposure Model summarized in the core
+chapter: P1 semantic metadata, P2 structural or on-disk leakage, P3 raw-data
+patterns, P4 unintended inclusion during processing, P5 aggregation or
+inference, P6 persistence beyond intended lifetime, and P7 misplaced trust in
+privacy by format. \code{EXT}, \code{OPS}, \code{TCD}, and \code{SCD} are
+separate SSP tags for extensions, operations, toolchains, and distribution.
+These labels classify candidate mechanisms, not inherent risk or response
+urgency. Without a bounded deployment, data population, recipient, retention
+condition, and consequence, the chapter-wide observation remains unrated
+evidence-backlog item \code{EXT-PRIV-001}.
 
-\subsection{Virtual Object Layer (VOL) Connectors}
-\subsubsection{Privacy-Relevant Mechanisms for VOL Connectors}
+\begin{table}[htbp]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\textwidth}{@{}p{0.17\textwidth}p{0.25\textwidth}X p{0.18\textwidth}@{}}
+\hline
+\textbf{Extension} & \textbf{Position in workflow} &
+\textbf{Boundary added to the assessment} & \textbf{Candidate families} \\
+\hline
+VOL connector & Above or in place of native object storage &
+External and non-HDF5 sources, aggregation, generated objects and metadata,
+network services, credentials, caches, and connector code. &
+P1, P4--P7; SSP: EXT, OPS, SCD \\
+Filter & Immediately before storage and after retrieval &
+Pipeline metadata, compressed-size patterns, plaintext buffers, derived
+information, temporary artifacts, and dynamically loaded code. &
+P1--P7; SSP: EXT, SCD \\
+VFD & Physical byte storage and retrieval &
+Storage locations, replicas and histories, physical layout and access
+patterns, network and cloud infrastructure, and VFD code. &
+P2--P7; SSP: EXT, OPS, SCD \\
+\hline
+\end{tabularx}
+\caption{Extension mechanisms and the deployment boundary they can add}
+\label{tab:extension-boundary}
+\end{table}
 
-HDF5 VOL connectors can substantially broaden a deployment's privacy-assessment
-boundary. When a VOL connector (or a stack of VOL connectors) is used, data privacy can no
-longer be evaluated by examining only the HDF5 file, its lifecycle, and the workflows in which it 
-is used. Instead, the privacy boundary extends to the entire data ecosystem, including all 
-underlying data sources, connector-generated data and metadata, caches, authentication 
-credentials, network communications, and the dynamically loaded plugin code itself. 
-Consequently, any comprehensive HDF5 privacy model must account for these components, 
-their interactions, and the trust relationships they establish.
+\subsection{Virtual Object Layer Connectors}
 
-The following mechanisms can create deployment-specific privacy exposure when
-HDF5 VOL connectors are used.
-
-\paragraph{External Data Sources (P7; SSP: EXT)}\mbox{}\\
- Users traditionally assume that an HDF5 file contains all of the data 
-being accessed and that inspecting or protecting the file is sufficient to understand and secure 
-the complete dataset. However, this assumption no longer holds when HDF5 VOL connectors 
-are used. A VOL connector can transparently retrieve and integrate data from numerous 
-external sources while presenting it as a single HDF5 file. These sources may include cloud 
-object stores, databases, remote servers accessed through REST or other network services, live 
-data streams, or files in non-HDF5 formats. In addition, connectors may generate derived data, 
-metadata, or virtual objects that do not physically exist in the underlying storage. As a result, 
-users may be unaware of the true origin, location, ownership, and privacy policies governing the 
-data being accessed, making it more difficult to assess privacy exposure and apply appropriate
-protections.
-
-\paragraph{Transparent Data Aggregation (P5; SSP: EXT)}\mbox{}\\
- A VOL connector can transparently aggregate data from multiple 
-HDF5 files, databases, cloud object stores, external file formats, and live data streams into a 
-single logical HDF5 dataset. For example, a connector could combine data from a geospatial 
-database, near real-time weather and natural disaster feeds, and property assessment records 
-to produce an HDF5 dataset for analyzing the potential impact of natural disasters on property 
-values. From the application's perspective, all of these heterogeneous data sources appear as a 
-single HDF5 dataset, potentially obscuring the number, nature, and privacy policies of the 
-underlying data sources. Such transparent aggregation can create unintended
-disclosure because data originating from independent sources with different ownership, access
-controls, or privacy policies may be analyzed or shared as a single integrated dataset without 
-the user's explicit awareness.
-
-\paragraph{Access to non-HDF5 data (P7; SSP: EXT)}\mbox{}\\
- VOL connectors can access data in other binary formats, for example 
-TIFF/GeoTIFF, BUFR, GRIB2, and CDF, and special storage systems, for example, DAOS. 
-Therefore, the privacy implications of these formats and storage systems must
-be included in the deployment's HDF5 privacy assessment.
-
-\paragraph{Generated metadata (P1, P4; SSP: EXT)}\mbox{}\\
- VOL connectors may generate their own metadata that in turn may 
-reveal, for example, dataset relationships, storage locations, URLs, cloud bucket names, and 
-provenance. VOL connectors may generate additional metadata; for example, BUFR and GRIB2 
-VOL connectors generate file inventories revealing file organization, create derived attributes 
-and dimension scales even when raw data remain protected.
-
-\paragraph{Network Workflow Artifacts (P4, P6; SSP: EXT, OPS)}\mbox{}\\
- HDF5 VOL connectors that access remote data sources generate 
-network workflow artifacts as part of normal operation. These artifacts may include HTTP 
-request and response headers, DNS queries and logs, proxy logs, browser or client history, 
-authentication records, local caches, temporary downloads, and other network-related 
-metadata retained on local or remote systems. Such artifacts can create a detailed record of the 
-datasets accessed, potentially exposing sensitive information even when the underlying data 
-remain protected. Consequently, HDF5 VOL connectors that rely on network communications 
-inherit privacy-relevant characteristics of networked systems and should be evaluated
-within a broader network privacy and security model. 
-
-\paragraph{Caching (P4, P6; SSP: EXT)}\mbox{}\\
- HDF5 VOL connectors may cache all sorts of data (metadata, downloaded raw data, 
-authentication information, etc.) that remain after execution and may be shared, copied, and 
-archived. A user may not be even aware of VOL’s artifacts and leaked data.
-
-\paragraph{Provenance leakage (P1, P4; SSP: EXT)}\mbox{}\\
- VOL connectors may reveal provenance information, e.g., data origin, 
-timestamps, organizational structure, modification history. 
-
-\paragraph{Policy Bypass (P7; SSP: EXT, OPS)}\mbox{}\\
- HDF5 applications are generally privacy-policy agnostic and have no inherent 
-awareness of the privacy policies governing the data they access. When VOL connectors are 
-used, the same application may transparently access data originating from multiple sources, 
-each subject to different ownership, access controls, retention requirements, or privacy 
-regulations. Because the application interacts only with the HDF5 API, it may unknowingly 
-combine, process, or redistribute data under incompatible privacy policies, effectively bypassing 
-policy boundaries that would otherwise apply to the individual data sources.
-
-\paragraph{Plugin Trust (P4, P6; SSP: EXT, SCD)}\mbox{}\\
- HDF5 VOL connectors are dynamically loaded plugins that execute external code 
-within the application's process. As a result, a connector has direct access to the data flowing 
-through the HDF5 API and can inspect, copy, modify, cache, export, or share that data before 
-returning it to the application. A malicious or untrusted VOL connector could therefore 
-compromise the confidentiality, integrity, or privacy of the data without the application's 
-knowledge. Consequently, VOL connectors should be obtained from trusted sources, verified 
-before deployment, and included within the application's overall trust and privacy model.
+A connector, or a connector stack, can present external and heterogeneous
+resources through the HDF5 API. Protecting or inspecting the apparent file is
+therefore not sufficient to establish where all data originated, where they
+were processed or retained, or which policies applied. Table~\ref{tab:vol-privacy-risks}
+consolidates the mechanisms that must be tested in a concrete deployment.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.25}
-
-%\setlength{\LTleft}{-0.7in}
-%\setlength{\LTright}{-0.7in}
-
-\begin{longtable}{@{}p{0.42\linewidth}p{0.44\widetablewidth}@{}}
+\renewcommand{\arraystretch}{1.14}
+\begin{longtable}{@{}p{0.20\textwidth}p{0.62\textwidth}p{0.13\textwidth}@{}}
 \caption{Candidate privacy-exposure families for VOL connector mechanisms}
 \label{tab:vol-privacy-risks}\\
-
 \hline
-\textbf{Mechanism} & \textbf{Candidate exposure families / SSP tags} \\
+\textbf{Mechanism} & \textbf{Deployment-relevant observation} &
+\textbf{Families / tags} \\
 \hline
 \endfirsthead
-
 \caption[]{Candidate privacy-exposure families for VOL connector mechanisms, continued}\\
 \hline
-\textbf{Mechanism} & \textbf{Candidate exposure families / SSP tags} \\
+\textbf{Mechanism} & \textbf{Deployment-relevant observation} &
+\textbf{Families / tags} \\
 \hline
 \endhead
-
 \hline
 \endfoot
 
-External Data Sources &
+External and non-HDF5 sources &
+A connector may retrieve and integrate cloud objects, databases, remote REST
+or other network services, live streams, TIFF/GeoTIFF, BUFR, GRIB2, CDF,
+DAOS, or other sources, and may generate derived data or virtual objects.
+Their origin, location, ownership, and governing policy need not be visible to
+an application that sees one logical HDF5 dataset. &
 P7; SSP: EXT \\
 \hline
 
-Transparent Data Aggregation &
-\parbox{\linewidth}{
-\strut
-P5; SSP: EXT
-\strut
-} \\
+Aggregation and policy crossing &
+Independent sources can be combined without an explicit application-level
+policy decision. For example, geospatial records, near-real-time weather and
+disaster feeds, and property assessments could appear as one property-impact
+dataset even though ownership, access, retention, or privacy rules differ. &
+P5, P7; SSP: EXT, OPS \\
 \hline
 
-Access to non-HDF5 Data &
-P7; SSP: EXT \\
+Generated metadata and provenance &
+Relationships, locations, URLs, bucket names, origin, timestamps,
+organizational structure, and modification history can disclose context while
+raw data remain protected. BUFR and GRIB2 connectors may create file
+inventories, derived attributes, and dimension scales. &
+P1, P4; SSP: EXT \\
 \hline
 
-Generated Metadata &
-\parbox{\linewidth}{
-\strut
-P1, P4; SSP: EXT
-\strut
-} \\
-\hline
-
-Network Workflow Artifacts &
+Network and cache artifacts &
+Headers, DNS and proxy logs, client history, authentication records, local
+caches, temporary downloads, raw data, metadata, and credentials can record
+which datasets were used and may remain after execution or be copied and
+archived. Networked connectors therefore inherit the surrounding network's
+privacy and security properties. &
 P4, P6; SSP: EXT, OPS \\
 \hline
 
-Caching &
-\parbox{\linewidth}{
-\strut
-P4, P6; SSP: EXT
-\strut
-} \\
-\hline
-
-Provenance Leakage &
-\parbox{\linewidth}{
-\strut
-P1, P4; SSP: EXT
-\strut
-} \\
-\hline
-
-Policy Bypass &
-P7; SSP: EXT, OPS \\
-\hline
-
-Plugin Trust &
+In-process plugin trust &
+A dynamically loaded connector executes in the application's process and can
+inspect, modify, copy, cache, export, or share data before returning. Its code,
+provenance, search path, and configuration belong in the trusted computing
+base. &
 P4, P6; SSP: EXT, SCD \\
 \hline
-
 \end{longtable}
 \endgroup
 
-
-
 \subsection{Filter Plugins}
-\subsubsection{Privacy-Relevant Mechanisms for Filter Plugins}
 
-Filter plugins operate on data immediately before storage and immediately after
-retrieval. As a result, the privacy boundary
-extends beyond the HDF5 file itself and the application that uses the data. Filter plugins execute 
-external code, may create temporary plaintext copies of sensitive data, generate intermediate 
-artifacts, maintain internal state, or transmit information outside the application. Consequently, 
-evaluating privacy exposure requires considering not only the stored HDF5 file but also the behavior
-of the filter plugins, their execution environment, and any artifacts they produce during data 
-processing.
-
-The following mechanisms can create deployment-specific privacy exposure when
-HDF5 filters are used.
-
-\paragraph{Metadata leakage via filter identifiers (P1; SSP: EXT)}\mbox{}\\
-The filter pipeline is stored in 
-the file as HDF5 metadata in the object header. Filter identifier and its parameters may reveal 
-security mechanisms, organizational standards, software ecosystem, application domain, etc.  
-
-\paragraph{Data characteristics leakage via filter parameters (P1, P3; SSP: EXT)}\mbox{}\\
-Filter parameters such as compression level, block sizes, scale-offset parameters, 
-etc. may reveal expected precision, data resolution, floating-point accuracy, acceptable 
-information loss. Usage of lossy filters shows acceptable data approximation, expected error 
-bounds, and precision requirements. Such data characteristics can give insights into 
-assumptions under which data was collected and characteristics of experimental setup.
-
-\paragraph{Sizes of compressed chunks reveal data characteristics (P2, P3; SSP: EXT)}\mbox{}\\
-Chunk sizes are metadata and can be examined without access to data. Different 
-sizes of compressed chunks may reveal sparsity, repeated patterns, data randomness, and 
-empty regions to name a few. 
-
-\paragraph{Filters operate on plaintext data buffers (P7; SSP: EXT)}\mbox{}\\
-Before data compression or 
-encryption is applied filters have access to data. Malicious filter may have access to data before 
-specialized compression or encryption are applied to protect data.
-
-\paragraph{Filters may persist data outside HDF5 (P4, P6; SSP: EXT)}\mbox{}\\
-Filters may allocate memory buffers that may remain in memory, or paged to disk, appear in crash 
-dumps. This sensitive data may persist outside the HDF5 file.
-
-\paragraph{Plugin trust (P4, P6; SSP: EXT, SCD)}\mbox{}\\
-As HDF5 VOL connectors, HDF5 filters are dynamically 
-loaded plugins that execute external code within the application's process. If the filter is 
-malicious, it can do anything before passing data to application or to storage, for example, 
-inspect memory, write logs, copy decoded data and send it elsewhere or retain it.  Untrusted 
-filter plugin could compromise data confidentiality, integrity and privacy without application’s 
-knowledge.
-
-\paragraph{Plugin search path (P7; SSP: EXT, SCD)}\mbox{}\\
-Dynamic filters are loaded from directories 
-specified by environment variables while the HDF5 library is searching for the requested plugin. 
-Such process may result in loading a malicious filter. On different systems application may load 
-different plugins. Thus, it becomes a supply-chain problem.
-
-\paragraph{Filters may generate derived information (P5; SSP: EXT).} Since filters have access to
-data they can generate and store any type of derived information, e.g., statistics, patterns, 
-sparsity characteristics, etc. The derived information may reveal sensitive information about 
-data.
-
-The table below provides primary privacy mechanism for built-in filters and several popular 
-third-party filters.
+Filters process data immediately before storage and immediately after
+retrieval. Their behavior, execution environment, pipeline metadata, and
+artifacts are therefore part of the privacy assessment. Table~\ref{tab:filter-plugin-privacy}
+combines the cross-cutting mechanisms with representative built-in and
+third-party filters; it does not assign risk to a filter merely because a
+mechanism is possible.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.7in}
-\setlength{\LTright}{-0.7in}
-
-\begin{longtable}{@{}p{0.19\widetablewidth}p{0.25\widetablewidth}p{0.52\widetablewidth}@{}}
-\caption{Primary privacy mechanisms associated with HDF5 filter plugins}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.23\textwidth}p{0.59\textwidth}p{0.13\textwidth}@{}}
+\caption{Primary privacy mechanisms associated with HDF5 filters}
 \label{tab:filter-plugin-privacy}\\
-
 \hline
-\textbf{HDF5 Filter} &
-\parbox{\linewidth}{\textbf{Exposure Families}\newline\textbf{/ SSP Tags}} &
-\textbf{Representative Privacy Considerations} \\
+\textbf{Mechanism or filters} & \textbf{Representative consideration} &
+\textbf{Families / tags} \\
 \hline
 \endfirsthead
-
-\caption[]{Primary privacy mechanisms associated with HDF5 filter plugins, continued}\\
+\caption[]{Primary privacy mechanisms associated with HDF5 filters, continued}\\
 \hline
-\textbf{HDF5 Filter} &
-\parbox{\linewidth}{\textbf{Exposure Families}\newline\textbf{/ SSP Tags}} &
-\textbf{Representative Privacy Considerations} \\
+\textbf{Mechanism or filters} & \textbf{Representative consideration} &
+\textbf{Families / tags} \\
 \hline
 \endhead
-
 \hline
 \endfoot
 
-Deflate (GZIP) &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Compression method, compression level, and resulting chunk sizes may reveal data entropy, sparsity, and redundancy. \\
+Pipeline identifiers and parameters &
+The object header records the pipeline required to interpret stored data.
+Identifiers and settings may reveal a security mechanism, organizational
+standard, software ecosystem, application domain, precision, resolution,
+floating-point accuracy, loss tolerance, or experimental assumptions. This
+metadata generally cannot be removed without affecting interoperability. &
+P1, P3; SSP: EXT \\
 \hline
 
-Shuffle &
-P3 Raw-data Pattern Leakage &
-Byte reordering itself is reversible, but its use together with compression may reveal characteristics of the underlying numeric representation and data organization. \\
+Deflate (GZIP), Zstandard, LZ4, and BZIP2 &
+Method, level, block choice, and resulting chunk sizes can reveal entropy,
+sparsity, redundancy, and structure. LZ4's fast, modest-ratio behavior and
+BZIP2 block characteristics are instances of the same observable. &
+P1--P3; SSP: EXT \\
+\hline
+
+Shuffle and Blosc &
+Reordering is reversible, but its use with compression, block sizes,
+shuffle, or bitshuffle options can disclose numeric representation and data
+organization. &
+P1, P3; SSP: EXT \\
 \hline
 
 Fletcher32 &
-P1 Semantic Metadata Exposure &
-Checksum metadata reveals integrity protection is used but generally introduces minimal additional privacy risk. \\
+Checksum metadata reveals that integrity protection is used but generally
+introduces little additional privacy exposure. &
+P1; SSP: EXT \\
 \hline
 
-N-bit &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Bit-width reduction reveals effective numeric precision and expected value ranges, providing insight into experimental accuracy and measurement characteristics. \\
+N-bit and Scale-Offset &
+Bit width, scale, and offset can reveal effective precision, expected value
+ranges, resolution, and acceptable quantization error. &
+P1, P3; SSP: EXT \\
 \hline
 
-Scale-Offset &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Scale factors and offsets reveal expected precision, acceptable quantization error, and data resolution. \\
+ZFP, SZ, and SZ3 &
+Fixed-rate, fixed-precision, fixed-accuracy modes and error bounds disclose
+acceptable information loss and numerical-accuracy requirements. &
+P1, P3; SSP: EXT \\
 \hline
 
-ZFP &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Compression mode (fixed rate, fixed precision, or fixed accuracy) and associated parameters reveal acceptable information loss and numerical accuracy requirements. \\
+Plaintext processing and derived information &
+Filters see plaintext buffers before protective compression or encryption and
+may compute or retain statistics, patterns, sparsity, or other derived
+information. Buffers may remain in memory, swap, or crash dumps; implementations
+may also create logs or temporary files. &
+P4--P7; SSP: EXT \\
 \hline
 
-SZ / SZ3 &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Error bounds expose tolerated approximation error and characteristics of scientific datasets. \\
+Dynamic loading and plugin trust &
+A filter loaded from an environment-controlled search directory executes in
+the application process and may inspect memory, copy decoded data, log,
+retain, modify, or transmit it. Search results can differ between systems;
+untrusted or user-writable paths therefore create a supply-chain boundary. &
+P4, P6, P7; SSP: EXT, SCD \\
 \hline
-
-Blosc &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Compression algorithm, block size, and shuffle/bitshuffle options reveal storage optimization choices and data organization. \\
-\hline
-
-Zstandard (Zstd) &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Compression level and resulting compressed sizes may reveal entropy and structural properties of datasets. \\
-\hline
-
-LZ4 &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Fast compression with modest ratios may reveal data compressibility through chunk sizes. \\
-\hline
-
-BZIP2 &
-\parbox{\linewidth}{P1 Semantic Metadata Exposure\newline P3 Raw-data Pattern Leakage} &
-Compression characteristics and block sizes may expose redundancy and data structure. \\
-\hline
-
-All Dynamic Filters &
-\parbox{\linewidth}{P4 Unintended Inclusion\newline P6 Persistence\newline SSP: EXT, SCD} &
-Filters operate on plaintext data before writing or after reading. Dynamically loaded plugins may inspect, cache, copy, or export sensitive data and may generate temporary buffers, logs, or crash artifacts. \\
-\hline
-
 \end{longtable}
 \endgroup
 
-\subsection{Virtual File Drivers (VFD)}
-\subsubsection{Privacy-Relevant Mechanisms for VFDs}
+\subsection{Virtual File Drivers}
 
-
-HDF5 VFDs manage how actual bytes are stored and retrieved. While VFDs perform
-I/O and do not change the logical HDF5 file and data model, they can create
-privacy-relevant exposure through data movement, storage, and application I/O
-characteristics.
-
-The following mechanisms can create deployment-specific privacy exposure when
-HDF5 VFDs are used.
-
-\paragraph{External Data Sources (P7; SSP: EXT)}\mbox{}\\
-Unlike traditional file I/O, Virtual File Drivers may transparently store and retrieve HDF5 data 
-from cloud object stores, distributed file systems, network storage, memory-resident files, or 
-multiple physical storage devices. Consequently, users and system administrators may 
-incorrectly assume where sensitive information resides and which security policies, regulatory 
-requirements, or administrative controls apply. The privacy boundary therefore extends 
-beyond the HDF5 file to the entire storage ecosystem.
-
-\paragraph{Multiple Copies of Data (P6; SSP: EXT)}
-Some VFDs create additional copies of HDF5 data without the application's explicit awareness. 
-These copies may exist in replicated files, metadata journals, backing stores, memory dumps, 
-swap files, or mirrored storage systems. Because these copies may persist beyond the lifetime 
-of the primary HDF5 file, sensitive information can remain recoverable even after the original 
-file has been deleted or relocated.
-
-\paragraph{Storage Metadata Exposure (P2; SSP: EXT)}\mbox{}\\
-Although VFDs do not understand HDF5 objects, they manage physical storage and therefore 
-may expose low-level storage metadata, including physical offsets, allocation sizes, storage 
-layouts, and file organization. Such information can reveal characteristics of datasets, storage 
-architecture, and application behavior even without accessing the logical HDF5 objects.
-
-\paragraph{Access Pattern Leakage (P3; SSP: EXT)}\mbox{}\\
-Storage activity observed by the operating system, distributed file system, storage servers, or 
-cloud infrastructure may reveal application behavior. Access frequency, read/write ratios, 
-sequential versus random I/O, update frequency, and accessed file regions can reveal 
-properties of the underlying datasets, application algorithms, or user activity. These 
-observations enable inference of information that is not explicitly stored within the HDF5 file.
-
-\paragraph{Workflow Artifacts (P4, P6; SSP: EXT)}\mbox{}\\
-VFDs may generate artifacts during normal operation, including metadata journals, temporary 
-files, swap files, memory images, crash dumps, replicated storage objects, and cloud access 
-logs. These artifacts can persist outside the HDF5 file itself and may retain sensitive
-information or evidence of application activity.
-
-\paragraph{Plugin Trust (P4, P6; SSP: EXT, SCD)}\mbox{}\\
-Dynamically loadable Virtual File Drivers execute external code within the application's process. 
-A malicious or compromised VFD can inspect, modify, retain, duplicate, or export data before 
-writing it to storage or returning it to the application. Consequently, VFDs should be obtained 
-only from trusted sources and considered part of the application's overall trust and privacy 
-model.
+VFDs do not change the logical HDF5 data model, but determine where and how
+bytes are stored and retrieved. A logical file may reside in cloud object
+storage, a distributed file system, network storage, process memory, or across
+multiple devices, so its apparent name need not identify the governing storage
+or policy domain. Consequently, physical layout, copies, communications,
+storage-provider controls, and artifacts can matter even when logical HDF5
+objects are adequately protected.
 
 \begingroup
 \small
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-
-\setlength{\LTleft}{-0.7in}
-\setlength{\LTright}{-0.7in}
-
-\begin{longtable}{@{}p{0.16\widetablewidth}p{0.27\widetablewidth}p{0.53\widetablewidth}@{}}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.20\textwidth}p{0.62\textwidth}p{0.13\textwidth}@{}}
 \caption{Candidate privacy-exposure families for HDF5 Virtual File Drivers}
 \label{tab:vfd-privacy-risks}\\
-
 \hline
-\textbf{HDF5 VFD} &
-\parbox{\linewidth}{
-\textbf{Privacy}\newline
-\textbf{Exposure families / SSP tags}
-} &
-\textbf{Representative privacy considerations} \\
+\textbf{VFD or mechanism} & \textbf{Representative consideration} &
+\textbf{Families / tags} \\
 \hline
 \endfirsthead
-
 \caption[]{Candidate privacy-exposure families for HDF5 Virtual File Drivers, continued}\\
 \hline
-\textbf{HDF5 VFD} &
-\parbox{\linewidth}{
-\textbf{Privacy}\newline
-\textbf{Exposure families / SSP tags}
-} &
-\textbf{Representative privacy considerations} \\
+\textbf{VFD or mechanism} & \textbf{Representative consideration} &
+\textbf{Families / tags} \\
 \hline
 \endhead
-
 \hline
 \endfoot
 
-SEC2 &
-P6 Persistence &
-Disk blocks allocated for new HDF5 files may contain residual information if the underlying storage is not securely initialized or overwritten. \\
-\hline
-
-STDIO &
-P6 Persistence &
-Similar to the SEC2 driver, persistent storage may expose residual data remaining on reused disk blocks. \\
+SEC2 and STDIO &
+Persistent storage can expose residual information in reused blocks if the
+storage layer does not securely initialize or overwrite them. &
+P6 \\
 \hline
 
 Core &
-\parbox{\linewidth}{
-P6 Persistence
-} &
-Stores the entire HDF5 file in memory. Sensitive information may persist in process memory, swap space, or operating-system crash dumps. When the backing-store option is enabled, the in-memory file is written to persistent storage upon closing. \\
+The file resides in process memory and may persist in swap or crash dumps; with
+the backing-store option, it is written to persistent storage at close. &
+P6 \\
 \hline
 
-Family &
-P6 Persistence &
-Splits a logical HDF5 file into multiple physical files. Misconfigured permissions or incomplete deletion of family members may expose portions of the dataset. \\
+Family, Split, Multi, and Subfiling &
+One logical file becomes multiple independently managed files. Family and
+Subfiling divide data across members or devices; Split separates metadata and
+raw data; Multi separates HDF5 memory types. Different permissions, locations,
+or incomplete deletion can disclose fragments, metadata, or raw data. &
+P2, P6, P7; SSP: EXT \\
 \hline
 
-Split &
-\parbox{\linewidth}{
-P2 Structural Leakage\newline
-P6 Persistence\newline
-P7 Misplaced Trust; SSP: EXT
-} &
-Stores metadata and raw data in separate files, which may have different permissions or reside on different storage systems. The driver also creates multiple physical copies of file information. \\
+Mirror, MPI-I/O, and ROS3 &
+Mirror replicates to a remote service and depends on communication,
+authentication, daemon trust, and protection of copies. MPI-I/O passes data
+through HPC communications unless protected below HDF5. ROS3 uses
+S3-compatible stores; HTTP requests and Range requests, DNS, and cloud access
+logs create artifacts and disclose access. &
+P4, P6, P7; SSP: EXT, OPS, SCD \\
 \hline
 
-Multi &
-\parbox{\linewidth}{
-P2 Structural Leakage\newline
-P6 Persistence\newline
-P7 Misplaced Trust; SSP: EXT
-} &
-Stores different HDF5 memory types in separate files. Independent storage locations and permissions increase the risk of metadata and raw data disclosure. \\
+Log (VFD SWMR) and Onion &
+Metadata journals retain snapshots for recovery. Onion retains historical
+versions, allowing recovery of deleted or overwritten data and reconstruction
+of metadata evolution, provenance, and workflow history. &
+P2, P5, P6; SSP: EXT \\
 \hline
 
-Mirror &
-\parbox{\linewidth}{
-P6 Persistence\newline
-P7 Misplaced Trust; SSP: EXT, SCD
-} &
-Replicates HDF5 data to a remote mirror service. Privacy depends on secure communication, trusted mirror daemons, authentication, and protection of replicated copies. \\
+Physical layout and access patterns &
+Offsets, allocations, file organization, access frequency, read/write ratios,
+sequential or random I/O, update frequency, and touched regions can reveal
+dataset, algorithm, storage-architecture, or user characteristics to operating
+systems, distributed stores, servers, or cloud providers. &
+P2, P3; SSP: EXT \\
 \hline
 
-Log (VFD SWMR) &
-\parbox{\linewidth}{
-P2 Structural Leakage\newline
-P6 Persistence; SSP: EXT
-} &
-Metadata journaling creates persistent journal files containing metadata snapshots for crash recovery, leaving additional workflow artifacts outside the HDF5 file. \\
+Workflow artifacts and plugin trust &
+Temporary files, swap, memory images, crash dumps, replicas, journals, and
+cloud logs can persist outside the logical file. A dynamically loaded VFD can
+inspect, modify, retain, duplicate, or export data in process and therefore
+belongs in the trusted computing base. &
+P4, P6; SSP: EXT, SCD \\
 \hline
-
-MPI-I/O &
-\parbox{\linewidth}{
-P7 Misplaced Trust; SSP: EXT, OPS
-} &
-Transfers metadata and raw data through the underlying HPC communication infrastructure. Unless protected by lower-layer mechanisms, network traffic may expose sensitive information. \\
-\hline
-
-Subfiling &
-\parbox{\linewidth}{
-P2 Structural Leakage\newline
-P6 Persistence\newline
-P7 Misplaced Trust; SSP: EXT
-} &
-Divides a logical HDF5 file into multiple subfiles distributed across storage devices. Fragmentation and independently managed files increase the risk of unauthorized disclosure through misconfigured access controls. \\
-\hline
-
-Onion &
-\parbox{\linewidth}{
-P2 Structural Leakage\newline
-P5 Inference\newline
-P6 Persistence
-} &
-Maintains historical versions of HDF5 files, allowing recovery of deleted or overwritten data and reconstruction of metadata evolution, provenance, and workflow history. \\
-\hline
-
-ROS3 &
-\parbox{\linewidth}{
-P4 Unintended Inclusion\newline
-P6 Persistence\newline
-P7 Misplaced Trust; SSP: EXT, OPS
-} &
-Accesses HDF5 files stored in S3-compatible object stores. HTTP requests, DNS queries, cloud access logs, and HTTP Range requests create network artifacts and extend the privacy boundary to cloud infrastructure. \\
-\hline
-
 \end{longtable}
 \endgroup
 
+\subsection{Control Proposals and Routing}
 
-\subsection{Architectural Observations and Mitigation Planning}
+The mechanisms above support control design but do not silently promote
+\code{EXT-PRIV-001} into a formal finding. The authoritative recommendation
+register and phased roadmap provide ownership, dependencies, sequencing, and
+acceptance evidence. The identifiers below express neither rank nor urgency.
 
-The general privacy-boundary observation in this section is recorded as
-evidence-backlog item \code{EXT-PRIV-001} in
-Appendix~\ref{app:findings-register}. It is not a formal finding because the
-report has not defined a deployment-specific sensitive-data population,
-recipient, retention condition, impact, or exposure. The recommendations below
-remain valid control proposals; their presence does not silently convert the
-observation into a rated finding.
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.11}
+\begin{longtable}{@{}p{0.14\textwidth}p{0.81\textwidth}@{}}
+\caption{Extension privacy and trust recommendations}\\
+\hline
+\textbf{Identifier} & \textbf{Control outcome} \\
+\hline
+\endfirsthead
+\caption[]{Extension privacy and trust recommendations, continued}\\
+\hline
+\textbf{Identifier} & \textbf{Control outcome} \\
+\hline
+\endhead
+\hline
+\endfoot
 
-\paragraph{Priority reconciliation.}\mbox{}\\
+\code{VOL-S1} & Document external sources, generated metadata, caching,
+network communications, authentication, workflow artifacts, and privacy
+assumptions for each connector. \\
+\hline
+\code{VOL-S2} & Standardize introspection for connector name, version, stack,
+source types and locations, network use, cached data or credentials, temporary
+or persistent artifacts, generated or derived data, cross-policy aggregation,
+and privacy configuration. Existing identity and capability callbacks do not
+expose all of these characteristics. \\
+\hline
+\code{VOL-S3} & Treat connectors as trusted code: restrict search paths,
+exclude user-writable locations, and verify identity, provenance, and
+integrity; support enforceable loading policy. \\
+\hline
+\code{VOL-S4} & Minimize unnecessary generated metadata and persistent caches,
+unless explicitly requested, and document unavoidable privacy characteristics
+during connector design. \\
+\hline
+
+\code{FILTER-S1} & Apply the same trusted-plugin, restricted-search-path,
+provenance, integrity, and enforceable-loading controls to filters. \\
+\hline
+\code{FILTER-S2} & Select and document pipelines with explicit consideration
+of what identifiers, parameters, precision, compression, and workflow choices
+reveal. \\
+\hline
+\code{FILTER-S3} & Where a file recipient must not see pipeline or structural
+metadata, evaluate whole-file protection covering raw data and metadata. Key
+management and recovery evidence follows \code{RM-2G}. Such protection can
+prevent that recipient from inspecting filter identifiers, parameters, object
+headers, and structural metadata, but does not treat caches, logs, authorized
+misuse, post-decryption inference, retention, or key-loss risk. \\
+\hline
+\code{FILTER-S4} & Minimize workflow artifacts, erase temporary buffers when
+possible using an appropriate secure method, avoid persistent temporary files,
+and document remaining artifacts. \\
+\hline
+\code{FILTER-S5} & Standardize filter documentation for generated metadata,
+plaintext processing, derived information, temporary artifacts, and privacy
+implications of parameters. \\
+\hline
+
+\code{VFD-S1} & Document storage locations, additional copies, network use,
+workflow artifacts, and storage assumptions for every VFD. \\
+\hline
+\code{VFD-S2} & Give replicated files, journals, histories, and backing stores
+secure deletion, retention, and lifecycle controls. \\
+\hline
+\code{VFD-S3} & Document authentication, communications, logging, and
+storage-provider privacy assumptions for cloud and distributed VFDs. \\
+\hline
+\code{VFD-S4} & Apply trusted-plugin, restricted-search-path, provenance,
+integrity, and enforceable-loading controls to dynamically loaded VFDs. \\
+\hline
+\end{longtable}
+\endgroup
+
+The trusted-loading proposals call for configurable policy based on plugin
+identity, exposed characteristics, or administrative rules, in addition to
+deployment-side search-path and provenance controls.
+
+For \code{VOL-S3}, \code{FILTER-S1}, and \code{VFD-S4}, signed-plugin
+verification requires HDF5 2.2.0 or a later verified release built with
+\code{HDF5_REQUIRE_SIGNED_PLUGINS=ON}, a configured and protected trusted
+keystore, signed approved artifacts, and a test that unsigned or untrusted
+plugins are rejected. Upgrading alone does not enable the control
+(Table~\ref{tab:tools-tests-security-features}).
+
 No report-wide risk urgency is assigned to \code{EXT-PRIV-001}. Phase~2
-schedules \code{RM-2E} to establish a bounded deployment, data flow, recipient,
-retention condition, and consequence; that administrative assurance target is
-not a Low-risk conclusion or a risk-response clock. Documentation,
-introspection, and plugin-trust controls in \code{RM-3D} are proactive
-assurance and do not by themselves establish residual-risk reduction;
-privacy-specific treatment in \code{RM-3D} and \code{RM-3F} follows the
-resulting evidence. A deployment
-matching the separately rated plugin-search scenario \code{APP-SEC-005}
-instead follows its Near-term application-treatment clock; that finding does
-not assign a High tier to extensions as a class.
-
-\subsubsection{Privacy}
-
-The architectural analysis identifies ways in which privacy boundaries may
-extend beyond the HDF5 file itself. VOL connectors, filter plugins, and Virtual
-File Drivers can add external data sources, dynamically loaded plugins, storage
-systems, cloud services, and network infrastructure. Depending on a concrete
-deployment, these mechanisms may expose raw data, metadata, derived information,
-workflow artifacts, or information about the surrounding software ecosystem,
-even when the HDF5 file itself is adequately protected. The following sections
-summarize the principal observations for each extension mechanism and present
-mitigation recommendations to improve privacy awareness, transparency, and trustworthiness within
-the HDF5 ecosystem.
-
-\paragraph{Privacy – HDF5 VOL Connectors}\mbox{}
-\paragraph{Architectural observations}\mbox{}\\
-The analysis identifies VOL connectors as a particularly broad potential
-extension of the privacy boundary. Unlike the HDF5 core library, a VOL
-connector may reach external data sources, cloud services, databases, network
-infrastructure, authentication systems, caches, and dynamically loaded plugins. Because
-applications interact only with the HDF5 API, users may be unaware of the true origin of data, 
-the privacy policies governing those data, or the workflow artifacts generated during processing. 
-Consequently, deployment-specific privacy exposure can arise not only from the
-HDF5 file itself but also from the broader software ecosystem accessed by the
-connector; the resulting harm and risk depend on the data, recipients, and
-controls in that deployment.
-\paragraph{Recommendations}\mbox{}\\
-The following VOL identifiers identify recommendations in this track. Their
-numbers do not express risk, urgency, effort, dependency, or implementation
-order:
-\paragraph{Recommendation VOL-S1 - Document connector privacy characteristics}\mbox{}\\*
-Each VOL connector should explicitly document any of applicable items listed below: 
-\begin{itemize}
-   \item External data sources VOL connector accesses
-   \item Generated metadata
-   \item Caching mechanism
-   \item Network communications
-   \item Authenticaion mechanism
-   \item Workflow artifacts
-   \item Privacy assumptions
-\end{itemize}
-\paragraph{Recommendation VOL-S2 - Improve connector transparency and introspection}\mbox{}\\*
-HDF5 should provide a standardized mechanism through which applications and audit tools can 
-identify the active VOL connector or connector stack and query privacy-relevant operational 
-characteristics. Existing VOL introspection callbacks can report connector identity and 
-selected capabilities, but they do not expose whether a connector accesses external 
-resources, aggregates multiple sources, generates metadata, maintains caches, creates workflow 
-artifacts, or performs network communication. 
-The VOL introspection interface, connector capability flags, or standardized optional 
-operations should therefore be extended to expose this information.
-
-Possible standardized queries could include:
-\begin{itemize}
-   \item Connector name, version, and stack composition
-   \item Types and locations of external data sources
-   \item Whether 
-   \begin{itemize}
-      \item network access is performed
-      \item raw data, metadata, or credentials are cached
-      \item the connector creates temporary or persistent artifacts
-      \item the connector generates metadata or derived data
-      \item the connector combines data governed by different policies
-      \item privacy-relevant configuration information can be obtained
-   \end{itemize}
-\end{itemize}
-\paragraph{Recommendation VOL-S3 - Strengthen connector trust and deployment practices}\mbox{}\\*
-VOL connectors are dynamically loaded shared libraries and therefore become part of the application's 
-trusted computing base. Organizations should deploy only trusted connectors, restrict the directories 
-searched for plugins, verify the provenance and integrity of connector libraries, and avoid 
-loading untrusted plugins from user-writable or publicly accessible locations.
-
-Future versions of HDF5 could further improve security by providing configurable policies that restrict 
-connector loading based on connector identity, implemented transparency and introspection, or 
-administrative policy. Where signed-plugin verification is used, users and
-application developers should deploy HDF5 2.2.0 or a later verified release,
-build it with \code{HDF5_REQUIRE_SIGNED_PLUGINS=ON}, configure and protect the
-trusted keystore, sign approved connector artifacts, and test rejection of
-unsigned or untrusted plugins; upgrading alone does not enable the control
-(Table~\ref{tab:tools-tests-security-features}).
-\paragraph{Recommendation VOL-S4 - Follow privacy-aware connector development guidelines}\mbox{}\\*
-Future connector implementations should minimize unnecessary metadata generation, avoid 
-persistent caches unless explicitly requested, and clearly document connector's privacy characteristics.
-
-\paragraph{Privacy – HDF5 Filter Plugins}\mbox{}
-\paragraph{Architectural observations}\mbox{}\\
-The analysis shows that HDF5 filters can alter a deployment's privacy
-characteristics because they
-execute immediately before storage and immediately after retrieval while operating directly on 
-plaintext data. Filter parameters, compression characteristics, and generated metadata may reveal 
-information about the underlying datasets even when the data themselves remain protected. 
-Dynamically loaded filter plugins also introduce a security-relevant supply-chain mechanism because they execute
-arbitrary code within the application's process and may generate temporary artifacts outside the 
-HDF5 file.
-\paragraph{Recommendations}\mbox{}\\
-The following FILTER identifiers identify recommendations in this track. Their
-numbers do not express risk, urgency, effort, dependency, or implementation
-order:
-\paragraph{Recommendation FILTER-S1 - Strengthen filter trust and deployment practices}\mbox{}\\*
-Organizations should deploy only trusted connectors, restrict the directories
-searched for plugins, verify the provenance and integrity of connector libraries, and avoid
-loading untrusted plugins from user-writable or publicly accessible locations.
-
-Future versions of HDF5 could further improve security by providing configurable policies that restrict
-connector loading based on connector identity, implemented transparency and introspection, or
-administrative policy. Where signed-plugin verification is used, users and
-application developers should deploy HDF5 2.2.0 or a later verified release,
-build it with \code{HDF5_REQUIRE_SIGNED_PLUGINS=ON}, configure and protect the
-trusted keystore, sign approved filter artifacts, and test rejection of
-unsigned or untrusted plugins; upgrading alone does not enable the control
-(Table~\ref{tab:tools-tests-security-features}).
-
-\paragraph{Recommendation FILTER-S2 - Select and document filter configurations with privacy in mind}\mbox{}\\*
-Filter identifiers and parameters are stored in HDF5 object headers and are required for correct 
-interpretation of the stored data. Consequently, this metadata cannot generally be removed 
-or obscured without affecting interoperability. Users should evaluate whether filter 
-configurations reveal sensitive information about data precision, compression characteristics, 
-or scientific workflows, and document these privacy implications when selecting filter pipelines.
-
-\paragraph{Recommendation FILTER-S3 - Use encryption when filter metadata are privacy sensitive}\mbox{}\\*
-When classification shows that filter metadata must be hidden from the file
-recipient, whole-file protection is a direct file-at-rest confidentiality
-control. A solution that protects both raw data and HDF5 metadata can prevent
-that recipient from inspecting filter identifiers, parameters, object headers,
-and structural metadata. Selection is deployment-specific, requires the key
-management and recovery evidence in \code{RM-2G}, and does not treat caches,
-logs, authorized misuse, retention, inference after decryption, or key-loss
-risk.
-
-\paragraph{Recommendation FILTER-S4 - Minimize workflow artifacts}\mbox{}\\*
-Filter implementations should securely erase temporary buffers when possible, avoid persistent 
-temporary files, and clearly document any generated artifacts.
-
-\paragraph{Recommendation FILTER-S5 - Standardize privacy documentation}\mbox{}\\*
-Built-in and registered filters should document:
-\begin{itemize}
-   \item Generated metadata
-   \item Plaintext processing
-   \item Derived information
-   \item Temporary artifacts
-   \item Privacy implications of filter parameters
-\end{itemize}
-
-\paragraph{Privacy – HDF5 Virtual File Drivers}\mbox{}
-\paragraph{Architectural observations}\mbox{}\\
-The analysis shows that Virtual File Drivers can affect a deployment's privacy
-boundary through physical storage
-management rather than the logical HDF5 data model. VFDs influence where data are stored, 
-how they are replicated, transmitted, cached, or versioned, and consequently extend the HDF5 
-privacy boundary to operating systems, distributed storage systems, cloud infrastructure, and 
-network services. Different VFDs emphasize different privacy concerns, including persistent 
-copies of data, storage metadata exposure, historical version retention, network artifacts, and 
-cloud-based workflow exposure.
-\paragraph{Recommendations}\mbox{}\\
-The following VFD identifiers identify recommendations in this track. Their
-numbers do not express risk, urgency, effort, dependency, or implementation
-order:
-\paragraph{Recommendation VFD-S1 - Document storage behavior}\mbox{}\\*
-Every VFD should clearly describe:
-\begin{itemize}
-   \item Where data are stored
-   \item Whether additional copies are created
-   \item Whether network communication occurs
-   \item Generated workflow artifacts
-   \item Storage assumptions
-\end{itemize}
-\paragraph{Recommendation VFD-S2 - Minimize unintended persistence}\mbox{}\\*
-Drivers that create replicated files, journal files, historical versions, or backing stores should 
-provide mechanisms for secure deletion, retention management, and lifecycle control.
-
-\paragraph{Recommendation VFD-S3 - Strengthen cloud and distributed-storage guidance}\mbox{}\\*
-Cloud-based and distributed-storage VFDs should document authentication requirements, 
-network communications, logging behavior, and storage-provider privacy assumptions.
-
-\paragraph{Recommendation VFD-S4 - Strengthen VFD trust and deployment practices}\mbox{}\\*
-Organizations should deploy only trusted VFD plugins, restrict the directories
-searched for plugins, verify the provenance and integrity of connector libraries, and avoid
-loading untrusted plugins from user-writable or publicly accessible locations.
-
-Future versions of HDF5 could further improve security by providing configurable policies that restrict
-VFD plugin loading based on VFD's identity, implemented transparency and introspection, or
-administrative policy. Where signed-plugin verification is used, users and
-application developers should deploy HDF5 2.2.0 or a later verified release,
-build it with \code{HDF5_REQUIRE_SIGNED_PLUGINS=ON}, configure and protect the
-trusted keystore, sign approved VFD artifacts, and test rejection of unsigned
-or untrusted plugins; upgrading alone does not enable the control
-(Table~\ref{tab:tools-tests-security-features}).
-
-\paragraph{Summary}\mbox{}\\
-The analysis shows that HDF5 library extensions can alter a deployment's
-privacy characteristics. While the HDF5 core library primarily exposes
-information through the file format itself, VOL connectors, filter plugins, and
-Virtual File Drivers can extend the privacy boundary to external software,
-storage systems, network infrastructure, cloud services, and dynamically loaded
-plugins. The existence and magnitude of harm remain deployment-specific.
-Effective privacy assessment should therefore evaluate both HDF5 files and the
-execution environment in which HDF5 operates. This broader ecosystem
-perspective should guide the design, implementation, deployment, and review of
-future HDF5 extensions.
-
-
-
+\code{RM-2E} establishes a bounded deployment, data flow, recipient, retention
+condition, and consequence; that administrative target is not a risk-response
+clock or a Low-risk conclusion. \code{RM-3D} and \code{RM-3F} then provide
+proactive extension assurance and evidence-dependent privacy treatment. A
+deployment matching separately rated plugin-search finding
+\code{APP-SEC-005} instead follows that finding's Near-term application clock;
+it does not assign a High tier to extensions as a class.
 
 \end{document}

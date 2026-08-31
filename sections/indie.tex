@@ -20,7 +20,52 @@
     \item[hdf5-pure and rustyhdf5-format/rustyhdf5] Pure Rust read/write.
     \item[async-hdf5 or h5coro] Cloud object-store chunk mapping.
     \item[JLD2.jl] Julia-native persistence in HDF5-compatible files.
+    \item[hdf5-pickles / H5Lens] Machine-readable format definitions with an
+          independent reader, validator, and preflight oracle. Distinct from
+          the others in that its interpretation of the format is
+          \emph{inspectable as data} rather than inferable from behaviour.
 \end{description}
+
+\paragraph{Vocabulary.}
+This chapter uses the issue families defined by the SSP SIG's HDF5 Independent
+Implementation (H5II) model~\cite{hdf5-indie-model}: \textbf{I1} parser/spec
+divergence, \textbf{I2} fail-open compatibility behaviour, \textbf{I3} writer
+correctness and interoperability failure, \textbf{I4} codec, filter, or
+external-reference boundary failure, \textbf{I5} numeric, structural, or
+resource amplification, \textbf{I6} concurrency, durability, or lifecycle
+mismatch, \textbf{I7} metadata and artifact exposure, \textbf{I8} dependency,
+provenance, or compatibility-claim drift, and \textbf{I9} trust-boundary
+confusion. As elsewhere, these labels classify mechanisms; they are not risk
+ratings, and they do not carry the SSP SIG's numeric scores into
+Section~\ref{sec:risk-rubric}.
+
+The model's central observation frames this chapter: an independent
+implementation removes a dependency on the reference library but not the hard
+problem, because the trusted computing base becomes the implementation's own
+parser, validator, writer, and support libraries. Its working assumption that
+\emph{partial support is normal, but unsupported or unknown features must fail
+closed rather than being silently ignored or guessed} is the specific standard
+against which the two 2026 cases below are best read.
+
+\paragraph{Why multiple implementations matter.}
+Independent implementations create observable comparisons between the prose
+specification, the reference library, and separately developed readers and
+writers. A difference does not by itself identify which artifact is wrong, but
+it exposes a question that a single implementation may leave hidden until files
+cross an implementation boundary. The consequence can then present as a reader
+or writer failure even when the underlying problem is a reference-library
+divergence or an unresolved normative ambiguity.
+
+The two relevant 2026 issues illustrate different outcomes and must not be used
+interchangeably. In issue \#6409 the published requirement was sufficiently
+clear to decide the dispute: the reference reader imposed an extra condition
+and was changed. In issue \#6616 the published optionality and reference-library
+behavior still admit competing interpretations, and no authoritative ruling has
+selected one. Only the latter unresolved adjudication and governance condition
+is the bounded observation recorded as evidence-backlog item
+\code{FMT-SAF-001}. The former remains
+evidence for the separately registered implementation divergence
+\code{IND-SAF-001}.
 
 Independent readers and writers are valuable checks on both the prose
 specification and the reference implementation. They also expose a three-way
@@ -42,14 +87,22 @@ HDF5 issue \#6409 concerns version-4 chunk-layout dimension widths. The format
 required an encoded width sufficient to hold the dimension value, but did not
 require the smallest possible width. The exact-width check present in HDF5
 2.0.0, 2.1.0, and 2.1.1 could therefore reject a specification-permitted,
-nonminimal encoding produced by an independent writer. The merged HDF5-side
+nonminimal encoding produced by an independent writer. Stated plainly, and this
+is the part the interoperability framing tends to soften: \textbf{the reference
+library was non-conforming}, the specification was correct, and it took an
+independent implementation to establish that. The merged HDF5-side
 change accepts any sufficient width and was tracked against 2.2.0
 \cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432}. PureHDF separately changed new
 output to match the reference reader's expectation
-\cite{purehdf-gh-issue-168,purehdf-pr-160}.
+\cite{purehdf-gh-issue-168,purehdf-pr-160} --- a rational local decision with a
+corrosive global effect, since converging on the reference implementation
+rather than on the specification is how a specification quietly stops being
+normative. The conformance answer in this case was nevertheless determinable.
 Formal finding \code{IND-SAF-001} records the historical reader-side
 interoperability risk; issue closure is not, by itself, verification of every
-release artifact or backport.
+release artifact or backport. In H5II terms this is \textbf{I1}, parser/spec
+divergence --- and note that it is divergence by the \emph{reference} reader,
+which is the direction the model's framing makes it easy to miss.
 
 \subsubsection{Contradictory PureHDF Metadata}
 
@@ -71,8 +124,133 @@ nor the report's Immediate urgency category. The evidence therefore supports
 bounded operational and archival
 harm, not irreversible data loss. Formal finding \code{IND-SAF-002} records
 this writer-side condition. Existing affected files remain a migration and
-inventory question even after corrected writer output is deployed.
+inventory question even after corrected writer output is deployed. In H5II
+terms it is \textbf{I3}, writer correctness and interoperability failure, and
+the older readers' acceptance of the file is \textbf{I2}, fail-open
+compatibility behaviour --- the pair is the model's canonical chain, where a
+writer emits bytes that are only self-consistent to itself and a permissive
+reader conceals it until a stricter one does not.
 
+
+\subsection{When a Normative Ambiguity Remains Unresolved}
+
+The two chunk-layout cases above have determinable answers: once examined, the
+published requirement and the bytes were sufficient to identify whether the
+reader or writer was wrong. A third case shows that a divergence can instead
+remain unresolved because the normative text and reference behavior support
+competing dispositions.
+
+HDF5 issue \#6616 records that the file-format specification documents the
+group info message as \emph{optional}, while the C library raises a ``message
+type not found'' error when it is absent and consequently cannot modify a file
+written without one. The reporter --- again an independent-implementation
+maintainer, again working from a PureHDF change --- sets out two candidate
+resolutions: the library should fall back to default group-info values, or the
+specification should be corrected to state that the message is required. At the
+evidence cutoff the issue is open, labelled a documentation bug, assigned, and
+milestoned, with no ruling recorded~\cite{hdf5-gh-issue-6616}.
+
+Until that ruling exists, \textbf{this report cannot determine whether omission
+of the group info message conforms when the reference library is asked to
+modify the file}. The bounded observation is the unresolved dispute and the
+demonstrated library behavior, not a conclusion that the whole format is
+indeterminate. This is also a limitation of the report's method: the conformance
+analysis in Section~\ref{sec:assessment-methodology} distinguishes the
+normative requirement from writer behaviour and reader validation, and here the
+authority needed to settle that distinction has not yet ruled. The missing
+control is therefore both an artifact that makes competing interpretations
+testable and a procedure that states who rules, on what timeline, which
+outcomes are permitted, and where the ruling is recorded. A machine-readable
+description could expose the question earlier; it would not select the answer
+without an adjudication decision.
+
+The bounded \#6616 adjudication and governance gap is recorded as
+evidence-backlog item \code{FMT-SAF-001} in
+Appendix~\ref{app:findings-register} and addressed by \code{FMT-S1} below. It
+does not receive a tier until an affected population and adverse consequence
+are bounded.
+
+\paragraph{Disposition matrix.}
+Table~\ref{tab:purehdf-disposition-matrix} is the compact decision record for
+the three cases. It prevents two unsafe shortcuts: treating acceptance by an
+older reader as proof of conformance, or treating the reference library's
+behavior as more authoritative than a clear normative requirement.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\LTleft}{-0.7in}
+\setlength{\LTright}{-0.7in}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.12\widetablewidth}
+>{\raggedright\arraybackslash}p{0.29\widetablewidth}
+>{\raggedright\arraybackslash}p{0.25\widetablewidth}
+>{\raggedright\arraybackslash}p{0.30\widetablewidth}@{}}
+\caption{PureHDF-related interoperability dispositions}
+\label{tab:purehdf-disposition-matrix}\\
+\hline
+\textbf{Case} & \textbf{Disposition at the evidence cutoff} &
+\textbf{What acceptance or rejection establishes} &
+\textbf{Required control and closure evidence} \\
+\hline
+\endfirsthead
+\caption[]{PureHDF-related interoperability dispositions, continued}\\
+\hline
+\textbf{Case} & \textbf{Disposition at the evidence cutoff} &
+\textbf{What acceptance or rejection establishes} &
+\textbf{Required control and closure evidence} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{\#6409}\newline
+\code{IND-SAF-001} &
+The nonminimal chunk-width encoding was permitted. The reference reader added
+an exact-width condition and was corrected; PureHDF also changed new output for
+compatibility~\cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432,
+purehdf-gh-issue-168,purehdf-pr-160}. &
+Rejection established a reader/specification divergence, not malformed writer
+output. Choosing one canonical writer form cannot narrow what readers must
+accept. &
+Keep the nonminimal form as a positive fixture. Verify the exact supported
+release and backport containing the reader correction; separately test the
+producer's canonical output. \\
+
+\textbf{\#6534}\newline
+\code{IND-SAF-002} &
+PureHDF 2.1.2 emitted contradictory element sizes. HDF5 2.0 correctly rejected
+the file; older readers had tolerated it~\cite{hdf5-gh-issue-6534,
+purehdf-gh-issue-164}. &
+Earlier acceptance did not establish conformance, and later rejection did not
+establish a regression. Permissiveness concealed the writer defect until an
+upgrade exposed it. &
+Keep the file as a negative fixture; enforce cross-message invariants; inventory
+the bounded legacy population; and provide reproducible repair, regeneration,
+migration, or an accountable compatibility disposition. \\
+
+\textbf{\#6616}\newline
+\code{FMT-SAF-001} &
+The specification calls the group-info message optional, while the C library
+cannot modify a file when it is absent. Two resolutions were proposed, but no
+authoritative ruling was recorded~\cite{hdf5-gh-issue-6616}. &
+The observed divergence establishes a disputed rule, not which artifact is
+wrong, a class-wide conformance failure, or a bounded risk tier. &
+Keep a contested fixture under both interpretations. The named format authority
+must rule, update the losing artifact, and record any explicitly
+implementation-defined outcome and compatibility consequence. \\
+
+\end{longtable}
+\endgroup
+
+A canonical producer profile may select minimal widths, mutually consistent
+metadata, and --- pending adjudication --- a group-info message to reduce
+cross-reader variation. It remains an interoperability subset, not a replacement
+for the normative format: it cannot make the \#6409 form invalid, make the
+\#6534 contradiction harmless, or decide \#6616 without the responsible
+authority. This is why \code{IND-S1} needs separate positive, negative, and
+contested fixtures and why only the third case depends on \code{FMT-S1}'s
+adjudication procedure.
 
 \subsection{Audit Findings and Mitigation Planning}
 
@@ -82,12 +260,24 @@ heaps, shared object-header messages, chunk-index variants, references, VLEN,
 compound and nested datatypes, virtual datasets, external storage, SWMR flags,
 user blocks, non-core filters, unusual library-version bounds, and files
 produced by different HDF5 releases. This architectural observation is not
-assigned a risk tier without a concrete affected workflow. The two bounded
-formal findings are \code{IND-SAF-001} and \code{IND-SAF-002} in
-Appendix~\ref{app:findings-register}.
+assigned a risk tier without a concrete affected workflow. The H5II model's
+\code{II-\#\#\#} review register is the natural instrument for working through
+that long tail feature by feature, and \code{IND-S1} below supplies the
+fixtures it would need. The two bounded chunk-layout findings are
+\code{IND-SAF-001} and \code{IND-SAF-002} in
+Appendix~\ref{app:findings-register}. The unresolved group-info-message dispute
+is separately recorded in the evidence backlog as \code{FMT-SAF-001}; it is not
+a class-level rating assigned to every implementation divergence.
 
 \paragraph{Priority reconciliation.}\mbox{}\\
-Both findings are Moderate and follow the Planned route; neither is ordered
+\code{FMT-SAF-001} has no inherent-risk response urgency. It has a 90-day
+administrative assurance target: rule on the \#6616 dispute, record the ruling,
+and change the artifact that the ruling identifies or document the construct as
+implementation-defined with explicit compatibility behavior. That bounded
+action has a named owner and is not contingent on completing \code{FMT-S1}; the
+90-day target does not imply a risk tier.
+\code{IND-SAF-001} and \code{IND-SAF-002} are Moderate and follow the Planned
+route; neither is ordered
 ahead of the other by issue chronology or recommendation numbering. Phase~2
 therefore verifies the exact supported reader artifacts, preserves positive and
 negative fixtures, inventories the affected legacy PureHDF population, and
@@ -96,8 +286,96 @@ Invariant and sustainment work continues in Phases~3--4. A production or
 archival population discovered to be actively interrupted may be expedited,
 but that scoped decision does not revise the historical inherent ratings.
 
-The \code{IND-S} identifiers below identify recommendations only; their numbers
-do not express risk, urgency, effort, dependency, or implementation order.
+The \code{FMT-S} and \code{IND-S} identifiers below identify recommendations
+only; their numbers do not express risk, urgency, effort, dependency, or
+implementation order.
+
+\subsubsection*{Recommendation FMT-S1: Make the specification executable and adjudicable}
+
+For a declared format subset, maintain a machine-readable description that
+generates valid, invalid, and contested fixtures, and adopt a standing dispute
+procedure naming the decision authority, deadline, permitted dispositions, and
+authoritative record. A disposition must identify a library defect, a
+description/specification defect, or an explicitly implementation-defined
+construct with documented compatibility consequences. A producer change made
+without that ruling does not close the normative question.
+
+The candidate \code{hdf5-pickles} foundation is GPLv3 while HDF5 is BSD-style;
+reuse therefore requires the provenance and licensing review in
+Section~\ref{sec:roadmap-licensing}, and generated artifacts become normative
+only through an explicit governance decision~\cite{hdf5-pickles}.
+
+\subsubsection*{Recommendation IND-S1: Maintain a differential conformance corpus}
+
+Preserve positive, negative, and contested fixtures across current and
+supported older readers, recording writer/reader versions, format bounds, and
+expected outcomes. Keep \#6409 (permitted nonminimal width), \#6534
+(contradictory element sizes), and \#6616 (unresolved group-info optionality)
+as distinct cases. Acceptance requires supported readers to accept the valid
+fixtures, reject invalid ones with controlled diagnostics, and provide a
+reproducible repair, regeneration, migration, or accountable compatibility
+disposition for the complete defined legacy PureHDF population, with provenance
+preserved when bytes change.
+
+The authoritative package, owner, clock, and closure evidence for both
+recommendations are in Appendix~\ref{app:phased-roadmap}.
+
+\iffalse
+\subsubsection*{Recommendation FMT-S1: Make the specification machine-readable and adjudicable}
+
+Two separate deliverables are conflated whenever this is discussed, and they
+fail in different ways if either is attempted alone.
+
+\paragraph{The artifact.}
+Maintain the normative file-format description in a machine-readable form from
+which validators and fixtures can be generated, rather than only as prose. The
+argument is not tooling convenience: executable descriptions make assumptions
+observable through generated examples and validation results. They can still
+encode an incorrect choice or preserve an ambiguity, so they complement rather
+than replace review and adjudication. Encoding ``the group info message is
+optional'' forces the project to state whether that means optional to write,
+optional to read, optional only under a stated condition, or
+implementation-defined with documented compatibility consequences. The
+existing \code{hdf5-pickles} work is a candidate foundation and an independent
+implementation in its own right rather than only a fixture
+generator~\cite{hdf5-pickles}.
+
+Two constraints on that foundation. It is GPLv3 while HDF5 is BSD-style, so
+the relationship must be consumption of identifiers, boundaries, and fixtures
+as data rather than incorporation of source; see
+Section~\ref{sec:roadmap-licensing}. And a machine-readable description is
+normative only if the project says it is --- otherwise it becomes a fourth
+artifact to disagree with, alongside the prose, the library, and the
+implementations.
+
+\paragraph{The procedure.}
+Adopt a standing rule for specification-versus-implementation disputes,
+covering who rules, within what period, what the possible dispositions are
+(the specification is corrected, the library is corrected, or the construct is
+declared implementation-defined and documented as such), and where the ruling
+is recorded so the next implementer finds it. Issue \#6616 is the evidence that
+the artifact alone is insufficient: the contradiction has been identified,
+labelled, assigned, and milestoned, and it is still not adjudicated. An
+ambiguity that is documented but unruled is not resolved.
+
+The two halves reinforce each other. Without the procedure, the machine-readable
+artifact records disagreements it cannot settle. Without the artifact, the
+procedure has nothing precise to rule on and every dispute is re-litigated from
+prose.
+
+\noindent\textbf{Acceptance evidence.}
+For a declared subset of the format --- not the whole format, which is a
+multi-release scope --- the machine-readable description generates valid and
+invalid fixtures with stated expected outcomes. Every observed divergence has
+a recorded adjudication: library defect, description defect, or an explicitly
+implementation-defined construct with documented reader/writer compatibility
+behavior. Every dispute raised in the tracking period has a recorded
+disposition naming the authoritative artifact or implementation-defined
+boundary, the resulting change or compatibility rule, and the elapsed time from
+report to ruling.
+A dispute closed by an implementation changing its output to match the
+reference library, without a ruling on which artifact was authoritative, is
+recorded as \emph{unresolved} rather than closed.
 
 \subsubsection*{Recommendation IND-S1: Maintain a differential conformance and compatibility corpus}
 
@@ -118,6 +396,12 @@ At minimum, the program should:
           filter pipeline, external-resource form, and library-version bound;
     \item preserve two separate regression cases: \#6409 for sufficient but
           nonminimal widths and \#6534 for contradictory element sizes;
+    \item carry a third fixture class for \emph{contested} readings --- a
+          construct whose conformance is genuinely undetermined, such as a
+          group written without a group info message under \#6616 --- recorded
+          with the competing interpretations and the expected result under
+          each, so that a dispute has a test rather than an argument and so
+          that the eventual ruling has something to close;
     \item report the writer, writer version, format bounds, reader, reader
           version, and expected accept/reject result for every fixture; and
     \item inventory already-produced files when a writer defect is discovered,
@@ -134,6 +418,9 @@ defined legacy PureHDF population, preserving checksums and provenance when
 bytes change.
 
 The machine-readable specification project \code{hdf5-pickles} is a natural
-source for generating and checking these fixtures~\cite{hdf5-pickles}.
+source for generating and checking these fixtures~\cite{hdf5-pickles}, and
+under \code{FMT-S1} it is also the candidate normative artifact rather than
+only a generator of test material.
+\fi
 
 \end{document}
