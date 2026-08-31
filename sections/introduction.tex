@@ -136,6 +136,22 @@ governance controls. It does not determine compliance with privacy statutes,
 regulations, contracts, consent requirements, institutional policies, or
 research-ethics obligations.
 
+\subsection{Assessment Surfaces}
+\label{sec:assessment-surfaces}
+
+Figure~\ref{fig:hdf5-assessment-surfaces} maps the principal components and
+interfaces considered when identifying HDF5 risk. Inclusion in the figure
+provides ecosystem context and does not override the scope levels and
+limitations defined in Section~\ref{sec:assessment-scope}. In particular, HSDS
+is shown for context but remains outside the engagement.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/HDF5_Surfaces.png}
+    \caption{HDF5 assessment surfaces.}
+    \label{fig:hdf5-assessment-surfaces}
+\end{figure}
+
 \subsection{Temporal Boundary and Evidence Basis}
 \label{sec:evidence-boundary}
 
@@ -379,12 +395,13 @@ the controlling assumptions rather than silently lowering the rating.
 A rating record also states one of the following statuses:
 
 \begin{description}
-    \item[Rated.] Both axes and the resulting tier are supported by the cited
-          evidence.
-    \item[Provisional.] Both axes can be estimated, but material uncertainty
-          remains and is expressly stated.
-    \item[NE---not evaluated.] At least one axis lacks sufficient evidence. An
-          NE finding is not implicitly Low risk.
+    \item[Rated.] The impact and exposure levels and the resulting inherent-risk
+          tier are supported by the cited evidence.
+    \item[Provisional.] The impact and exposure levels can be estimated, but
+          material uncertainty remains and is expressly stated.
+    \item[NE---not evaluated.] At least one required rating input --- impact or
+          exposure --- lacks sufficient evidence. An NE finding is not implicitly
+          Low risk.
     \item[N/A---not applicable.] The item is not a risk-bearing finding, such as
           a recommendation, implementation task, or program theme.
 \end{description}
@@ -734,23 +751,5 @@ change as files move between organizations and repositories, are repurposed,
 or are combined with external data and machine-learning analysis. This report
 therefore examines privacy exposure throughout the HDF5 data lifecycle; it does
 not claim that the format or library supplies a general privacy guarantee.
-
-
-
-\section{Assessment Surfaces}
-\label{sec:assessment-surfaces}
-
-Figure~\ref{fig:hdf5-assessment-surfaces} maps the principal components and
-interfaces considered when identifying HDF5 risk. Inclusion in the figure
-provides ecosystem context and does not override the scope levels and
-limitations defined in Section~\ref{sec:assessment-scope}. In particular, HSDS
-is shown for context but remains outside the engagement.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=\textwidth]{images/HDF5_Surfaces.png}
-    \caption{HDF5 assessment surfaces (interfaces: rounded rectangles)}
-    \label{fig:hdf5-assessment-surfaces}
-\end{figure}
 
 \end{document}
