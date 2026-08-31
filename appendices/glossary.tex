@@ -1,0 +1,1833 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section{Glossary}
+\label{app:glossary}
+
+This appendix explains specialized vocabulary used in the report for readers
+who do not work in security, privacy, software assurance, or HDF5 development.
+Definitions describe how a term is used \emph{in this report}; they do not add
+a finding, change a rating, or replace the controlling scope and decision rules
+in Sections~\ref{sec:assessment-scope}--\ref{sec:risk-rubric}. Product and
+project names are generally omitted unless the name itself is used as
+technical shorthand.
+
+\subsection{Abbreviations}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.15\linewidth}>{\raggedright\arraybackslash}p{0.25\linewidth}p{0.54\linewidth}@{}}
+\hline
+\textbf{Short form} & \textbf{Expansion} & \textbf{Meaning in this report} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Short form} & \textbf{Expansion} & \textbf{Meaning in this report} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+ABI & Application Binary Interface &
+The low-level contract by which compiled software calls a library, including
+calling conventions, data layout, and exported symbols. Two builds can expose
+similar source APIs but still be ABI-incompatible. \\
+
+AFL & American Fuzzy Lop &
+A coverage-guided fuzzing tool family. The build appendix mentions AFL support
+as one available test configuration, not as evidence that every parser path was
+fuzzed. \\
+
+AI/ML & Artificial Intelligence / Machine Learning &
+Application domains discussed here chiefly because model loaders and model
+artifacts can cross an HDF5 trust boundary. \\
+
+API & Application Programming Interface &
+The functions, types, and rules through which software uses a library or
+service. The HDF5 C API is distinct from the HDF5 on-disk format. \\
+
+ASan & AddressSanitizer &
+A runtime testing tool that detects many invalid memory accesses, including
+some buffer overflows and uses of freed memory. \\
+
+CI / CI/CD & Continuous Integration / Continuous Integration and Delivery &
+Automated building and testing of changes; CD adds automated packaging or
+delivery stages. Passing CI is evidence only for the configurations and tests
+that actually ran. \\
+
+CLI & Command-Line Interface &
+A program operated from a shell, such as \code{h5dump} or \code{h5repack}. \\
+
+CPU & Central Processing Unit &
+The processor resource that can be exhausted by excessive or non-terminating
+work. \\
+
+CVE & Common Vulnerabilities and Exposures &
+A public identifier for a reported vulnerability record. A CVE identifier does
+not by itself establish root cause, affected HDF5 versions, reachability in a
+particular application, or this report's risk rating. \\
+
+CVSS & Common Vulnerability Scoring System &
+A standardized vulnerability-severity scoring method. This report does not
+convert CVSS scores into its impact/exposure ratings. \\
+
+CWE & Common Weakness Enumeration &
+A catalog of software weakness classes. For example, \code{CWE-20} denotes
+improper input validation; a CWE describes a class, not a particular affected
+release. \\
+
+CWD & Current Working Directory &
+The process directory used to resolve many relative paths. Implicit CWD lookup
+can make an external-file or plugin search depend on who launched the process
+and from where. \\
+
+DNS & Domain Name System &
+The network service that resolves names to addresses. DNS queries and logs can
+expose which external data services a workflow contacts. \\
+
+DoS & Denial of Service &
+Loss of availability caused by a crash, hang, excessive work, exhausted
+resources, or another condition that prevents useful service. \\
+
+ENOSPC & No space left on device &
+The operating-system error reported when a storage target cannot accept more
+data. The report also uses it as shorthand for HDF5's broader out-of-space
+write, flush, and close problem. \\
+
+FFM / JDK & Foreign Function and Memory API / Java Development Kit &
+The JDK supplies the Java compiler and runtime tools; its FFM API lets Java
+code call native libraries and access foreign memory. HDF5 can optionally
+generate Java FFM bindings. \\
+
+GHSA & GitHub Security Advisory &
+A security-advisory record and identifier published through GitHub. Like a CVE,
+it must be checked for exact scope, evidence, and applicability. \\
+
+HDF / HDF5 & Hierarchical Data Format / Hierarchical Data Format version 5 &
+In this report, HDF5 refers to the version-5 format and data model and, only
+where specifically stated, the core C library, official CLI tools, extension
+classes, and build or release configuration. HDF4 and older HDF technology are
+different formats and software. \\
+
+H5II / H5PW & HDF5 Independent Implementation / HDF5 Python Wrapper &
+Names of two SSP SIG mechanism models used in the independent-implementation
+and binding chapters. Their numbered families classify mechanisms rather than
+assigning this report's risk tiers. \\
+
+HDFS & Hadoop Distributed File System &
+A distributed storage system that can be reached through an optional HDF5 VFD
+and therefore adds build, storage, and deployment dependencies. \\
+
+HPC & High-Performance Computing &
+Computing environments such as clusters and supercomputers, often involving
+parallel I/O, MPI, shared storage, and tightly matched software builds. \\
+
+HSDS & Highly Scalable Data Service &
+An HDF5-oriented service shown for ecosystem context but expressly outside the
+assessment scope. \\
+
+HTTP & Hypertext Transfer Protocol &
+A network protocol used to retrieve resources. HTTP requests, range requests,
+proxies, and access logs can expose data locations and access patterns. \\
+
+ID & Identifier &
+A name or code used to distinguish a record, object, process resource, or other
+entity. Report identifiers and HDF5 object identifiers belong to different
+namespaces and must be interpreted in context. \\
+
+I/O & Input / Output &
+Reading or writing data between a process and files, memory, devices, or
+network services. \\
+
+JNI / JVM & Java Native Interface / Java Virtual Machine &
+JNI connects Java code to native libraries; the JVM executes Java bytecode.
+Their boundary matters when Java-facing software reaches native HDF5 code. \\
+
+LSan & LeakSanitizer &
+A runtime testing tool that detects allocated memory that becomes unreachable
+without being released. \\
+
+LRU & Least Recently Used &
+A cache-management policy that preferentially evicts entries not used recently.
+The report mentions LRU rank in one metadata-cache invariant case. \\
+
+MPI / MPI-I/O & Message Passing Interface / MPI input and output &
+Standards used for parallel programs and coordinated parallel file access.
+Parallel HDF5 builds depend on compatible MPI behavior and binaries. \\
+
+N/A & Not applicable &
+A report status for an item that is not a risk-bearing finding, such as a
+recommendation or program theme. It does not mean that a risk was evaluated as
+zero. \\
+
+\code{NDEBUG} / \code{-DNDEBUG} & Assertions disabled &
+The C/C++ convention and compiler definition that remove ordinary
+\code{assert(...)} checks. This commonly occurs in release builds. \\
+
+NE & Not evaluated &
+A rating status used when impact or exposure lacks enough evidence. NE never
+means Low risk. \\
+
+OSS & Open-Source Software &
+Software whose source is available under an open-source license. Openness
+supports inspection and reuse but is not, by itself, a security guarantee. \\
+
+OSS-Fuzz & Continuous fuzzing service for open-source software &
+A service that repeatedly runs project fuzz targets at scale. Its results
+cover the submitted targets and configurations rather than every possible HDF5
+path. \\
+
+POSIX & Portable Operating System Interface &
+A family of operating-system interface standards. POSIX calls and semantics
+underlie some HDF5 file drivers and candidate storage-reservation controls. \\
+
+PR & Pull Request &
+A proposed source change submitted for review and automated checks before
+merging. A PR test gate provides fast feedback but not long-running assurance. \\
+
+RCE & Remote Code Execution &
+Execution of attacker-chosen code across a remote trust boundary. The broader
+phrase \emph{arbitrary code execution} does not necessarily imply a remote
+attacker. \\
+
+REST & Representational State Transfer &
+A common style of network API that some connectors or external services may
+use. \\
+
+ROS3 & Read-Only S3 &
+The HDF5 Virtual File Driver for read-only access to objects through an S3 or
+S3-compatible interface. Its network, credential, and service behavior remain
+part of the deployment boundary. \\
+
+SBOM & Software Bill of Materials &
+A machine-readable inventory of software components and versions in a build or
+package. It supports applicability analysis but does not prove that a
+vulnerability is reachable or fixed. \\
+
+S3 & Amazon Simple Storage Service, or an S3-compatible interface &
+An object-storage API used by cloud services and by HDF5's ROS3 VFD for
+read-only access. The governing provider need not be Amazon when an
+S3-compatible service is used. \\
+
+SDLC & Software Development Life Cycle &
+The processes used to design, implement, test, release, operate, and maintain
+software. \\
+
+SIG & Special Interest Group &
+A community group focused on a defined subject. The SSP SIG is the HDF5 Safety,
+Security \& Privacy Special Interest Group. \\
+
+SIGFPE & Floating-point exception signal &
+An operating-system signal commonly raised by invalid integer or floating-point
+arithmetic, including the division-by-zero case discussed in the report. \\
+
+SLA & Service-Level Agreement &
+A documented operating commitment, such as a response target. The proposed
+roadmap calls for SLA child records to make clocks and evidence accountable;
+those records do not create a risk rating or show that the proposal was
+adopted. \\
+
+SLSA & Supply-chain Levels for Software Artifacts &
+A framework for improving and describing the integrity and provenance of
+software builds and releases. \\
+
+SSP & Safety, Security \& Privacy &
+The three assessment dimensions and the name of the HDF5 SSP SIG. Their
+meanings in this report are separately defined below. \\
+
+SWMR & Single Writer / Multiple Reader &
+An HDF5 access mode that permits one writer and multiple readers to access a
+file concurrently under SWMR's required open, flush, and refresh protocol and
+filesystem semantics. It is not a general crash-recovery or multi-writer
+guarantee. \\
+
+\code{T0} / TBD & Clock start / To be determined &
+\code{T0} is the recorded start date for a finding-and-scope or work-package
+clock. Depending on its stated trigger, it is affected-scope or equivalent-
+exposure identification, or roadmap adoption; the record must say which. TBD
+marks a field for which a required decision has not yet been made. \\
+
+UBSan & Undefined Behavior Sanitizer &
+A runtime testing tool that detects selected C/C++ operations whose behavior
+the language does not define, such as some invalid arithmetic. \\
+
+UAF & Use After Free &
+A memory-lifetime error in which code accesses an object after releasing its
+storage. The full term is defined in the concepts below. \\
+
+URL & Uniform Resource Locator &
+An address for a network resource. URLs in metadata, logs, or connector
+configuration can themselves reveal sensitive context. \\
+
+VDS & Virtual Dataset &
+An HDF5 dataset whose logical view maps to regions of source datasets, possibly
+in other files. Reading it can therefore cause external-file access. \\
+
+VFD & Virtual File Driver &
+The HDF5 layer that maps logical file reads and writes to physical storage,
+such as a local file, memory, multiple files, MPI-I/O, or object storage. \\
+
+VLEN & Variable Length &
+An HDF5 datatype whose elements have variable size. VLEN data require dynamic
+allocation and careful lifetime and resource handling. \\
+
+VOL & Virtual Object Layer &
+The HDF5 layer through which a connector implements object operations. A VOL
+connector can present remote, generated, or non-HDF5 data through the HDF5 API. \\
+
+\end{longtable}
+\endgroup
+
+\subsection{Report identifiers and notation}
+
+Identifiers are labels, not scores. A recommendation number does not imply
+priority, and a roadmap phase does not change a finding's risk. The letter
+\code{I} is context-sensitive: \code{I1}--\code{I4} mean impact levels in a
+risk record, while \code{I1}--\code{I9} in the independent-implementation
+chapter name mechanism families. The surrounding table or model determines
+which meaning applies.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth}p{0.69\linewidth}@{}}
+\hline
+\textbf{Pattern or label} & \textbf{Meaning} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Pattern or label} & \textbf{Meaning} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\code{CORE}, \code{APP}, \code{EXT}, \code{FMT}, \code{IND},
+\code{LONG}, \code{SUP} &
+Report component prefixes for the core library or tools, downstream
+applications, extensions, format governance, independent implementations,
+long-term accessibility, and the software supply chain. \\
+
+\code{SEC}, \code{SAFE}/\code{SAF}, \code{PRIV}, \code{TOOL} &
+Report dimension or surface labels for security, safety, privacy, and an
+official tool. \\
+
+\code{<component>-<dimension>-nnn} &
+A report finding or evidence-record identifier, for example
+\code{CORE-SEC-001}. The register states whether the record is formally rated
+or remains in the evidence backlog. \\
+
+\code{<component>-Snn} &
+A recommendation identifier, for example \code{APP-S4}. Variants such as
+\code{FILTER-S1}, \code{VFD-S4}, and \code{CORE-PRIV-S2} identify a more
+specific track. The number is an identifier only. \\
+
+\code{RM-nX} &
+A phased-roadmap work package. Its phase and sequence describe delivery
+planning, not severity or inherent risk. \\
+
+\code{I1}--\code{I4} and \code{E1}--\code{E4} &
+The report's ordinal impact and exposure levels. They are combined through the
+matrix in Table~\ref{tab:inherent-risk-matrix}; they are not multiplied as
+numbers. \\
+
+\code{P1}--\code{P7} &
+Privacy-exposure mechanism families: semantic metadata; structural or on-disk
+leakage; raw-data patterns; unintended inclusion during processing;
+aggregation, correlation, or inference; persistence beyond the intended
+lifetime; and misplaced trust in privacy by format. They are categories, not
+risk ratings. \\
+
+\code{W1}--\code{W10} &
+Wrapper or binding mechanism families from the SSP SIG H5PW model. They cover
+native compromise, code in data, dynamic loading, lifecycle mismatch, resource
+amplification, ABI or packaging drift, artifact exposure, trust-boundary
+confusion, misleading safety signals, and external-reference traversal. \\
+
+\code{I1}--\code{I9} in the H5II model &
+Independent-implementation mechanism families covering parser/specification
+divergence through trust-boundary confusion. These are unrelated to the
+report's four impact levels despite reusing the letter \code{I}. \\
+
+\code{ATK-nnn}, \code{HAZ-nnn}, \code{EXP-nnn} &
+SSP SIG threat, safety-hazard, and privacy-exposure registry identifiers. They
+are separate program artifacts, not findings in this report. \\
+
+\code{EXT}, \code{OPS}, \code{TCD}, \code{SCD} in SSP tag fields &
+SSP classification tags for extensions, operations, toolchains, and
+distribution, respectively. They classify a mechanism and carry no report-wide
+risk rating. \\
+
+\code{HDF5-SHINES-}\allowbreak\code{FAMILY-nn} &
+An SSP SIG policy-control identifier. A crosswalk to a report recommendation
+does not establish adoption or control satisfaction. \\
+
+\code{APP}, \code{ASSURE}, \code{CORE}, \code{EXT}, \code{GOV},
+\code{INTEROP}, \code{PRIV}, \code{REL} in owner fields &
+Accountability role labels for application, assurance, core engineering,
+extension, governance, interoperability, privacy, and release work. They name
+roles rather than currently assigned people or organizations. \\
+
+\end{longtable}
+\endgroup
+
+\subsection{Quick distinctions}
+
+Two groups of terms recur in conclusions and recommendations but answer
+different questions. These tables are reading aids; the full definitions and
+the controlling rules remain in the cited report sections.
+
+\subsubsection{Risk and response terms}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}p{0.31\linewidth}>{\raggedright\arraybackslash}p{0.43\linewidth}@{}}
+\hline
+\textbf{Term} & \textbf{Question it answers} & \textbf{Use in this report} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Term} & \textbf{Question it answers} & \textbf{Use in this report} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+Impact & How serious is the greatest credible consequence? &
+Ordinal level \code{I1}--\code{I4}, supported by evidence for the bounded
+scenario. \\
+
+Exposure & How readily and commonly can the scenario arise? &
+Ordinal level \code{E1}--\code{E4}, based on reachability, preconditions,
+deployment prevalence, and recurrence; not a numerical probability. \\
+
+Inherent risk and risk tier & What does the report rate before optional or
+proposed controls? & The impact/exposure matrix yields Low, Moderate, High, or
+Critical for a bounded scenario. The two ordinal levels are not multiplied. \\
+
+Rating status & Is the evidence sufficient to issue that tier? &
+Rated and Provisional records carry a tier; NE means a required input is not
+evaluated sufficiently, and N/A marks a non-risk-bearing item. \\
+
+Current residual risk & What remains after controls already verified in the
+stated deployment? & It can differ from inherent risk only when evidence shows
+that existing controls apply and work. \\
+
+Target residual risk & What might remain if proposed controls are completed? &
+A projection, not achieved risk reduction; acceptance evidence must pass before
+it can become current residual risk. \\
+
+Response urgency & How quickly does the report recommend treatment? &
+A report-assigned route and target horizon based on remaining risk, time to
+harm, recurrence or exploitation, and risk tolerance; it is not an adopted
+stakeholder deadline. \\
+
+SSP SIG severity and likelihood & How does a separate SSP registry score a
+mechanism? & Separate 1--5 inputs that the SSP SIG multiplies. Its mechanism
+scores cannot be converted into or merged with this report's scenario ratings. \\
+
+\end{longtable}
+\endgroup
+
+\subsubsection{Format interpretation terms}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.24\linewidth}>{\raggedright\arraybackslash}p{0.70\linewidth}@{}}
+\hline
+\textbf{Term} & \textbf{What it establishes} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Term} & \textbf{What it establishes} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+Conformance & The bytes or implementation satisfy the normative requirements
+of the governing specification. \\
+
+Reader acceptance & One particular reader, version, build, and profile opens
+or processes a file. It does not alone establish conformance. \\
+
+Compatibility & A stated producer, artifact, reader, and configuration work
+together in practice. It is an observed relationship, not a universal property. \\
+
+Backward / forward compatibility & Respectively, newer software handles older
+artifacts, or older software handles newer artifacts within a declared feature
+set. Neither licenses malformed metadata. \\
+
+Interoperability & Different tools, versions, or implementations exchange and
+interpret data as intended across a stated scope. \\
+
+Deployment safety & Processing the artifact under a deployment's authority,
+limits, and policy does not produce the adverse behavior in question. A file
+can conform and still be unsafe for a particular deployment. \\
+
+\end{longtable}
+\endgroup
+
+\subsection{Terms and concepts}
+
+PDF search is usually the quickest lookup method. The entries are also grouped
+in four navigable ranges: \hyperref[glossary:ac]{A--C},
+\hyperref[glossary:dh]{D--H}, \hyperref[glossary:ip]{I--P}, and
+\hyperref[glossary:qz]{Q--Z}. A slash in a headword groups terms that are most
+usefully distinguished together; common secondary terms are repeated or
+cross-referenced where alphabetical lookup would otherwise be difficult.
+
+\subsubsection{A--C}
+\label{glossary:ac}
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+
+\item[Accountability roles.]
+The accountable owner answers for an outcome; the implementer performs the
+work; the verifier independently reproduces acceptance evidence; the approver
+authorizes rollout; and the risk acceptor decides whether verified remaining
+risk may be retained. The roadmap separates these roles for High and Critical
+scope.
+
+\item[Acceptance criteria / acceptance evidence.]
+The observable condition, test result, document, or operating record required
+to show that a recommendation was implemented and works over its stated scope.
+Completing an activity is not acceptance evidence unless its required outcome
+is also demonstrated.
+
+\item[Access control.]
+Rules and mechanisms that decide which identities may read, change, create, or
+delete a resource. HDF5 applications normally rely on the operating system,
+storage service, or surrounding application for identity and access control.
+
+\item[Adversary / attacker / malicious actor.]
+A person or system intentionally trying to cause an unwanted result. Safety
+failures and privacy harms in this report can also occur without an adversary.
+
+\item[Adverse-event scenario.]
+A bounded statement connecting an initiating actor or non-adversarial event,
+an assessment object, exposure and preconditions, a condition, and a credible
+harm to named assets, people, or operations. This---not a technology or defect
+name alone---is what the report rates.
+
+\item[Affected scope / affected population.]
+The specific versions, builds, configurations, deployments, files, users, or
+workflows to which a scenario applies. A project name or CVE count is not a
+substitute for establishing this population.
+
+\item[Aggregation, correlation, and inference.]
+Combining or analyzing data and metadata so that the result reveals information
+not evident from any one item. This can create privacy harm even when every
+individual input was disclosed legitimately.
+
+\item[Allocation / resource budget.]
+Allocation reserves memory, storage, or another finite resource. A resource
+budget is an enforced upper bound on aggregate or per-object use, such as
+logical bytes, objects, traversal depth, CPU time, or decompression expansion.
+
+\item[Allowlist.]
+An explicit list of permitted items, such as approved plugin identities or
+external directories. Items not on the list are denied. An allowlist is useful
+only if its storage and update path are themselves protected.
+
+\item[Ambient authority.]
+Permissions already held by a process---for example filesystem, network,
+credential, or plugin-loading access---that are available without a fresh,
+resource-specific authorization decision. An untrusted file can be dangerous
+when its metadata directs a process to exercise this authority.
+
+\item[Application boundary.]
+The point where an application decides how an HDF5 capability will be used and
+with what permissions. A defect at this boundary is not automatically a defect
+in the HDF5 parser merely because HDF5 carried the instruction.
+
+\item[Archive / archival profile.]
+An archive preserves information for later use. An archival profile states the
+formats, features, dependencies, and validation rules accepted for that purpose;
+preserving primary file bytes alone may be insufficient.
+
+\item[Artifact.]
+A durable output used as evidence or input. Depending on context this can mean a
+source or release package, a test fixture, an SBOM, a signed manifest, a log or
+cache created by a workflow, or a report and decision record.
+
+\item[Assertion / always-active check.]
+An assertion is a developer check written with facilities such as
+\code{assert(...)} and often removed from release builds. An always-active
+runtime check remains present in supported production configurations. A
+condition derived from untrusted file bytes must not depend on an assertion
+alone.
+
+\item[Assessment horizon.]
+The period over which a scenario is evaluated. Time is material for risks such
+as a filter becoming unavailable over a decade; ratings with materially
+different horizons should not be directly ordered without qualification.
+
+\item[Assessment object.]
+The exact technology, version, file population, component, or deployment being
+examined. A formal rating attaches to this bounded object and scenario, not to
+``HDF5'' in the abstract.
+
+\item[Assessment surface / scope level.]
+A surface is a component, input, interface, or boundary considered while
+looking for risk. A \emph{primary assessment object} is directly assessed; a
+\emph{boundary case study} examines only a defined interaction with a primary
+object; and a \emph{contextual reference} illustrates the landscape without
+creating an audit conclusion about that product. Appearing in a diagram,
+example, or citation does not mean the entire product was audited.
+
+\item[Assurance.]
+Justified confidence, based on stated evidence, that a property holds over a
+defined scope. Tests, review, reproducible builds, and independent verification
+can increase assurance, but assurance is not an absolute guarantee and does not
+by itself mean certification or an assurance opinion.
+
+\item[Asset.]
+Something of value that the assessment seeks to protect, such as scientific
+data, metadata, credentials, software integrity, service availability,
+research validity, privacy, or long-lived records.
+
+\item[Attack mechanism.]
+A capability or sequence an attacker can use to produce harm. A documented and
+correctly implemented feature can be an attack mechanism when a surrounding
+application grants it inappropriate authority.
+
+\item[Attack surface.]
+The set of inputs, interfaces, features, tools, and extension points through
+which an adverse condition might be reached. More surface does not by itself
+establish a vulnerability or a risk tier.
+
+\item[Attestation / certification / assurance opinion.]
+Formal statements made under defined criteria and evidence requirements. This
+technical audit is not any of these and does not certify an HDF5 release,
+application, file, or deployment.
+
+\item[Audit.]
+A documented technical examination in this report. It does not mean a
+compliance audit, certification, attestation, penetration test, or exhaustive
+line-by-line source review.
+
+\item[Authentication / authorization.]
+Authentication establishes which identity is making a request; authorization
+decides what that identity may do. Successfully authenticating a connector or
+plugin does not authorize every file-selected action it can perform.
+
+\item[Authority.]
+The practical ability to act on a resource, such as reading a local file,
+opening a network connection, allocating memory, loading code, or using a
+credential. The report assigns a control failure to the boundary that supplies
+and governs the relevant authority.
+
+\item[Availability.]
+The property that data and services remain accessible and usable when needed.
+Confidentiality, integrity, and availability are the conventional three core
+security objectives.
+
+\item[Backport.]
+Applying a correction developed for a newer code line to an older maintained
+release. A backport is not assumed to contain the fix until the exact release
+artifact and path are verified.
+
+\item[Backward / forward compatibility.]
+Backward compatibility lets newer software use older artifacts; forward
+compatibility lets older software handle artifacts from newer producers within
+a defined feature set. Neither requires accepting malformed metadata, and
+historical reader acceptance does not prove format conformance.
+
+\item[Baseline.]
+The exact version, commit, build, configuration, or deployment state against
+which an observation is made. This historical ecosystem assessment has no
+single baseline that represents every conclusion.
+
+\item[Binary / source / release artifact.]
+Source is human-readable program material; a binary is compiled executable
+code; a release artifact is a published package containing either or both.
+Integrity and provenance must identify which exact artifact was assessed.
+
+\item[Binding / wrapper.]
+Software that exposes HDF5 to another language or programming model, such as
+Python, Java, or .NET. It translates types, memory ownership, errors, and
+lifecycle rules, but it does not automatically make every HDF5 capability safe
+for an application.
+
+\item[Bounded decode.]
+Reading a defined number of bytes through a cursor or equivalent boundary so a
+decoder cannot silently run past the available record. The report's preferred
+sequence is decode, validate, construct, and only then separately authorize
+activation.
+
+\item[Buffer overflow / out-of-bounds read or write / buffer over-read.]
+An overflow or out-of-bounds write stores data beyond the memory reserved for a
+buffer; an out-of-bounds read or over-read reads beyond it. Either can crash a
+process, disclose memory, corrupt state, or in some conditions enable code
+execution.
+
+\item[Build configuration / build profile.]
+The selected compiler, options, dependencies, features, and debug or release
+settings used to produce a binary. Different HDF5 builds of the same nominal
+version may have materially different behavior and dependencies.
+
+\item[Cache / temporary artifact.]
+A cache retains data to avoid recomputation or retrieval; a temporary artifact
+is an intermediate file, buffer, snapshot, or log. Either may persist longer
+than intended and expose data outside the primary HDF5 file.
+
+\item[Callback.]
+A function or handler supplied for another component to invoke later, often
+when an event or extension point is reached. A callback executes code in the
+calling process, so its origin, lifetime, inputs, and authority are part of the
+security boundary.
+
+\item[Canonical / minimal / nonminimal encoding.]
+A canonical encoding is the one representation selected when a rule permits
+several byte representations of the same value. A minimal encoding uses the
+shortest sufficient representation; a nonminimal encoding uses more space. A
+nonminimal encoding can still conform unless the specification expressly
+requires minimal or canonical form.
+
+\item[Capability.]
+An ability a component exposes or holds, such as opening an external path,
+contacting a service, allocating memory, or loading executable code. A
+capability may be intentional and correctly implemented yet still require
+explicit authorization and limits at a trust boundary; it is not synonymous
+with a vulnerability.
+
+\item[Census.]
+A systematic inventory of installed versions, linkage, features, files, or
+deployments. The roadmap census supplies affected-scope evidence; discovering
+scope is not itself treatment.
+
+\item[Checked arithmetic.]
+Addition, multiplication, range calculation, or conversion that detects
+overflow, underflow, division by zero, truncation, or an invalid bound before
+using the result for allocation, copying, or traversal.
+
+\item[Checkpoint.]
+A known recovery point recorded during a long-running write or computation.
+Checkpoint discipline limits how much work or data must be reconstructed after
+a failure but is not the same as a file-format transaction guarantee.
+
+\item[Checksum / cryptographic hash / digital signature.]
+A checksum helps detect accidental change. A cryptographic hash produces a
+substitution-resistant digest, but detects malicious replacement only when the
+expected digest comes through a trusted or authenticated channel. A verified
+digital signature can provide integrity and origin authentication when the
+verification key is reliably associated with the signer. None of these
+mechanisms proves that the checked code is safe.
+
+\item[Chunk / chunked storage / chunk index.]
+A chunk is a separately stored block of a dataset. Chunking supports partial
+I/O, compression, and extendible datasets. A chunk index is the on-disk
+structure that maps logical chunk coordinates to stored blocks.
+
+\item[Ciphertext / plaintext.]
+Plaintext is information in a directly readable form; ciphertext is the output
+of encryption. Data become plaintext again during authorized processing, where
+applications, plugins, caches, and logs can expose them.
+
+\item[Closure: defect, class, recommendation, and risk.]
+Defect closure shows that one affected case was treated. Class closure shows
+that the recurring family and sibling paths are structurally covered.
+Recommendation closure requires its acceptance evidence, while risk closure
+also requires an accountable decision about what remains. These claims are not
+interchangeable.
+
+\item[Codec.]
+Software that encodes and decodes a data representation, such as a compression
+filter. Long-term readability depends on retaining either a working codec or
+enough specification and test evidence to reproduce it.
+
+\item[Command-line tool.]
+A standalone program invoked from a shell. HDF5 inspection and conversion tools
+are security and privacy surfaces because they parse files, render output, load
+extensions, and can create persistent copies.
+
+\item[Compatibility.]
+The practical ability of particular producers, files, readers, and
+configurations to work together. Compatibility is an observed relationship and
+is distinct from both conformance to the specification and deployment safety.
+
+\item[Compensating control.]
+A control used when the preferred or structural control is unavailable, such
+as isolating an affected parser until an upgrade can be deployed. Its coverage
+and effectiveness must be tested rather than assumed.
+
+\item[Condition / failure mode / consequence.]
+The condition is the state that permits an event, the failure mode is how the
+component departs from intended behavior, and the consequence is the resulting
+effect. Separating them prevents a visible crash from being mistaken for the
+earliest root cause.
+
+\item[Confidentiality.]
+The property that information is not disclosed to unauthorized recipients.
+Privacy is broader: inference, retention, correlation, or unwanted secondary
+use can cause privacy harm even without a confidentiality breach.
+
+\item[Conformance.]
+Compliance with the normative requirements of a specification. A file can be
+accepted by one reader yet be non-conforming, or be conforming and rejected by
+a reader that imposes an extra condition.
+
+\item[Confused deputy.]
+A system with legitimate authority that is induced to use that authority on
+behalf of a less-privileged requester. In this report, a file-processing service
+that follows an attacker-selected local path with the service's permissions is
+the central example.
+
+\item[Connector / connector stack.]
+An extension implementing an HDF5 abstraction, especially a VOL connector.
+Multiple connectors may be layered as a stack, so data origin, caching,
+network use, and side effects may span more than one component.
+
+\item[Containment / structural prevention.]
+Containment promptly limits a known exposure, for example by disabling a
+feature, isolating a process, or monitoring capacity. Structural prevention
+changes the design, implementation, or process so the recurring defect class
+is less likely to return. One does not substitute for the other's deadline.
+
+\item[Control.]
+A technical, operational, or governance measure intended to prevent, detect,
+limit, or recover from an unwanted event. A proposed control receives credit
+in residual risk only after relevant acceptance evidence exists.
+
+\item[Controlled rejection.]
+Stopping on invalid or disallowed input with a bounded, documented diagnostic,
+without a crash, uncontrolled allocation, unintended side effect, or silent
+repair. Controlled rejection is often the safe result for unsupported features.
+
+\item[Core VFD.]
+The specifically named in-memory Virtual File Driver, optionally with a backing
+file written at close. In that phrase, \emph{Core} does not mean the HDF5 core
+library.
+
+\item[Corpus / fixture / test vector.]
+A corpus is a maintained collection of test inputs. A fixture is one input with
+a stated expected result; a test vector pairs known input and output. Positive
+fixtures should be accepted, negative fixtures should be rejected, and
+contested fixtures preserve competing interpretations until adjudication.
+
+\item[Coverage.]
+Evidence about which declared code, structures, invariants, configurations, or
+cases a test or control exercised. A percentage is meaningful only with a
+versioned denominator and does not, by itself, prove defect or class closure.
+
+\item[Crash consistency.]
+The guarantees about durable file state when a writer crashes, is killed, or
+loses power during an update. A flush call, SWMR mode, or successful earlier
+write does not by itself define those guarantees.
+
+\item[Credential / secret.]
+Information that grants authority, such as a token, password, private key, or
+cloud credential. Logs, environment variables, crash dumps, connectors, and
+plugins can expose secrets even when HDF5 payload data are protected.
+
+\item[Current working directory / search path.]
+The current working directory is the process's default relative-path base. A
+search path is the ordered set of locations examined for an external file or
+loadable module. User-writable or implicit locations can let untrusted parties
+control what is opened or executed.
+
+\end{description}
+
+\subsubsection{D--H}
+\label{glossary:dh}
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+
+\item[Data integrity.]
+The property that data remain correct, complete, and unaltered except through
+authorized changes. In this report it includes avoiding silent wrong data,
+corruption, and scientifically invalid interpretation.
+
+\item[Data lifecycle.]
+The stages through which data pass, including creation, processing, storage,
+sharing, transfer, reuse, archival, and deletion. Security and privacy controls
+must account for artifacts created at every relevant stage.
+
+\item[Data minimization / tokenization.]
+Minimization avoids or removes information that is not needed. Tokenization
+replaces a sensitive value with a less revealing reference. A field is not
+actually minimized if it disappears from the API view but remains recoverable
+from raw bytes, free space, logs, or copies.
+
+\item[Data remanence / secure deletion.]
+Data remanence is information that remains recoverable after ordinary deletion
+or replacement, including in free blocks, histories, replicas, snapshots, and
+backups. Secure deletion is a storage-specific process intended to make the
+defined information unrecoverable across the stated copies and layers.
+
+\item[Dataset.]
+An HDF5 object containing an array of data values together with a datatype and
+dataspace, plus optional attributes and storage properties.
+
+\item[Dataspace.]
+A dataspace defines a dataset's or attribute's extent: scalar, null, or simple,
+with rank and current or maximum dimensions. A dataspace handle can also carry
+a selection used for dataset I/O; that selection is not normally part of the
+stored dataset or attribute definition. A declared logical extent can be much
+larger than the physically stored payload.
+
+\item[Datatype / committed datatype.]
+The description of how values are represented and interpreted. A committed
+datatype is stored as a named HDF5 object that other objects can reference;
+compound, variable-length, enumeration, and nested types add parsing complexity.
+
+\item[Decode / encode.]
+Decode turns stored bytes into an in-memory representation; encode performs the
+reverse. The report requires bounded decode followed by record-, object-, and
+graph-level validation before construction; invalid state must not reach later
+encode or flush paths.
+
+\item[Default deny.]
+A policy under which a capability is unavailable unless it is explicitly
+permitted. For untrusted HDF5 input, external resources and executable plugins
+are examples of capabilities suited to a default-deny policy.
+
+\item[Defect / weakness / vulnerability.]
+A defect is a specific implementation or specification error. A weakness is a
+broader condition or recurring class that can contribute to harm. A
+vulnerability is a weakness that can be reached and used under stated
+conditions to violate a security property. The words are related but are not
+interchangeable, and none alone assigns a report risk tier.
+
+\item[Defense in depth.]
+Using independent layers of protection so one failure does not immediately
+produce harm, such as combining input validation, resource limits, process
+isolation, and least privilege.
+
+\item[Denial of service / resource exhaustion / amplification.]
+Denial of service makes a system unavailable. Resource exhaustion consumes
+finite memory, CPU, storage, output, or handles. Amplification occurs when a
+small input induces disproportionately large work or allocation.
+
+\item[Dependency / upstream / downstream / transitive dependency.]
+A dependency is software or infrastructure required by another component.
+Upstream dependencies are used to build or run HDF5; downstream projects use or
+package HDF5. A transitive dependency is reached indirectly through another
+dependency, which can make the actual HDF5 build invisible to an end user.
+
+\item[Deployment.]
+A concrete installed system: its versions, build options, enabled features,
+configuration, permissions, users, data sources, storage, and surrounding
+controls. Risk conclusions often depend more narrowly on a deployment than on
+a product name.
+
+\item[Deserialization.]
+Reconstructing application objects or behavior from stored data. HDF5 decoding
+can be safe while a higher-level model loader unsafely reconstructs executable
+objects from HDF5 content.
+
+\item[Differential testing / differential conformance testing.]
+Giving the same inputs to multiple builds or independent implementations and
+comparing outcomes. A difference exposes a question; it does not by itself
+prove which implementation or specification is wrong.
+
+\item[Digital signature.]
+See \emph{Checksum / cryptographic hash / digital signature}. A signature is
+useful only when verification succeeds and the verification key is reliably
+associated with the claimed signer.
+
+\item[Disposition / ruling.]
+An authoritative resolution of a reported issue or specification question,
+including which interpretation governs and which artifacts or implementations
+must change. An issue label, implementation behavior, or proposed patch is not
+a ruling unless the responsible authority records it as such.
+
+\item[Documented observation / reasoned inference.]
+A documented observation is supported directly by a cited artifact, with
+source-reported evidence distinguished from independent reproduction. A
+reasoned inference draws a conclusion from evidence plus stated assumptions
+and uncertainty. Neither is a recommendation or a formal rating by itself.
+
+\item[Durability.]
+The property that data acknowledged as written survive the failures covered by
+the stated guarantee. Durability differs from an in-memory value being visible
+to a reader and must be evaluated against the storage stack and recovery model.
+
+\item[Dynamic loading / plugin loading.]
+Loading executable code while a process is running, often from a shared
+library found on a search path. The loaded code executes with the process's
+authority, so its identity, origin, path, configuration, and privileges matter.
+
+\item[Effort / implementation dependency / sequence.]
+Effort estimates the scale of delivery work; a dependency is a concrete
+prerequisite; sequence records an implementation order and its rationale.
+These planning fields may shape delivery but never lower or otherwise change
+inherent risk or response urgency.
+
+\item[Embargo.]
+A temporary restriction on vulnerability information while affected parties
+coordinate analysis, fixes, and disclosure. Embargoed local repair can close a
+known defect without proving that the recurring class has been eliminated.
+
+\item[Encryption / key management.]
+Encryption uses a key to make protected information unreadable at a stated
+boundary. Key management covers generation, custody, access, backup, rotation,
+recovery, and destruction. Encryption that leaves metadata or keys exposed, or
+whose keys cannot be recovered, does not satisfy the report's broader privacy
+and durability needs.
+
+\item[Error path / cleanup / unwinding.]
+The code followed after an operation fails, including releasing partially
+created objects and restoring state. Malformed input often exposes lifetime
+defects in these paths even when the original decode detects an error.
+
+\item[Evidence action / evidence backlog.]
+A bounded investigation needed because a scenario lacks enough information to
+rate or route. A backlog record is not a formal risk tier and must never be
+read as Low risk.
+
+\item[Evidence confidence.]
+The report's judgment about how directly and completely the evidence supports
+a scenario and its rating assumptions. High, Moderate, or Low confidence is
+reported separately from impact, exposure, and risk tier.
+
+\item[Evidence cutoff / subsequent-event update.]
+The cutoff is the latest date on which substantive evidence is eligible for
+this revision. A later retrieval can document an older artifact, but a new
+measurement, fix, or decision after the cutoff is a subsequent event unless
+the report expressly incorporates it.
+
+\item[Exception / variance.]
+An approved, scoped departure from a control, gate, route, or deadline. The
+roadmap requires it to name an accountable authority, rationale, interim
+control, expiration, and remaining-risk decision; an undocumented deviation is
+not an exception record.
+
+\item[Exploitability / reachability.]
+Reachability asks whether a real input can enter the relevant code path in a
+specified build and deployment. Exploitability asks whether the resulting
+behavior can be used to cause a security consequence. A source pattern or
+crash alone may establish neither for supported releases.
+
+\item[Exposure (risk axis).]
+The E1--E4 axis expressing how readily and commonly a stated scenario arises,
+considering reachability, preconditions, deployment prevalence, and recurrence.
+It is ordinal and is not a numerical probability. \emph{Privacy exposure} is a
+different use of the word: information becoming observable or usable in a way
+that may cause privacy harm.
+
+\item[Extension.]
+A component that adds behavior outside the baseline library path, including a
+filter, VOL connector, or VFD. An extension may be built in or loaded as a
+plugin; the words \emph{extension} and \emph{dynamically loaded plugin} are
+therefore not synonyms.
+
+\item[External link / external raw storage / external reference.]
+An external link names an object in another HDF5 file. External raw storage
+places a dataset's raw bytes in non-HDF5 files. VDS mappings can also name
+external source files. This report uses \emph{external reference} or
+\emph{external resource} as an umbrella for file-controlled access beyond the
+initial file; it is not limited to the HDF5 object-reference datatype.
+
+\item[Fail closed / fail open.]
+A fail-closed system denies or safely stops when validation, policy, or a
+dependency cannot be established. A fail-open system continues, guesses, or
+silently ignores the condition. Unsupported or unknown untrusted-file features
+should normally fail closed.
+
+\item[Fault injection.]
+Deliberately causing failures---such as out-of-space errors, failed writes, or
+process termination---at controlled points to measure durable state, error
+reporting, and recovery behavior.
+
+\item[File-derived value / file-controlled metadata.]
+A size, count, address, path, shape, filter setting, link, flag, or other value
+obtained from the input file. Until validated and authorized, it must be treated
+as controlled by the file's originator rather than trusted program state.
+
+\item[File disclosure / data exfiltration.]
+File disclosure is unauthorized reading or return of file contents.
+Exfiltration is their unauthorized transfer out of the protected boundary.
+The demonstrated external-storage incident in this report is rated for the
+disclosure actually evidenced, not for an unreported code-execution path.
+
+\item[File format / data model / library.]
+The file format specifies the on-disk representation; the data model describes
+logical objects and relationships; the library is software that reads, writes,
+and manipulates them. A defect or capability in one is not automatically a
+defect in the others.
+
+\item[File locking.]
+Coordination intended to prevent incompatible concurrent access to a file.
+Its availability and semantics depend on the HDF5 build, configuration,
+filesystem, and access pattern; it is not a substitute for crash recovery.
+
+\item[Fill value.]
+The value HDF5 returns for dataset elements that have not been explicitly
+written, subject to the dataset's creation and allocation properties. A fill
+value is part of dataset behavior and should not be confused with bytes that
+happen to remain in unused storage.
+
+\item[Filter / filter pipeline / filter plugin.]
+A filter transforms dataset chunks during writing and reverses or interprets
+the transformation during reading. A pipeline is an ordered sequence of
+filters. A plugin supplies filter code dynamically; losing that dependency can
+make data unreadable.
+
+\item[Finding / formal finding.]
+A documented adverse-event scenario supported strongly enough to enter the
+authoritative findings register. Its identifier, scope, evidence, rating, and
+response route are distinct from the recommendations that may address it.
+
+\item[Flush.]
+An operation that pushes buffered HDF5 state toward a lower storage layer.
+What becomes durable after a flush depends on the documented library, driver,
+operating-system, and storage guarantees; the word alone does not promise
+crash consistency.
+
+\item[Format bounds / library-version bounds.]
+HDF5 properties that constrain which on-disk format versions and features a
+writer may emit. They are not the same as the installed library's version and
+do not alone prove reader compatibility.
+
+\item[Fuzzing / mutation.]
+Automated testing that generates or alters many inputs to find crashes,
+resource problems, or invariant violations. Whole-file fuzzing mutates bytes
+broadly; structure-aware or invariant-guided fuzzing targets meaningful HDF5
+records and boundary values.
+
+\item[Graph / traversal.]
+HDF5 files contain linked structures that can be viewed as a graph. Traversal
+follows those relationships. Cycles, excessive depth, repeated work, or
+external targets require explicit progress rules and budgets.
+
+\item[Group.]
+An HDF5 container object whose links organize datasets, committed datatypes,
+and other groups into a hierarchy, much like directories organize filesystem
+names.
+
+\item[Guard / dominating check.]
+A guard is a check that prevents unsafe execution when its condition fails. A
+check dominates an operation when every path to that operation must pass
+through the check. Cataloging a check matters because a nearby assertion may
+not protect all release-build paths to the unsafe use.
+
+\item[Hard link / soft link.]
+An HDF5 hard link is a group entry that names an object in the same file; more
+than one hard link can name the same object. A soft link stores a path to be
+resolved later and can be dangling. An external link additionally names another
+file and crosses an external-resource boundary.
+
+\item[Hazard.]
+A condition with the potential to cause a non-adversarial safety loss. The SSP
+SIG hazard registry and this report use different rating methods, so a hazard
+identifier or its registry score is not a report finding or tier.
+
+\item[HDF Group, The.]
+The nonprofit organization that develops and supports the reference HDF5
+software and stewards the format. It is distinct from the broader ecosystem of
+downstream and independent projects.
+
+\item[HDF5 interface and subsystem prefixes.]
+Prefixes such as \code{H5C}, \code{H5O}, \code{H5T}, and \code{H5Z} identify
+metadata-cache, object, datatype, and filter interfaces or subsystems. Some
+occur in public API names as well as internal symbols; the surrounding finding
+names the relevant path.
+
+\item[HDF5 object / attribute / link / reference.]
+Groups, datasets, and committed datatypes are principal HDF5 objects. An
+attribute is a named metadata item with its own datatype and dataspace, attached
+to an object. A hard link gives an object a name in a group; soft and external
+links instead store targets resolved during traversal and may dangle. An object
+reference identifies an object, while a region reference also identifies a
+selection within a dataset.
+
+\item[Heap.]
+In ordinary programming, a heap is the memory area used for dynamic
+allocation. In the HDF5 format, local, global, and fractal heaps are also named
+on-disk metadata structures. The surrounding phrase determines which meaning
+applies.
+
+\item[Hostile / malicious / untrusted input.]
+Input for which the processor cannot rely on the originator's intentions or
+care. \emph{Untrusted} includes accidentally malformed third-party files;
+\emph{malicious} means intentionally crafted. Safe parsing should not depend
+on knowing which one arrived.
+
+\end{description}
+
+\subsubsection{I--P}
+\label{glossary:ip}
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+
+\item[Immutable file identity.]
+See \emph{Open handle / immutable file identity}. It is the property used to
+show that validation and later processing apply to the same bytes, rather than
+merely to the same path name.
+
+\item[Impact.]
+The I1--I4 axis describing the greatest credible consequence supported by the
+evidence, from limited through severe or systemic. It is not an unconstrained
+worst case and is not multiplied numerically by exposure.
+
+\item[Independent copy.]
+A separately stored copy whose failure modes and administrative control are not
+the same as the working file. For unregenerable data, a duplicate on the same
+full device or in the same failure domain is not the independent recovery
+control intended by the roadmap.
+
+\item[Independent implementation.]
+A separately developed reader or writer that interprets the HDF5 format
+without simply calling the reference C library for the relevant work. It can
+reveal specification or reference-library errors, but it has its own parser,
+validator, writer, and dependency risks.
+
+\item[Inherent risk.]
+Risk for the stated scenario and deployment before optional, proposed, or
+organization-specific controls receive credit. Only mandatory controls
+intrinsic to the identified implementation, version, and default configuration
+are included.
+
+\item[Input validation.]
+Checking that input has an allowed type, range, size, relationship, and
+structure before it influences trusted operations. Local field checks are not
+enough when an invariant spans an object or reference graph.
+
+\item[Integer overflow / divide by zero.]
+Integer overflow occurs when an arithmetic result cannot be represented in the
+destination integer type; division by zero has no valid arithmetic result.
+File-derived dimensions, counts, and sizes must be checked before either result
+can influence allocation, address calculation, or copying.
+
+\item[Integrity.]
+For data, see \emph{Data integrity}. In a software supply chain, integrity is
+evidence that an artifact has not changed since an identified producer
+published or signed it. Either meaning must state its object and boundary;
+integrity is not the same as provenance or safety.
+
+\item[Interoperability.]
+The ability of different tools, versions, and implementations to exchange and
+interpret data as intended. It depends on conformance, supported features,
+extensions, configuration, and compatibility policy.
+
+\item[Interpretability.]
+The ability to recover the intended meaning of preserved data, not merely its
+bytes. It can depend on schema, provenance, format bounds, external resources,
+filters, connectors, drivers, and a reader that implements the relevant rules.
+
+\item[Invariant.]
+A condition that must always hold for a structure or operation to be valid,
+such as a count fitting its buffer or two metadata fields agreeing. An
+invariant registry ties each condition to enforcement, tests, fuzz targets,
+findings, and migration status.
+
+\item[Isolation / process isolation.]
+Separating file processing from sensitive resources, other processes, or the
+host so a failure has limited reach. Containers, restricted workers, operating-
+system sandboxes, and separate accounts are possible mechanisms; their actual
+boundaries must be verified.
+
+\item[Journal / write-ahead log.]
+A journal records update information used to recover consistent state. A
+write-ahead log records the intended change before applying it to the main
+data. These are candidate crash-consistency mechanisms, not guarantees HDF5 is
+assumed to provide today.
+
+\item[Least privilege.]
+Giving a process only the filesystem, network, credential, code-loading, and
+other authority required for its task, for only as long as needed. It limits
+the consequence when an input or component misbehaves.
+
+\item[Legacy.]
+An older format, feature, file, tool, or behavior retained for compatibility.
+Legacy status does not mean unsafe, but historical tolerance of invalid input
+must not silently become a permanent compatibility requirement.
+
+\item[Library / reference library / \code{libhdf5}.]
+A library is reusable program code. \code{libhdf5} is the principal HDF5 C
+library; \emph{reference library} emphasizes its central role in implementing
+the format. Reference status does not make its behavior automatically
+normative when it conflicts with the specification.
+
+\item[Likelihood / severity in SSP SIG registries.]
+Likelihood and severity are separate 1--5 inputs in the SSP SIG mechanism
+registries, where they are multiplied and banded. They are not this report's
+exposure and impact levels, and their product cannot be converted into this
+report's scenario-based risk tiers.
+
+\item[Linkage: static, dynamic, system, bundled, or vendored.]
+Static linkage copies library code into a binary at build time; dynamic linkage
+loads a shared library at run time. A system library comes from the operating
+environment; bundled or vendored code is shipped within another project. The
+linkage determines which HDF5 code a user actually runs and how it is updated.
+
+\item[Logical size / physical size.]
+Logical size is the amount of data described after interpreting dimensions and
+types; physical size is the storage currently occupied. Compression, sparse
+layout, fill values, external storage, and VDS mappings can make them differ by
+orders of magnitude.
+
+\item[Lossless / lossy compression.]
+Lossless compression reconstructs the original values exactly. Lossy
+compression intentionally discards information according to precision, rate,
+or error settings. Those settings and the resulting sizes can reveal data
+characteristics even when values are not directly shown.
+
+\item[Machine-readable specification.]
+A structured description that software can process to generate validators or
+fixtures. It makes choices testable but becomes normative only through an
+explicit governance decision and cannot resolve ambiguity by itself.
+
+\item[Malformed / invalid / inconsistent file.]
+A file whose bytes violate required structural, arithmetic, or relational
+conditions. \emph{Malformed} does not imply malicious intent. A valid but
+policy-disallowed file is different: it may conform to the format yet still be
+unsafe for a particular deployment.
+
+\item[Managed runtime / native code.]
+A managed runtime, such as a JVM or .NET runtime, supplies services such as
+automatic memory management. Native code executes directly under platform
+conventions, commonly through C or C++. A binding can cross from managed code
+into native HDF5 code and therefore inherit both models' failure modes.
+
+\item[Manifest.]
+A machine-readable list of expected artifacts, identities, versions,
+capabilities, or dependencies. A protected plugin manifest can support an
+allowlist; a corpus manifest can state each fixture's provenance and expected
+outcome.
+
+\item[Materialization / activation.]
+Materialization constructs an in-memory object from validated data. Activation
+causes effects such as publishing it to a cache, registering an identifier,
+loading a plugin, decompressing data, invoking a callback, or opening an
+external file. Successful parsing must not automatically authorize activation.
+
+\item[Memory corruption / memory safety.]
+Memory corruption changes or accesses memory outside the program's intended
+rules. Memory safety prevents classes such as out-of-bounds access,
+use-after-free, double-free, and invalid lifetime use. A memory-safe language
+reduces many such defects but does not prevent resource exhaustion, logic
+errors, unsafe foreign code, or policy failures.
+
+\item[Memory leak.]
+Allocated memory that is no longer usable but has not been released. Repeated
+leaks can exhaust a process even when no individual access crosses a memory
+boundary.
+
+\item[Metadata / semantic metadata / structural metadata.]
+Metadata describe data. Semantic metadata convey meaning, such as names,
+attributes, units, provenance, or enumeration labels. Structural metadata
+describe organization and storage, such as hierarchy, shapes, layouts, chunk
+indexes, filters, addresses, and references. Either can be sensitive.
+
+\item[Metadata cache / cache image.]
+The metadata cache retains decoded HDF5 metadata in memory. A cache image is a
+serialized representation used to accelerate a later open. Both manage
+interrelated structures whose corrupted sizes, ranks, or lifetimes can affect
+parser and recovery paths.
+
+\item[Migration / repair / regeneration.]
+Migration transforms data to a supported representation. Repair changes an
+existing artifact to restore a defined valid state. Regeneration recreates it
+from an authoritative source. Each must be deterministic, preserve provenance,
+and state how checksums and meaning change.
+
+\item[Mitigation / treatment.]
+An action intended to reduce likelihood, exposure, or impact, or to avoid,
+transfer, contain, or recover from a scenario. A proposed mitigation is not
+treated as effective until acceptance evidence supports it.
+
+\item[Model artifact / model loader.]
+A stored machine-learning model, weights file, or related package and the
+software that reconstructs it. An HDF5 container can hold application-level
+instructions or objects whose security semantics are defined by the loader,
+not by HDF5 alone.
+
+\item[Named VFD families.]
+SEC2 and STDIO use ordinary local-file mechanisms; Core uses memory; Family,
+Split, Multi, and Subfiling distribute one logical file across physical files;
+MPI-I/O supports parallel access; ROS3 reads object storage; and Mirror, Log,
+and Onion add replication, logging, or history. These names identify storage
+behavior, not general meanings of words such as ``core'' or ``family.''
+
+\item[Normative / informative / implementation-defined.]
+Normative text states requirements for conformance. Informative text explains
+without imposing a requirement. Implementation-defined behavior is deliberately
+left to an implementation but should be documented with its compatibility
+consequences.
+
+\item[Null dereference.]
+Attempting to access memory through a null pointer. The usual result is a crash,
+but the precise consequence depends on the code and platform.
+
+\item[Object header / superblock / B-tree / free-space metadata.]
+Internal on-disk structures used to describe an HDF5 file. The superblock
+identifies global file properties; object headers hold messages describing
+objects; B-trees index records; free-space metadata tracks reusable regions.
+These structures are parser inputs even though most users never manipulate
+them directly.
+
+\item[Object store.]
+A storage service that addresses data as named objects rather than ordinary
+filesystem byte streams. S3-compatible stores are examples; their credentials,
+network requests, copies, logs, and consistency behavior become part of the
+deployment boundary.
+
+\item[On-disk.]
+Stored in the serialized file representation rather than existing only in
+program memory. On-disk metadata remain input-controlled when a file comes from
+an untrusted source.
+
+\item[Open handle / immutable file identity.]
+An open handle is a process reference to an already opened file or resource.
+Binding validation and later use to the same handle, or to a cryptographically
+or otherwise reliably verified immutable identity, prevents a path from being
+swapped to different bytes between the two steps.
+
+\item[Open or processing profile.]
+The report proposes named bundles of policy choices and resource limits for
+opening or processing a file, with design targets such as legacy,
+\emph{trusted-fast}, \emph{untrusted-strict}, or forensic. These names are not
+current HDF5 guarantees; a profile becomes useful only when the relevant APIs
+and runtime paths enforce it.
+
+\item[Oracle.]
+A source of expected answers used in testing, such as a validator that labels a
+fixture valid or invalid. An oracle can expose a disagreement but must itself
+be reviewed; its answer is not automatically the governing specification.
+
+\item[Parser.]
+Code that reads bytes and constructs meaning from their structure. Because
+HDF5 is a complex binary format, its library and tools contain many interacting
+parsers for metadata and data descriptions.
+
+\item[Path traversal / path confinement.]
+Path traversal uses components such as \code{..} or absolute paths to escape an
+intended directory. Confinement ensures resolved external resources remain
+under an explicitly permitted root after normalization and resolution.
+
+\item[Payload.]
+The primary data values a user intends to store, as distinguished from
+metadata, structure, indexes, logs, caches, and other context. Payload-only
+protection can therefore leave substantial information exposed.
+
+\item[Penetration test / exploit development / source review.]
+A penetration test actively attempts to compromise a system. Exploit
+development turns a weakness into a reliable attack technique. Source review
+examines code for defects or assurance gaps. This report is a targeted
+technical examination and does not claim exhaustive performance of any of
+these activities.
+
+\item[Plugin.]
+Code loaded to extend a program without rebuilding it. HDF5 filter, VOL, and
+some VFD extensions can be plugins. A plugin is executable code, not inert
+file data, and normally runs with the host process's authority.
+
+\item[Poisoned or suspect file state.]
+A proposed durable indication that a write failure may have left a file unsafe
+to trust. Clearing such a state would require a defined diagnostic and recovery
+procedure rather than an ordinary reopen.
+
+\item[Precondition.]
+A fact that must hold for a scenario to occur, such as a feature being enabled,
+the process having access to a target, or an affected version being deployed.
+Preconditions shape exposure; they are not implementation-effort factors.
+
+\item[Preflight validator / enforcement coupling.]
+A preflight validator inspects a file before expensive allocation,
+deserialization, plugin activation, or external access. Its result is advisory
+unless it is bound to the same immutable file identity or open handle and the
+same policy is rechecked at side-effect boundaries.
+
+\item[Preservation object.]
+Everything that must be retained to make archived information accessible and
+interpretable. It may be a self-contained HDF5 file, or it may also require
+external stores, codecs, connector behavior, configuration, schemas, test
+vectors, credentials policy, and a reproducible reader environment.
+
+\item[Primary artifact / primary evidence.]
+The source closest to the fact being established, such as the specification,
+affected source and fix, test result, vendor advisory, or first-party incident
+record. A primary source can still be incomplete or wrong and must be bounded
+to what it actually shows.
+
+\item[Primary assessment object / boundary case study / contextual reference.]
+The primary object is directly assessed. A boundary case study assesses only a
+defined interaction with that object. A contextual reference explains the
+surrounding ecosystem without making an audit conclusion about the referenced
+product. See also \emph{Assessment surface / scope level}.
+
+\item[Privacy.]
+Protection against adverse consequences from disclosure, retention, inference,
+aggregation, correlation, surveillance, or secondary use of information.
+Privacy harm can occur during authorized, technically correct operation and is
+not limited to a security breach or legal compliance question.
+
+\item[Privilege escalation.]
+Gaining authority beyond what the initiating user or process was intended to
+have. Loading code through a path writable by a lower-privileged user can let
+that code execute with a higher-privileged process's permissions.
+
+\item[Profile.]
+A named bundle of assumptions or settings. The report uses the word for
+security/open policy, build configuration, producer/consumer compatibility,
+deployment scope, and archival requirements. These profiles answer different
+questions and are not interchangeable.
+
+\item[Property list.]
+An HDF5 API object that carries configuration for operations such as opening a
+file, creating a dataset, selecting a driver, or loading external resources.
+Several proposed security controls are expressed as properties so policy can
+be bound to the relevant operation.
+
+\item[Provenance.]
+Evidence of where data or software came from, who or what produced it, which
+versions and transformations were involved, and how custody changed. A valid
+signature can support provenance but does not describe every transformation or
+prove correctness.
+
+\end{description}
+
+\subsubsection{Q--Z}
+\label{glossary:qz}
+
+\begin{description}[leftmargin=1.5em,style=nextline]
+
+\item[Rank / dimension / shape / extent.]
+Rank is the number of axes in an HDF5 dataspace. Dimensions give the size along
+those axes; their ordered values form the shape or current extent. These
+file-declared values must be checked before a consumer allocates an array.
+
+\item[Rating status: Rated, Provisional, NE, and N/A.]
+Rated means the evidence supports the impact, exposure, and tier. Provisional
+means those can be estimated but material uncertainty remains. NE means a
+required rating input is insufficient, and N/A means the item is not
+risk-bearing. Only Rated and Provisional records carry report-wide tiers.
+
+\item[Reader acceptance.]
+The observed fact that one reader opens or processes a file. Acceptance does
+not by itself prove specification conformance, internal consistency, safe
+deployment, or acceptance by another version or implementation.
+
+\item[Reader / writer / producer / consumer.]
+A writer or producer creates an HDF5 artifact; a reader or consumer interprets
+it. The terms can refer to libraries, tools, applications, or independently
+implemented software, and each exact version and profile matters.
+
+\item[Recommendation.]
+A proposed control outcome identified separately from a finding. Its number
+does not encode risk, urgency, effort, dependency, or implementation sequence.
+
+\item[Recovery / recoverability.]
+The ability and documented procedure to return data or service to a known,
+usable state after failure. Reopening a file is not sufficient evidence if it
+silently returns incorrect data.
+
+\item[Recurrence / prevalence.]
+Recurrence is repeated observation of a mechanism or event. Prevalence is how
+widely it exists in the relevant installed population. Several CVEs can show a
+recurring class without establishing current deployment prevalence.
+
+\item[Reference implementation.]
+The implementation maintained as the principal realization of a specification.
+It is important evidence and often defines practical compatibility, but its
+behavior does not override a clear normative requirement without an
+authoritative specification decision.
+
+\item[Regression / regression test.]
+A regression is the return of a previously corrected defect or an unintended
+loss of supported behavior. A regression test is a permanent, preferably
+small test intended to detect that return. Stricter rejection of invalid input
+is not automatically a regression.
+
+\item[Re-identification / secondary use.]
+Re-identification connects data thought to be anonymous or de-identified to a
+person or entity. Secondary use applies information for a purpose beyond the
+one for which it was collected or shared. Both can create privacy harm without
+breaking file encryption or access controls.
+
+\item[Release build / debug build.]
+A release build is configured for supported distribution and commonly disables
+assertions or adds optimization. A debug or assertion-enabled build favors
+diagnostics. Security-relevant behavior must be tested in the configurations
+users actually receive, including paired assertion-enabled and
+\code{-DNDEBUG} builds. A \emph{supported release} is instead a shipped version
+within the project's support policy; the two phrases are not interchangeable.
+
+\item[Reproducible build / reproducible environment.]
+A reproducible build can be recreated from recorded source, tools, dependencies,
+and instructions with a defined matching result. A reproducible environment
+preserves enough of the runtime stack to execute or reimplement a dependency
+later. Either claim must state what is reproduced and how equality is tested.
+
+\item[Residual risk: current and target.]
+Current residual risk is what remains after verified existing controls. Target
+residual risk is a projection for proposed controls and is not achieved until
+acceptance criteria pass. Neither replaces the inherent-risk rating.
+
+\item[Resource budget.]
+See \emph{Allocation / resource budget}. A useful budget is an enforced bound
+over the relevant aggregate work or resource use, not merely a per-field size
+check.
+
+\item[Response urgency / response clock.]
+The report-assigned treatment lane---Immediate, Near-term, Planned, or
+Monitor---and its target horizon. Urgency considers current residual risk, time
+to harm, exploitation or recurrence, and risk tolerance; dependencies and
+effort may shape delivery but do not lower it. These are assessment
+recommendations, not stakeholder-approved commitments until adopted and
+assigned.
+
+\item[Risk / risk rubric / risk tier.]
+Risk is the possibility and consequence of a stated adverse scenario. The
+rubric is this report's decision method; it combines ordinal impact and
+exposure through a matrix to yield Low, Moderate, High, or Critical. A tier
+belongs to a bounded scenario, not to a CVE count, recommendation, technology,
+or project. A range such as Moderate--High remains a range even when response
+is conservatively routed at its upper bound.
+
+\item[Risk acceptance / risk owner / risk tolerance.]
+Risk acceptance is an accountable decision to retain verified remaining risk.
+The risk owner has authority to make or escalate that decision. Risk tolerance
+states how much risk an organization permits; silence, an expired exception, or
+an unfinished mitigation is not acceptance.
+
+\item[Root cause / symptom / consequence.]
+The root cause is the earliest evidenced failure that explains an event, such
+as accepting an invalid file-derived size. A crash or buffer overflow may be a
+symptom or consequence. Fixing one symptom does not prove elimination of the
+root-cause class or sibling paths.
+
+\item[Runtime check.]
+A condition evaluated while the deployed program runs. A security-relevant
+runtime check must be present in supported release builds and return a
+controlled error when it fails.
+
+\item[Safety.]
+Operational robustness and protection of integrity, availability,
+recoverability, interoperability, and long-term accessibility without assuming
+a malicious actor. It does not mean regulated physical or functional safety in
+this report.
+
+\item[Sandbox.]
+An enforced environment that restricts what a process can read, write, execute,
+or contact. A temporary directory alone is not a sandbox; the actual
+filesystem, network, credential, and process boundaries must deny access.
+
+\item[Sanitizer.]
+Instrumentation that detects selected runtime errors during tests. ASan,
+UBSan, and LSan cover different classes. A sanitizer-clean corpus is useful
+evidence but cannot prove absence of all defects or policy failures.
+
+\item[Scope tag.]
+A label identifying where a CVE or condition belongs, such as core parser,
+official tool, plugin loading, external resource, or downstream
+deserialization. It supports triage but assigns neither a rating nor priority.
+
+\item[Search path.]
+See \emph{Current working directory / search path}. The order and ownership of
+locations searched for external files or loadable code can determine which
+resource the process actually uses.
+
+\item[Security.]
+Protection against an adversary compromising confidentiality, integrity, or
+availability, or causing a process to exercise authority contrary to the
+operator's intent. A security consequence can arise from a parser defect or
+from unsafe use of an intentional capability.
+
+\item[Security advisory.]
+A published notice about a security issue, often stating affected versions,
+impact, and treatment. Advisory identifiers such as a CVE or GHSA help locate
+records; the underlying evidence and applicability still require review.
+
+\item[Security profile.]
+An enforceable bundle of feature policy and limits appropriate to a trust
+context. The proposed untrusted-HDF5 profile denies unnecessary external and
+executable capabilities and bounds parsing, traversal, output, and allocation.
+
+\item[Segmentation fault / crash.]
+A segmentation fault is process termination commonly caused by an invalid
+memory access. A crash is any unexpected process termination. Either is an
+observable failure, not by itself proof of root cause or reliable
+exploitability.
+
+\item[Selection / hyperslab / point selection.]
+A selection identifies which elements of a dataspace participate in an I/O
+operation. A hyperslab describes regular blocks with offsets, strides, counts,
+and block sizes; a point selection lists individual coordinates. Selections
+can drive large work or allocations and therefore require bounds checking.
+
+\item[Self-describing data.]
+Data that carry structural information needed to decode them, such as
+data\-types, data\-spaces, names, attributes, and relationships. HDF5 can also
+carry semantic metadata, but \emph{self-describing} does not guarantee that all
+context needed to interpret the scientific meaning is present. The included
+metadata can itself disclose sensitive context.
+
+\item[Sensitive information.]
+Information whose disclosure, inference, retention, or use can harm people,
+organizations, research, operations, or obligations. Sensitivity is contextual
+and can reside in metadata, structure, access patterns, and derived results as
+well as payload values.
+
+\item[Serialization.]
+Turning an in-memory value or object into bytes for storage or transfer; the
+reverse operation is deserialization. See also \emph{Decode / encode} and
+\emph{Deserialization}.
+
+\item[Side effect.]
+An externally observable action beyond constructing a value in memory, such as
+opening another file, loading code, making a network request, writing a cache,
+allocating a large buffer, or invoking a callback. Validation does not by
+itself authorize a side effect.
+
+\item[Software license.]
+The legal terms governing use, modification, and distribution of software.
+The report's GPLv3-or-later versus permissive BSD-style discussion is a reuse
+and provenance constraint, not a security rating; legal review may be required
+before incorporating code or generated artifacts.
+
+\item[Specification / normative ambiguity / adjudication.]
+A specification defines the format's requirements. A normative ambiguity
+exists when those requirements permit materially competing interpretations.
+Adjudication is the authoritative decision that identifies the correct rule,
+the artifact to change, or an explicitly implementation-defined boundary.
+
+\item[Stack.]
+In ordinary code execution, the stack holds call frames and many local values;
+deep recursion can exhaust it, and a stack buffer can be overrun. In extension
+chapters, a \emph{connector stack} instead means multiple layered VOL
+connectors.
+
+\item[Static analysis / dynamic testing.]
+Static analysis examines source or binaries without executing the target
+program; dynamic testing runs it with selected inputs. They find overlapping
+but different problems, and evidence from one should not be described as if it
+came from the other.
+
+\item[Storage exhaustion.]
+Running out of space or quota while writing, flushing, or closing a file. An
+operation can report failure yet still leave uncertain durable state, which is
+why monitoring, headroom, error signaling, and recovery are separate controls.
+
+\item[Storage layout.]
+The principal dataset layouts are compact (raw data in the object header),
+contiguous (one continuous region in the HDF5 address space), chunked
+(separately indexed blocks), and virtual (mappings to source datasets).
+External raw storage is a form of contiguous layout that places bytes in one or
+more external files. Layout affects performance, compatibility, and security
+policy.
+
+\item[Supply chain.]
+The people, source, dependencies, build systems, automation, packages,
+distributors, and downstream consumers through which software is produced and
+delivered. Supply-chain integrity does not by itself establish parser safety or
+deployment compatibility.
+
+\item[Supported release / affected version.]
+A supported release is a shipped version still covered by the maintainer's
+support policy. An affected version is one for which evidence establishes the
+relevant condition. Development-tree behavior, an unspecified older version,
+and a supported affected release are different claims.
+
+\item[Threat model.]
+A structured description of assets, actors, trust boundaries, capabilities,
+assumptions, attack mechanisms, and consequences. It helps enumerate scenarios
+but does not automatically assign this report's risk ratings.
+
+\item[Tranche.]
+A bounded, independently deliverable subset of a larger migration or assurance
+program, such as one family of on-disk structures. Tranches support staged
+implementation; their order does not create a risk rating.
+
+\item[Triage.]
+The initial classification and routing of a report or record: determining
+scope, affected versions, duplicates, reachability, owner, and next evidence or
+treatment action. Triage is not the same as remediation or risk acceptance.
+
+\item[Trust boundary / trusted computing base.]
+A trust boundary is where data or control passes between parties or components
+with different authority or assumptions. The trusted computing base is the set
+of hardware, software, configuration, and people whose correct behavior the
+security property depends on. In-process plugins normally join it.
+
+\item[Trusted.]
+A context-dependent claim that may refer to an input source, verified
+provenance, code admitted to the trusted computing base, or the proposed
+\emph{trusted-fast} processing profile. It does not automatically mean
+conforming, harmless, confidential, or free of defects.
+
+\item[Type confusion.]
+Using a value or memory object as though it had an incompatible type. This can
+produce incorrect interpretation, invalid memory access, or corruption even
+when the underlying bytes are within an allocated region.
+
+\item[Undefined behavior.]
+A C/C++ operation for which the language standard imposes no required result.
+It can appear to work in one build and fail, corrupt memory, or be optimized in
+surprising ways in another.
+
+\item[Uninitialized value.]
+Memory or a variable used before the program has assigned a valid value. Its
+contents are indeterminate and can affect addresses, sizes, control flow, or
+output.
+
+\item[Use-after-free / double-free.]
+Use-after-free accesses an object after its storage has been released.
+Double-free releases the same storage twice. Both are memory-lifetime errors
+that can cause crashes, corruption, or, in some conditions, code execution.
+
+\item[User block.]
+An optional area at the beginning of an HDF5 file reserved for application
+content. It can contain arbitrary bytes, including scripts, XML, identifiers,
+or other sensitive information not visible in an ordinary dataset listing.
+
+\item[Valid.]
+An overloaded word that must be qualified. Bytes can be syntactically
+decodable, internally consistent, specification-conforming, accepted by a
+particular reader, and authorized under an application's policy---or only some
+of these. None of the first four alone proves safe deployment.
+
+\item[Validation scope: record, object, and graph.]
+Record-local validation checks one decoded structure. Object-wide validation
+checks relationships across all records forming an object. Graph validation
+checks references, cycles, aggregate limits, and relationships across objects.
+A file can pass the first scope and fail a wider one.
+
+\item[Vendored library.]
+A copy of a dependency included and maintained inside another project's source
+or package. Users may not realize they are running it, and system-library
+updates may not replace it.
+
+\item[Version-and-path gap.]
+The report's term for missing evidence about which versions contain a defect,
+which real entry paths reach it, and which versions or commits fix it. Until
+that gap is closed, a CVE history cannot be treated as an installed-population
+applicability list.
+
+\item[Vulnerability.]
+See \emph{Defect / weakness / vulnerability}. A bug, assertion site, feature,
+or CVE mention is not enough by itself to establish a vulnerability in every
+version or deployment.
+
+\item[Whole-file / payload-only protection.]
+Payload-only protection covers primary data values but may leave names,
+attributes, shapes, filter settings, links, and internal structure readable.
+Whole-file or equivalent all-metadata protection covers the serialized file at
+the stated boundary, but still does not prevent post-decryption inference,
+authorized misuse, logs, caches, key loss, or uncontrolled copies.
+
+\item[Work package / roadmap phase.]
+A planned bundle of implementation and evidence work with an owner, dependency,
+effort, target, and acceptance condition. Its phase is a delivery construct and
+does not assign or alter a finding's risk tier.
+
+\item[Workflow artifact.]
+An output created around the primary data, such as a log, redirected command
+output, cache, temporary file, converted copy, snapshot, crash dump, or derived
+dataset. These artifacts can change the security, privacy, and preservation
+boundary.
+
+\end{description}
+
+\end{document}
