@@ -47,26 +47,25 @@ parser, validator, writer, and support libraries. Its working assumption that
 closed rather than being silently ignored or guessed} is the specific standard
 against which the two 2026 cases below are best read.
 
-\paragraph{Why the count matters.}
-The number of independent implementations is not a curiosity; it changes the
-character of specification risk. With a single implementation, an ambiguity in
-the format is invisible, because that implementation's behaviour is
-operationally indistinguishable from the format itself --- there is nothing for
-it to disagree with. With five or nine, \textbf{every ambiguity is resolved
-independently once per implementation}, and each unresolved ambiguity becomes a
-latent divergence that surfaces only when files cross implementation
-boundaries. That is precisely when the data is least recoverable and the
-diagnosis hardest, because the failure appears as a reader defect rather than
-as the specification defect it is.
+\paragraph{Why multiple implementations matter.}
+Independent implementations create observable comparisons between the prose
+specification, the reference library, and separately developed readers and
+writers. A difference does not by itself identify which artifact is wrong, but
+it exposes a question that a single implementation may leave hidden until files
+cross an implementation boundary. The consequence can then present as a reader
+or writer failure even when the underlying problem is a reference-library
+divergence or an unresolved normative ambiguity.
 
-This is the mechanism behind \code{FMT-SAF-001}. Both documented instances ---
-issues \#6409 and \#6616 --- were found by an independent implementation
-exercising a construct and diverging from the reference library, not by reading
-the specification. Independent implementations are therefore currently the
-ecosystem's only conformance test, and what they are detecting is not confined
-to their own defects: they are finding errors in the reference library and in
-the specification. That is a strength of the ecosystem and an indictment of the
-normative artifact at the same time.
+The two relevant 2026 issues illustrate different outcomes and must not be used
+interchangeably. In issue \#6409 the published requirement was sufficiently
+clear to decide the dispute: the reference reader imposed an extra condition
+and was changed. In issue \#6616 the published optionality and reference-library
+behavior still admit competing interpretations, and no authoritative ruling has
+selected one. Only the latter unresolved adjudication and governance condition
+is the bounded observation recorded as evidence-backlog item
+\code{FMT-SAF-001}. The former remains
+evidence for the separately registered implementation divergence
+\code{IND-SAF-001}.
 
 Independent readers and writers are valuable checks on both the prose
 specification and the reference implementation. They also expose a three-way
@@ -98,7 +97,7 @@ output to match the reference reader's expectation
 \cite{purehdf-gh-issue-168,purehdf-pr-160} --- a rational local decision with a
 corrosive global effect, since converging on the reference implementation
 rather than on the specification is how a specification quietly stops being
-normative. \code{FMT-SAF-001} records that dynamic.
+normative. The conformance answer in this case was nevertheless determinable.
 Formal finding \code{IND-SAF-001} records the historical reader-side
 interoperability risk; issue closure is not, by itself, verification of every
 release artifact or backport. In H5II terms this is \textbf{I1}, parser/spec
@@ -133,35 +132,43 @@ writer emits bytes that are only self-consistent to itself and a permissive
 reader conceals it until a stricter one does not.
 
 
-\subsection{When the Specification Itself Is the Defect}
+\subsection{When a Normative Ambiguity Remains Unresolved}
 
-The two chunk-layout cases above are divergences with a determinable answer:
-once examined, it was clear which party was wrong. A third case shows that this
-is not guaranteed.
+The two chunk-layout cases above have determinable answers: once examined, the
+published requirement and the bytes were sufficient to identify whether the
+reader or writer was wrong. A third case shows that a divergence can instead
+remain unresolved because the normative text and reference behavior support
+competing dispositions.
 
 HDF5 issue \#6616 records that the file-format specification documents the
 group info message as \emph{optional}, while the C library raises a ``message
 type not found'' error when it is absent and consequently cannot modify a file
 written without one. The reporter --- again an independent-implementation
-maintainer, again working from a PureHDF change --- sets out the two available
+maintainer, again working from a PureHDF change --- sets out two candidate
 resolutions: the library should fall back to default group-info values, or the
 specification should be corrected to state that the message is required. At the
 evidence cutoff the issue is open, labelled a documentation bug, assigned, and
 milestoned, with no ruling recorded~\cite{hdf5-gh-issue-6616}.
 
-Until that ruling exists, \textbf{it is not determinable whether a file without
-a group info message conforms}. This matters beyond the individual case for two
-reasons. First, it is a limitation of this report's own method: the conformance
+Until that ruling exists, \textbf{this report cannot determine whether omission
+of the group info message conforms when the reference library is asked to
+modify the file}. The bounded observation is the unresolved dispute and the
+demonstrated library behavior, not a conclusion that the whole format is
+indeterminate. This is also a limitation of the report's method: the conformance
 analysis in Section~\ref{sec:assessment-methodology} distinguishes the
 normative requirement from writer behaviour and reader validation, and here the
-normative requirement is exactly what is in dispute. Second, it shows that the
-missing control is not only a better artifact but a \emph{procedure} --- who
-rules, on what timeline, and where the ruling is recorded. A machine-readable
-specification would have forced the question earlier by making the optionality
-explicit and testable; it would not, by itself, have answered it.
+authority needed to settle that distinction has not yet ruled. The missing
+control is therefore both an artifact that makes competing interpretations
+testable and a procedure that states who rules, on what timeline, which
+outcomes are permitted, and where the ruling is recorded. A machine-readable
+description could expose the question earlier; it would not select the answer
+without an adjudication decision.
 
-The condition is registered as \code{FMT-SAF-001} in
-Appendix~\ref{app:findings-register} and treated by \code{FMT-S1} below.
+The bounded \#6616 adjudication and governance gap is recorded as
+evidence-backlog item \code{FMT-SAF-001} in
+Appendix~\ref{app:findings-register} and addressed by \code{FMT-S1} below. It
+does not receive a tier until an affected population and adverse consequence
+are bounded.
 
 \subsection{Audit Findings and Mitigation Planning}
 
@@ -174,16 +181,19 @@ produced by different HDF5 releases. This architectural observation is not
 assigned a risk tier without a concrete affected workflow. The H5II model's
 \code{II-\#\#\#} review register is the natural instrument for working through
 that long tail feature by feature, and \code{IND-S1} below supplies the
-fixtures it would need. The two bounded
-formal findings are \code{IND-SAF-001} and \code{IND-SAF-002} in
-Appendix~\ref{app:findings-register}; the condition that produces them is
-registered separately as \code{FMT-SAF-001}.
+fixtures it would need. The two bounded chunk-layout findings are
+\code{IND-SAF-001} and \code{IND-SAF-002} in
+Appendix~\ref{app:findings-register}. The unresolved group-info-message dispute
+is separately recorded in the evidence backlog as \code{FMT-SAF-001}; it is not
+a class-level rating assigned to every implementation divergence.
 
 \paragraph{Priority reconciliation.}\mbox{}\\
-\code{FMT-SAF-001} is routed Near-term, and its Near-term obligation is narrow:
-rule on the disputes already identified, record each ruling, and change
-whichever artifact was wrong. That is a small, bounded action with a named
-owner in at least one case, and it is not contingent on \code{FMT-S1}.
+\code{FMT-SAF-001} has no inherent-risk response urgency. It has a 90-day
+administrative assurance target: rule on the \#6616 dispute, record the ruling,
+and change the artifact that the ruling identifies or document the construct as
+implementation-defined with explicit compatibility behavior. That bounded
+action has a named owner and is not contingent on completing \code{FMT-S1}; the
+90-day target does not imply a risk tier.
 \code{IND-SAF-001} and \code{IND-SAF-002} are Moderate and follow the Planned
 route; neither is ordered
 ahead of the other by issue chronology or recommendation numbering. Phase~2
@@ -206,13 +216,15 @@ fail in different ways if either is attempted alone.
 \paragraph{The artifact.}
 Maintain the normative file-format description in a machine-readable form from
 which validators and fixtures can be generated, rather than only as prose. The
-argument is not tooling convenience. \textbf{Prose can be silently ambiguous;
-an executable description cannot.} Writing ``the group info message is
-optional'' in a form that must generate a valid file and validate one forces
-the question that issue \#6616 is currently suspended on --- optional to write,
-optional to read, or optional only when some other condition holds. The
-existing \code{hdf5-pickles} work is the obvious foundation, and it is already
-an independent implementation in its own right rather than only a fixture
+argument is not tooling convenience: executable descriptions make assumptions
+observable through generated examples and validation results. They can still
+encode an incorrect choice or preserve an ambiguity, so they complement rather
+than replace review and adjudication. Encoding ``the group info message is
+optional'' forces the project to state whether that means optional to write,
+optional to read, optional only under a stated condition, or
+implementation-defined with documented compatibility consequences. The
+existing \code{hdf5-pickles} work is a candidate foundation and an independent
+implementation in its own right rather than only a fixture
 generator~\cite{hdf5-pickles}.
 
 Two constraints on that foundation. It is GPLv3 while HDF5 is BSD-style, so
@@ -240,12 +252,14 @@ prose.
 
 \noindent\textbf{Acceptance evidence.}
 For a declared subset of the format --- not the whole format, which is a
-multi-release scope --- the machine-readable description generates valid
-fixtures that the reference library accepts and invalid fixtures it rejects,
-and any divergence is either an identified library defect or an identified
-description defect, with no third category. Every dispute raised in the
-tracking period has a recorded disposition naming the authoritative artifact
-and the change made, and the elapsed time from report to ruling is published.
+multi-release scope --- the machine-readable description generates valid and
+invalid fixtures with stated expected outcomes. Every observed divergence has
+a recorded adjudication: library defect, description defect, or an explicitly
+implementation-defined construct with documented reader/writer compatibility
+behavior. Every dispute raised in the tracking period has a recorded
+disposition naming the authoritative artifact or implementation-defined
+boundary, the resulting change or compatibility rule, and the elapsed time from
+report to ruling.
 A dispute closed by an implementation changing its output to match the
 reference library, without a ruling on which artifact was authoritative, is
 recorded as \emph{unresolved} rather than closed.

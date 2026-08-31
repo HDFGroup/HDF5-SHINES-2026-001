@@ -81,7 +81,8 @@ payload-only protection. & Privacy & I2--I3/E2 & Moderate--High & Provisional & 
 
 \code{CORE-SAFE-001} &
 Storage exhaustion during write or close leaves an incomplete or corrupted
-file, with no library mechanism to detect or recover. & Safety & I2--I3/E3 &
+file after the operation reports failure, with no defined recovery or
+poisoned-file protocol. & Safety & I2--I3/E2 &
 Moderate--High & Provisional & Low \\
 
 \code{CORE-SAFE-002} &
@@ -90,9 +91,8 @@ corrupted or not reopenable. & Safety & I2--I3/E3 & Moderate--High &
 Provisional & Low \\
 
 \code{LONG-SAF-001} &
-An archived file becomes unreadable or uninterpretable because a required
-filter, VFD, or VOL connector is no longer available. & Safety & I2--I3/E2 &
-Moderate--High & Provisional & Low \\
+An archived dataset becomes unreadable because a required non-core filter is
+no longer available. & Safety & I2/E2 & Moderate & Provisional & Low \\
 
 \code{APP-SEC-001} &
 The affected Hugging Face dataset service followed attacker-selected external
@@ -114,11 +114,6 @@ exhausts memory. & Security & I2/E3 & Moderate & Rated & High \\
 TensorFlow 2.17.0 loads HDF5 plugins from an uncontrolled search location,
 enabling local privilege escalation. & Security & I3/E2 & High & Rated & Moderate \\
 
-\code{FMT-SAF-001} &
-The normative specification is incomplete, ambiguous, or contradicted by the
-reference implementation, so conformance is not determinable. & Safety &
-I2--I3/E2--E3 & Moderate--High & Provisional & Moderate \\
-
 \code{IND-SAF-001} &
 HDF5 2.0/2.1 exact-width validation rejects a sufficient but nonminimal chunk
 encoding permitted by the specification. & Safety & I2/E2 & Moderate & Rated & High \\
@@ -133,9 +128,10 @@ that HDF5 2.0 rejects after upgrade. & Safety & I2/E2 & Moderate & Rated & High 
 \subsection{Correspondence with the SSP SIG Registries}
 \label{sec:findings-ssp-crosswalk}
 
-Table~\ref{tab:findings-ssp-crosswalk} relates each record above to the SSP SIG
-threat, hazard, and privacy registries. Three cautions govern its use, and all
-three are load-bearing.
+Table~\ref{tab:findings-ssp-crosswalk} relates the formal findings and
+evidence-backlog records maintained in this appendix to the SSP SIG threat,
+hazard, and privacy registries. Three cautions govern its use, and all three are
+load-bearing.
 
 First, this is an \textbf{editorial correspondence established by this report}.
 Neither project has adopted it, and a row asserts only that the two records
@@ -187,8 +183,9 @@ scope and evidence base. The decomposition is the better basis for the
 \code{CORE-SEC-002} &
 \code{ATK-009}, \code{ATK-010}, \code{ATK-012} &
 Resource exhaustion, null and uninitialized dereference, and I/O amplification
-from pathological chunk layouts. The promoted assert-only instance sits under
-\code{ATK-010}. \\
+from pathological chunk layouts. The development-tree assert-only case tracked
+under \code{CORE-SEC-003} corresponds to \code{ATK-010} but is not part of this
+finding's rated population. \\
 
 \code{CORE-TOOL-001} &
 \code{ATK-007} (mechanism only) &
@@ -203,8 +200,9 @@ comparable bands. \\
 \code{CORE-SAFE-001} &
 \code{HAZ-005} &
 Same scenario. The registry supplies a hazard analysis and rating; this report
-declines to rate pending \code{RM-2D} measurement. See
-Table~\ref{tab:haz-crosswalk}. \\
+rates the bounded scenario Moderate--High, Provisional, with Low confidence;
+\code{RM-2D} measures durable-state and recovery outcomes and may change that
+assessment. See Table~\ref{tab:haz-crosswalk}. \\
 
 \code{CORE-SEC-003} &
 \code{ATK-010} (partial) &
@@ -219,9 +217,10 @@ around flush semantics, concurrency, and recovery tooling is not separately
 rated here. \\
 
 \code{LONG-SAF-001} &
-\code{HAZ-014} (partial) &
-The registry covers missing filter plugins. Neither registry covers VFD or VOL
-archival dependency; that scope originates here. \\
+\code{HAZ-014} &
+Same missing-filter portability mechanism, assessed here at an explicit
+ten-year-or-more archival horizon. VFD and VOL archival dependencies remain
+outside this rated record. \\
 
 \code{APP-SEC-001} &
 No direct counterpart &
@@ -252,8 +251,8 @@ Table~\ref{tab:ssp-divergence}. \\
 \code{FMT-SAF-001} &
 No direct counterpart &
 The hazard model has an \code{H6} parser-ambiguity family and H5II has
-\textbf{I1} parser/spec divergence, but neither registry rates defects in the
-normative artifact itself. \\
+\textbf{I1} parser/spec divergence, but neither registry records the unresolved
+normative-artifact question represented by this evidence-backlog item. \\
 
 \code{IND-SAF-001}, \code{IND-SAF-002} &
 No direct counterpart &
@@ -320,9 +319,11 @@ mechanism and representative sites, not their runtime consequences
 ~\cite{hdf5-pickles-issue-87,hdf5-assert-build-config-2026,
 hdf5-assert-chunk-record-2026,hdf5-assert-extensible-array-2026,
 hdf5-assert-fractal-heap-2026}.
-\textbf{One instance has been promoted} into \code{CORE-SEC-002} on reported
-reproduction: a v2 B-tree \code{record\_size} of zero reaching an integer
-division, \code{SIGFPE} on a release build~\cite{h5policy-case-v2btree-recordsize}.
+One v2 B-tree \code{record\_size} case advances the evidence without closing
+the supported-release gap: its source-reported reproduction records
+\code{SIGFPE} on an \code{-DNDEBUG}, release-configured HDF5 2.3.0 development
+tree, but explicitly records no 32-bit measurement and no affected supported
+version or version range~\cite{h5policy-case-v2btree-recordsize}.
 A second candidate is reported for the cache-image LRU rank relation without a
 measured release-build consequence~\cite{h5policy-case-mdci-lru}. The remaining
 population is unquantified, and this record stays open. &
@@ -332,9 +333,22 @@ reachability, first security-relevant sink, paired debug and \code{-DNDEBUG}
 fixture result, affected versions, and consequence. Promote each supported
 adverse-event scenario into \code{CORE-SEC-001}, \code{CORE-SEC-002}, or a new
 formal finding as the evidence requires; a redundant or unreachable assertion
-needs a documented negative disposition. Begin from the promoted instance's own
-sibling audit, which names further unaudited assertions in the same B-tree
-header initializer and in fractal-heap initialization. \\
+needs a documented negative disposition. Begin from the measured development-
+tree case's sibling audit, which names further unaudited assertions in the same
+B-tree header initializer and in fractal-heap initialization. \\
+
+\code{FMT-SAF-001} &
+The reference library and the published file-format specification disagree on
+whether the group-info message is optional, and no ruling had been recorded at
+the cutoff. Issue~\#6409 separately demonstrates the value of an independent
+implementation, but not indeterminacy: the published rule settled that case
+and the reader was corrected~\cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432,
+hdf5-gh-issue-6616}. &
+Record an authoritative disposition for issue~\#6616, identify any file or
+workflow whose behavior depends on the disputed rule, and measure the resulting
+access, integrity, or compatibility consequence. Until both an adverse outcome
+and affected population are bounded, this is a format-governance observation,
+not a rated safety finding. \\
 
 \code{EXT-PRIV-001} &
 Extensions can move data and metadata across storage, cache, logging, network,
@@ -403,8 +417,7 @@ historical incident rating is not a current rating of Hugging Face. \\
 
 Near-term---within 30 days & \code{CORE-SEC-001}, \code{CORE-TOOL-001},
 \code{CORE-PRIV-001}, \code{CORE-SAFE-001}, \code{CORE-SAFE-002},
-\code{FMT-SAF-001}, \code{APP-SEC-002}, \code{APP-SEC-003},
-\code{APP-SEC-005} &
+\code{APP-SEC-002}, \code{APP-SEC-003}, \code{APP-SEC-005} &
 Identify affected releases and exposed deployments, apply available fixes or
 containment, minimize disclosed metadata, and verify the trust boundary. For
 the two write-side safety findings the Near-term obligation is \emph{tested
@@ -412,20 +425,17 @@ operational containment} --- capacity headroom and monitoring, flush and
 checkpoint discipline, a rehearsed recovery procedure, and an independent copy
 of data that cannot be regenerated. The library changes in
 \code{CORE-SAFE-S1} and \code{CORE-SAFE-S2} are structural and follow the
-Planned and Phase~3 horizons. For \code{FMT-SAF-001} the Near-term obligation
-is to \emph{adjudicate the already-identified disputes} --- rule on each, record
-the ruling, and change whichever artifact was wrong --- not to build the
-machine-readable specification, which is the Phase~3 programme in
-\code{FMT-S1}. \\
+Planned and Phase~3 horizons. \\
 
 Planned---within 90 days or the next supported release or migration window,
 whichever is sooner & \code{CORE-SEC-002},
 \code{APP-SEC-004}, \code{IND-SAF-001}, \code{IND-SAF-002},
-\code{LONG-SAF-001} (by recorded departure) &
+\code{LONG-SAF-001} &
 Plan treatment and acceptance testing; expedite where an affected production
 pipeline, archive, sensitive-data population, or service is identified.
-\code{LONG-SAF-001} routes here rather than at its Moderate--High upper bound;
-the departure and its rationale are recorded below. \\
+For \code{LONG-SAF-001}, identify the bounded archive corpus and its filter
+dependencies within the clock; longer-term profile and preservation work does
+not extend that first deliverable. \\
 
 \end{longtable}
 \endgroup
@@ -433,30 +443,26 @@ the departure and its rationale are recorded below. \\
 \subsection{Evidence Actions Without Assigned Urgency}
 \label{sec:findings-evidence-actions}
 
-Items \code{CORE-SEC-003}, \code{EXT-PRIV-001}, and \code{SUP-SAFE-001}
+Items \code{CORE-SEC-003}, \code{FMT-SAF-001}, \code{EXT-PRIV-001}, and
+\code{SUP-SAFE-001}
 require the scenario evidence listed in
 Table~\ref{tab:findings-evidence-backlog}. These are evidence actions, not a
 fifth response-urgency category.
 
 \code{CORE-SAFE-001} appeared in this category in an earlier revision and no
-longer does. The change is explained in its record below: the evidence gap was
-misidentified as an absence of knowledge about the library's behaviour when it
-is in fact a documented absence of a mechanism, which bounds the exposure axis
-rather than leaving it open.
+longer does. The cited API behavior and maintainer discussion establish the
+control gap, while the unmeasured frequency and durable-state outcome constrain
+exposure to E2 and keep confidence Low.
 
-\paragraph{Recorded departure from the default routing map for
+\paragraph{Horizon handling for
 \code{LONG-SAF-001}.}
-Section~\ref{sec:risk-rubric} maps a Moderate--High range, routed at its upper
-bound, to \emph{Near-term}. \code{LONG-SAF-001} is routed \emph{Planned}
-instead. Rationale: the finding states a decadal assessment horizon, and
-decision rule 7 forbids directly ordering ratings that use materially different
-horizons against those that do not. The harm accrues gradually, is not acute in
-any identified present deployment, and is prevented by decisions taken at write
-and archive time rather than by an urgent change to a running system. A 30-day
-treatment clock would therefore measure nothing. This departure requires an
-accountable decision at adoption; if an archive is identified whose readers are
-already failing, that scoped instance is expedited and rated without a horizon
-qualifier.
+The I2/E2 Moderate rating maps to \emph{Planned} without a departure. Its
+ten-year-or-more horizon remains material, so decision rule 7 still forbids
+direct ordering against scenarios that state no horizon. The 90-day deliverable
+is a bounded corpus and dependency inventory plus an accountable disposition;
+it is not a claim that decadal preservation can be completed in 90 days. If an
+archive is already failing, that present-tense instance is separately scoped
+and routed without the horizon qualifier.
 
 \subsection{Core Library, Tool, and Format Findings}
 
@@ -518,37 +524,17 @@ present installed population are not established. The file-space repair is one
 direct example of converting an assertion reached from corrupted metadata into
 a controlled error~\cite{commit_804f3ba,cve_hdf5}.
 
-\noindent\textbf{Confirmed instance promoted from \code{CORE-SEC-003}.}
-One assert-masked deserializer invariant has been carried to the standard that
-Section~\ref{sec:risk-rubric} requires for a rated scenario, and is recorded
-here rather than left in the evidence backlog. A version-2 B-tree header
-declaring \code{record\_size == 0} reaches an integer division while the leaf
-record capacity is derived; the only guard is
-\code{assert(cparam->rrec\_size > 0)} in \code{H5B2hdr.c}, which is absent from
-release builds compiled with \code{-DNDEBUG}. The reported measurement records
-\code{SIGFPE} on a shipped \code{h5dump -H} against HDF5 2.3.0, on the public
-API path \code{H5Fopen} $\rightarrow$ \code{H5Gopen2} $\rightarrow$
-\code{H5Gget\_info}, on both x86-64 and i386 builds, with the condition
-re-checked against a later source state~\cite{h5policy-case-v2btree-recordsize}.
-
-This satisfies the three conditions \code{CORE-SEC-003} had left open for its
-population: the assertion is the sole guard, it is release-reachable in a
-supported version, and the adverse outcome is observed rather than inferred.
-Under \code{RM-1E}, a confirmed adverse path is routed by its consequence
-without waiting for the catalog; the consequence here is controlled-process
-termination, which is this record's scenario rather than
-\code{CORE-SEC-001}'s. The instance is therefore promoted into
-\code{CORE-SEC-002}.
-
-Two qualifications are part of the record. The measurement is
-\emph{source-reported}: this assessment did not independently reproduce it, and
-the reporting project states the affected version range as \emph{not
-established}, having measured one release without version archaeology. Second,
-a related variant --- a leaf capacity of exactly zero rather than a division by
-zero --- is reported to produce intermittent heap corruption under an older
-h5py-linked library, which if characterized would belong to
-\code{CORE-SEC-001} instead. That variant is expressly recorded by its
-reporters as observed but not characterized, and this report does not rate it.
+\noindent\textbf{Related development-tree evidence.}
+The \code{CORE-SEC-003} backlog contains a source-reported v2 B-tree case in
+which an assert-only zero-record-size guard is absent in an \code{-DNDEBUG}
+build and the public API path terminates with \code{SIGFPE}. It was measured on
+a locally built HDF5 2.3.0 development source tree, not an established
+supported release; the record explicitly says that 32-bit behavior and the
+affected version range were not measured
+~\cite{h5policy-case-v2btree-recordsize}. It corroborates the mechanism and
+provides a concrete fixture for \code{RM-1E}, but it is not included in this
+formal finding's rated population. A related zero-capacity variant reported
+against an older h5py-linked library is likewise uncharacterized and unrated.
 
 \noindent\textbf{Rating basis.}
 I2 reflects a meaningful but ordinarily recoverable process or workflow
@@ -560,21 +546,13 @@ version prevalence makes the assessment provisional. The rating is
 \textbf{I2/E2--E3, Moderate, Provisional, Moderate confidence}. Current release
 and installed-population residual risk were not evaluated.
 
-The promoted instance does not change the tier: a confirmed termination path is
-the I2 consequence already assigned. It does not raise confidence to High
-either, because the affected version boundary --- a material rating assumption
-under Section~\ref{sec:risk-rubric} --- remains unestablished. What it does
-change is the \emph{status of the mechanism}: release-build absence of a
-file-derived check is no longer a hypothesis for this record, and the
-\code{RM-1B} negative test for it is a concrete, available deliverable rather
-than one contingent on the \code{RM-1E} catalog.
-
 \noindent\textbf{Linked recommendations.}
 \code{CORE-S0}--\code{CORE-S8}, \code{CORE-S12}, \code{APP-S1}, and
 \code{APP-S2}.
 
 \noindent\textbf{SSP SIG correspondence.}
-\code{ATK-009}; the promoted instance also corresponds to \code{ATK-010}.
+\code{ATK-009}. The development-tree assertion case in \code{CORE-SEC-003}
+corresponds to \code{ATK-010}, but is outside this finding's rated population.
 See Section~\ref{sec:rubric-reconciliation} for why the ratings differ.
 
 \subsubsection*{CORE-TOOL-001 --- h5dump use-after-free}
@@ -635,52 +613,51 @@ known. Current installed-population residual risk was not evaluated.
 
 \noindent\textbf{Scenario.}
 An application writes an HDF5 file to storage that fills during the write,
-flush, or close sequence. The write fails with \code{ENOSPC}. The library
-provides no mechanism by which the application can be notified at the point of
-failure, no defined recovery procedure, and no way to mark the resulting file
-as suspect. The file is left incomplete or internally inconsistent, and data
+flush, or close sequence. The operation reports failure through the ordinary
+HDF5 error path, including \code{ENOSPC} in the cited example. The library
+provides no structured VFD callback at the failure point, no defined recovery
+or safe-abandonment procedure, and no supported way to mark the resulting file
+as suspect. The file may be incomplete or internally inconsistent, and data
 that has not been independently preserved may be lost.
 
 \noindent\textbf{Scope and evidence.}
-The assessed population is any deployment that writes HDF5 files to storage
-which can reach capacity --- which is not a narrow population. The controlling
-evidence is architectural rather than statistical, and it is a maintainer
-statement in the cited design discussion: \emph{there is no HDF5 story for}
-\code{ENOSPC}, \emph{and no callback for the condition that the virtual file
-driver has just encountered it}. The same discussion records that the current
-practice is a workaround --- configuring the metadata cache to discard on
-evict --- rather than a supported control, and enumerates four candidate
-treatments: space reservation via \code{posix\_fallocate}, an explicit
-poisoned-file state, a pre-flush capacity check, and a virtual-file-driver
-error callback that lets the caller choose to retry, fail fast, or
-panic~\cite{forum-enospc-11714}. The condition also appears in general
-file-corruption reports across the community
-forum~\cite{forum-recover-1146,forum-recover-5441}.
+The assessed population is deployments that write HDF5 files to finite storage
+without an assured reserve and that lack a separately verified recoverable copy
+of the in-flight data. The controlling evidence is architectural rather than
+statistical. In the cited discussion the application receives write and close
+errors, while a maintainer states that HDF5 has no recovery story for
+\code{ENOSPC} and no callback for the VFD event itself. The discussion records
+a workaround --- configuring the metadata cache to discard on evict --- and
+enumerates four candidate treatments: space reservation via
+\code{posix\_fallocate}, an explicit poisoned-file state, a pre-flush capacity
+check, and a virtual-file-driver error callback that lets the caller choose to
+retry, fail fast, or panic~\cite{forum-enospc-11714}. General file-corruption
+reports provide contextual recurrence evidence but do not establish that
+storage exhaustion caused each outcome
+~\cite{forum-recover-1146,forum-recover-5441}.
 
 \noindent\textbf{Why this is no longer NE.}
-An earlier revision recorded this finding as NE on the ground that the recovery
-path was not bounded. That was a category error, and correcting it is the
-substantive change in this record. The recovery path \emph{is} bounded: it does
-not exist. That is a verifiable property of the published API surface, not an
-unmeasured quantity. It also determines the exposure axis, because a control
-that is absent cannot intermittently succeed --- every occurrence of the
-triggering condition during a write reaches the unsafe state. Exposure
-therefore reduces to how often storage fills during a write, which is an
-ordinary operational fact rather than an open question about HDF5. Treating the
-documented absence of a control as an absence of evidence understated this
-finding.
+An earlier revision recorded this finding as NE. The additional evidence now
+establishes a bounded control deficiency: ordinary operation reports an I/O
+failure, but the cited API and maintainer discussion provide no defined
+recovery, safe-abandonment, or poisoned-file contract. That is sufficient to
+state the scenario and estimate both axes provisionally. It is not evidence
+that every \code{ENOSPC} event corrupts a file, that applications receive no
+error, or that storage exhaustion is broadly prevalent; those questions remain
+part of \code{RM-2D}.
 
 \noindent\textbf{Rating basis.}
 I2 reflects a recoverable loss where the workload can be rerun or an
 independent copy exists. I3 reflects major loss or corruption where it cannot;
-I4 is not assigned, because irreversible loss of unique or mission-critical
-records is credible but is not established by the cited evidence, and decision
-rule 1 requires the greatest \emph{supported} impact rather than a worst case.
-E3 reflects a common workflow with few material preconditions. The rating is
-\textbf{I2--I3/E3, Moderate--High, Provisional, Low confidence}. Confidence is
-Low because no failure sequence, durable-state result, recoverability outcome,
-or population has been measured; \code{RM-2D} remains required and would move
-confidence rather than the tier. Current residual risk was not evaluated.
+I4 is not assigned because irreversible loss of unique or mission-critical
+records is not established by the cited evidence. E2 reflects the material
+preconditions: finite storage must fill during an active write, and the
+deployment must lack a control that preserves a known-good recoverable state.
+The rating is \textbf{I2--I3/E2, Moderate--High, Provisional, Low confidence}.
+Confidence is Low because no failure sequence, durable-state result,
+recoverability outcome, recurrence rate, or affected population has been
+measured; \code{RM-2D} can change the tier as well as confidence. Current
+residual risk was not evaluated.
 
 \noindent\textbf{Response.}
 Routed Near-term at the upper bound. The Near-term obligation is tested
@@ -943,171 +920,116 @@ evaluated, and no residual tier is assigned.
 \noindent\textbf{Linked recommendations.}
 \code{CORE-S1}, \code{CORE-S6}, \code{CORE-S8}, and \code{IND-S1}.
 
-\subsection{Format and Specification Findings}
+\subsection{Format and Specification Evidence Record}
 
-\subsubsection*{FMT-SAF-001 --- Conformance is not determinable}
+\subsubsection*{FMT-SAF-001 --- Unresolved normative interpretation}
 
-\noindent\textbf{Scenario.}
-An independent implementation writes or reads an HDF5 structure according to
-the published file-format specification. The reference library behaves
-differently. Because the specification and the reference implementation
-disagree --- and because no procedure exists to rule on which is authoritative
---- neither party can establish whether the file conforms. Files are rejected,
-silently reinterpreted, or accepted by one implementation and not another, and
-the dispute is resolved by whoever concedes rather than by reference to a
-normative artifact.
+\noindent\textbf{Observation and scope.}
+Issue~\#6616 records a specific unresolved disagreement. The published format
+describes the group-info message as optional, while the C library reports
+``message type not found'' when it is absent and therefore cannot modify the
+file. The reporter identifies two possible resolutions: the library supplies
+the documented defaults, or the specification is corrected to require the
+message. At the evidence cutoff the issue was open, assigned, labelled as a
+documentation bug, and milestoned, with no authoritative ruling recorded
+~\cite{hdf5-gh-issue-6616}.
 
-\noindent\textbf{Scope and evidence.}
-Two instances are documented, and they fail in different directions, which is
-what makes the class rather than either case the finding.
+Issue~\#6409 is deliberately not used as a second instance of indeterminacy.
+There the published width rule was sufficient to decide conformance, the
+reference reader was wrong, and the reader was corrected
+~\cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432}. It remains strong evidence that an
+independent implementation can expose a reference-library defect; it does not
+show that the normative artifact was unable to settle the question.
 
-\begin{description}[leftmargin=1.5em,style=nextline]
-    \item[The library was non-conforming.]
-    Issue \#6409. The format required an encoded chunk-dimension width
-    sufficient to hold the value and did not require the smallest possible
-    width; HDF5 2.0.0, 2.1.0, and 2.1.1 rejected a sufficient but nonminimal
-    encoding anyway. The specification was correct and the reference reader was
-    wrong, and the reader was changed~\cite{hdf5-gh-issue-6409,hdf5-gh-pr-6432}.
+\noindent\textbf{Why this remains in the evidence backlog.}
+The issue establishes a governance and specification-adjudication gap, but the
+available record does not identify a bounded file population, a material user
+or data consequence, or recurrence of the same unresolved condition. The
+separate \code{IND-SAF-001} and \code{IND-SAF-002} findings already rate the
+evidenced consequences of their particular reader/writer divergences. Combining
+those outcomes with issue~\#6616 would rate heterogeneous mechanisms twice and
+would use a resolved case to support an unresolved one. Impact, exposure, tier,
+and risk-response urgency are therefore \textbf{NE}; NE is not a Low-risk
+conclusion.
 
-    \item[Which artifact is wrong is undetermined.]
-    Issue \#6616. The specification documents the group info message as
-    optional; the C library raises a ``message type not found'' error when it
-    is absent, so it cannot modify a file written without one. The reporter
-    states the two possible resolutions explicitly --- the library should fall
-    back to default group-info values, or the specification should be corrected
-    to say the message is required --- and at the evidence cutoff the issue is
-    open, labelled a documentation bug, assigned, and milestoned, with no
-    ruling recorded~\cite{hdf5-gh-issue-6616}.
-\end{description}
-
-Both were discovered the same way: an independent implementation exercised a
-construct and diverged from the reference library. Neither was found by
-inspecting the specification, and neither would have been visible at all if
-libhdf5 were the only implementation, because a sole implementation's behaviour
-is indistinguishable from the format.
-
-\noindent\textbf{Why this is a distinct finding.}
-\code{IND-SAF-001} and \code{IND-SAF-002} rate the \emph{consequences} of two
-particular divergences --- data that became unreadable after a reader upgrade.
-This record rates the \emph{condition that produces them}: a normative artifact
-that cannot settle the question. It is registered separately because its
-treatment is different in kind. Repairing a file or fixing a reader does not
-make the next ambiguity determinable, and the report's own method assumes
-determinability: Section~\ref{sec:assessment-methodology} states that where
-implementations disagree the analysis distinguishes the normative requirement
-from writer behaviour and reader validation. Issue \#6616 is a case where that
-distinction cannot currently be drawn, which is a limitation of the method as
-well as a finding about the format.
-
-\noindent\textbf{Rating basis.}
-I2 reflects a bounded, repairable interoperability or data-access failure ---
-the evidenced outcome in both instances. I3 reflects consequential loss where
-an archive or a scientific result depends on the contested interpretation and
-the dispute is not resolved in time; this is credible but not evidenced, so the
-range is stated rather than the upper bound asserted. E2 reflects the
-preconditions for any single ambiguity: a construct must be exercised, an
-implementation must diverge, and files must cross implementations. E3 reflects
-that the condition now recurs --- two instances surfaced within months of each
-other in 2026 --- and that exposure rises with the number of independent
-implementations, since each ambiguity is resolved independently by every one of
-them. The rating is \textbf{I2--I3/E2--E3, Moderate--High, Provisional,
-Moderate confidence}. Confidence is Moderate because both instances rest on
-primary evidence but no systematic survey of the specification has been
-performed; the extent of the defect population is unmeasured.
-
-\noindent\textbf{A second-order effect worth recording.}
-In \#6409 the independent writer changed its output to match the reference
-reader, even though its original output was specification-permitted. That is
-the rational local decision and the corrosive global one: under-specification
-makes implementations converge on the reference library's behaviour rather than
-on the specification, so the specification loses normativity exactly as the
-number of implementations that should be reinforcing it grows. A dispute
-resolved by concession leaves the ambiguity in place for the next
-implementation to rediscover.
-
-\noindent\textbf{Response.}
-Routed Near-term at the upper bound. The Near-term obligation is
-\emph{adjudication of the identified disputes}: for each open case, rule which
-artifact is authoritative, record the ruling and its rationale, and change the
-losing artifact. \#6616 is the immediate instance and already has an owner and
-a milestone. The systematic treatment --- a machine-readable normative
-specification and a standing procedure for future disputes --- is
-\code{FMT-S1} and runs on the Phase~3 horizon. Adjudicating two open cases does
-not require the programme, and the programme does not excuse leaving them open.
+\noindent\textbf{Evidence and governance action.}
+Within 90 days of roadmap adoption, the format authority should adjudicate
+issue~\#6616, publish the rationale and authoritative artifact, change whichever
+artifact is wrong, and preserve positive and negative fixtures. That is an
+administrative assurance target, not an inherent-risk response clock. To
+promote this record, identify files or workflows that depend on the disputed
+rule and measure the resulting access, integrity, or compatibility consequence.
+The systematic prevention work remains \code{FMT-S1}: a standing adjudication
+procedure and a machine-readable description for a declared subset, with
+implementation-defined behavior permitted only when it is explicit and tested.
 
 \noindent\textbf{Linked recommendations.}
-\code{FMT-S1}; \code{IND-S1} for the contested-reading fixtures; \code{CORE-S1},
-whose invariant registry must record which invariants are
-specification-derived and which are reference-implementation-derived, because
-the two carry different authority.
+\code{FMT-S1}; \code{IND-S1} for paired fixtures; and \code{CORE-S1}, whose
+invariant registry must distinguish specification-derived requirements,
+implementation-defined behavior, and reference-implementation behavior.
 
 \noindent\textbf{SSP SIG correspondence.}
-No direct counterpart. The hazard model has a parser-ambiguity hazard family
+No direct counterpart. The hazard model has a parser-ambiguity family
 (\code{H6}) and the independent-implementation model has \textbf{I1}
-parser/spec divergence, but neither registry contains an entry for defects in
-the normative artifact itself. This scope originates here.
+parser/spec divergence, but neither registry contains an entry for an unresolved
+normative-artifact question.
 
 \subsection{Long-Term Accessibility Findings}
 
-\subsubsection*{LONG-SAF-001 --- Extension-dependent loss of interpretability}
+\subsubsection*{LONG-SAF-001 --- Filter-dependent loss of interpretability}
 
 \noindent\textbf{Scenario.}
-An HDF5 file is retained in an archive. Reading or interpreting it requires a
-filter plugin, virtual file driver, or VOL connector that is not part of the
-core library. At some later point that extension is unavailable for the
-reader's platform, unbuildable against a current toolchain, unmaintained, or
-simply unidentifiable from the file itself. The bytes survive; the data does
-not. Depending on the extension class, the outcome ranges from a dataset that
-cannot be decompressed to a file whose contents were never fully self-contained
-in the first place.
+An HDF5 file is retained in an archive and a dataset in it requires a non-core
+filter plugin. At some later point the filter is absent from the reader's build
+or platform, unbuildable against the current toolchain, or no longer
+obtainable. The file bytes survive, but the affected dataset cannot be decoded.
 
 \noindent\textbf{Assessment horizon.}
 This finding states an assessment horizon of \textbf{ten years or more} from
-the date of writing. The horizon is material: at a one-year horizon the
-scenario is largely hypothetical, and at a multi-decade horizon it approaches
-certainty for any file depending on a single-maintainer extension. Under
-decision rule 7 of Section~\ref{sec:risk-rubric}, this rating must not be
-directly ordered against ratings that state no horizon.
+the date of writing. The cited reports establish that missing-filter failures
+already occur; they do not measure how extension availability changes over a
+decade. The horizon is therefore a material assumption and, under decision
+rule 7 of Section~\ref{sec:risk-rubric}, this rating must not be directly
+ordered against ratings that state no horizon.
 
 \noindent\textbf{Scope and evidence.}
-The assessed population is archived files that depend on a non-core extension
-for read or interpretation. The immediate mechanism is already observable at
-short horizons: community reports record users unable to read data because a
-required compression filter was absent from their build or platform, across a
-fifteen-year span and several filter families
+The assessed population is archived files containing datasets that require a
+non-core filter. The mechanism is observable at short horizons: community
+reports record users unable to read data because a required compression filter
+was absent from their build or platform, across a fifteen-year span and several
+filter families
 \cite{forum-filter-compressed-2756,forum-filter-h5dump-3396,
 forum-filter-dynamic-4047,forum-filter-lzo-4102}. The archival extrapolation
 --- that availability decreases rather than increases over a decade --- is
 reasoned inference, not measurement, and is the reason confidence is Low.
 
-The three extension classes are not equally exposed, and the report does not
-claim they are. A missing \emph{filter} is the best-evidenced and most bounded
-case: the file identifies the filter by numeric identifier, so the dependency
-is at least discoverable, and re-implementation is possible in principle. A
-missing \emph{VFD} affects whether the bytes can be reached at all. A missing
-\emph{VOL connector} is the most severe and the least evidenced, because the
-data may never have been in an HDF5 file in the first place --- the connector
-may have been mapping to an entirely different store, in which case
-``preserving the HDF5 file'' preserves nothing.
+VFD and VOL dependencies are excluded from the rated population. A missing VFD
+can affect whether bytes can be reached at all, while a VOL connector may map
+to a different store rather than to a self-contained HDF5 file. Those are
+materially different mechanisms and affected populations, and the report has
+no comparable archival failure evidence for them. They remain reasoned
+extensions of the analysis and require separate scenarios before rating.
 
 \noindent\textbf{Rating basis.}
-I2 reflects a bounded interoperability failure where the extension can be
-recovered, rebuilt, or re-implemented and the data is then readable. I3
-reflects consequential loss where it cannot and the records are unique or
-scientifically significant. E2 reflects the preconditions --- the file must
-depend on a non-core extension, and the extension must have become unavailable
-within the horizon --- which is realistic but not universal, since a large
-share of HDF5 data uses only core features or \code{gzip}. The rating is
-\textbf{I2--I3/E2, Moderate--High, Provisional, Low confidence}, at the stated
-horizon.
+I2 reflects the evidenced material workflow interruption: an affected dataset
+cannot be read until the filter is recovered, rebuilt, or re-implemented. I3
+would require evidence that unavailable decoding caused consequential or
+irrecoverable loss of significant records; the cited reports do not establish
+that outcome. E2 reflects the material preconditions --- an archived dataset
+must depend on a non-core filter and that filter must be unavailable to the
+reader. The rating is \textbf{I2/E2, Moderate, Provisional, Low confidence}, at
+the stated horizon. Confidence is Low because the archived population,
+dependency survival distribution, and decadal availability trend were not
+measured.
 
 \noindent\textbf{Response.}
-Routed \emph{Planned} by recorded departure from the default map; see the
-rationale in Section~\ref{sec:findings-evidence-actions}. The controlling point
-is that the effective treatment window is at \emph{write and deposit} time, not
-at read time: once an archive holds files whose extension is gone, the options
-are recovery archaeology or loss. Treatment is therefore a producer-side and
-curator-side practice, delivered through \code{LONG-S1}.
+The Moderate rating routes \emph{Planned}. Within 90 days, the accountable
+archive or producer should define a bounded corpus, inventory each file's
+filter dependencies, and record whether each dependency is available,
+reproducible, removable by migration, or accepted with an owner and review
+date. The longer-term archival profile and preserved specifications are
+producer-side and curator-side work delivered through \code{LONG-S1}; they do
+not defer that bounded first deliverable.
 
 \noindent\textbf{Linked recommendations.}
 \code{LONG-S1}; \code{IND-S1} for the fixture and reader-matrix machinery it
@@ -1115,9 +1037,9 @@ reuses; \code{CORE-S11} and \code{APP-S6} for the provenance inputs that make a
 dependency discoverable.
 
 \noindent\textbf{SSP SIG correspondence.}
-\code{HAZ-014} covers the filter-plugin portability slice at Moderate.
-\textbf{Neither registry covers VFD or VOL archival dependency}, and this
-report contributes that scope.
+\code{HAZ-014} covers the same filter-plugin portability mechanism at Moderate.
+Neither registry covers VFD or VOL archival dependency; this report identifies
+those as unmeasured extensions rather than including them in this rating.
 
 \subsection{Evidence-Backlog Record Details}
 

@@ -144,8 +144,10 @@ data when the layer they are using can in fact trigger complex parsing, codec
 execution, external access, or object reconstruction
 \cite{hdf5-indie-model,hdf5-python-wrapper-model}. This report reached the same
 conclusion from the incident evidence rather than by applying the models, which
-is worth recording as corroboration: two independent routes to the same root
-cause is a stronger result than either alone.
+is worth recording as internal consistency: two analytic routes within the same
+programme converge on the same root cause. The models are separate artifacts,
+not independent third-party validation, so their agreement does not raise the
+incident evidence's confidence by itself.
 HDF5 sits at the boundary between a file and the process.
 Downstream frameworks often add another boundary: model loading,
 dataset ingestion, scientific workflow execution, browser upload,

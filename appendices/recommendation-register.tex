@@ -10,7 +10,7 @@ the findings addressed, the enforcing actor or owner, response urgency,
 dependencies, effort, sequence and target horizon, acceptance evidence,
 status, and residual-risk decision. This appendix is that register. It
 consolidates the forty-three recommendations issued across
-Sections~\ref{sec:core-lib-format}--\ref{sec:supply-chain} into a single
+Sections~\ref{sec:core-lib-format}--\ref{sec:long-haul} into a single
 reverse index from recommendation to finding, owner, work package, and
 observable acceptance evidence.
 
@@ -36,9 +36,11 @@ Six recommendations --- \code{CORE-S1}, \code{CORE-S2}, \code{CORE-S4},
 \code{CORE-S5}, \code{CORE-S6}, and \code{APP-S2} --- describe controls that
 are already designed, and in several cases built and measured, in the H5Lens /
 \code{hdf5-pickles} project. Their effort below is the \emph{revised} estimate
-from Table~\ref{tab:core-prior-art-rescope}, which assumes reuse of existing
-identifiers, boundaries, fixtures, and measurements as data, subject to the
-licensing boundary in Section~\ref{sec:roadmap-licensing}. Each is marked
+from Table~\ref{tab:core-prior-art-rescope}, which assumes that existing
+identifiers, boundaries, fixtures, and measurements can be used after
+artifact-level provenance, license, and, where needed, legal review under
+Section~\ref{sec:roadmap-licensing}. This is an implementation-planning
+assumption, not a legal opinion. Each is marked
 \textbf{(re-scoped)}. Effort is still not subtracted from risk, and a smaller
 estimate never shortens a response clock.
 
@@ -201,25 +203,29 @@ Table~\ref{tab:security-program-metrics} against a versioned tranche
 denominator; each target is met or carries a named, expiring exception. The
 dashboard is coverage evidence, not defect closure. \\
 
-\code{CORE-SAFE-S1} & Give HDF5 an \code{ENOSPC} story. \code{CORE} &
+\code{CORE-SAFE-S1} & Give HDF5 an \code{ENOSPC} story. \code{CORE},
+\code{APP} &
 \code{CORE-SAFE-001} (Near-term containment; structural treatment Planned) &
-\code{RM-2D}, \code{RM-3G} / Medium &
-Fault injection returns \code{ENOSPC} at write, flush, and close for each
-supported VFD and buffering profile; the application receives a
-distinguishable error at every injected point; last durable state and recovery
-result are recorded; a later open never silently returns wrong data. Reported
-success followed by a file later found inconsistent is a failure. \\
+\code{RM-1F}, \code{RM-2D}, \code{RM-3G} / Medium &
+For each named deployment, tested headroom monitoring alerts before exhaustion;
+flush and checkpoint discipline is tied to a recovery-point objective;
+storage-exhaustion recovery is rehearsed; and a validated independent copy is
+available. Structural evidence then shows fault injection at write, flush, and
+close for each supported VFD and buffering profile, records the error surfaced,
+last durable state, and recovery result, and rejects reported success followed
+by a file later found inconsistent. \\
 
 \code{CORE-SAFE-S2} & State, then improve, the crash-consistency guarantee.
-\code{CORE} &
+\code{CORE}, \code{APP} &
 \code{CORE-SAFE-002} (Near-term containment; structural treatment Phase~3) &
-\code{RM-2D}, \code{RM-3G} / Large &
-Published per-layout and per-driver guarantee including its limits; a
+\code{RM-1F}, \code{RM-2D}, \code{RM-3G} / Large &
+For each named deployment, checkpoint and orderly-quiescence discipline is
+tied to a recovery-point objective, abrupt-termination recovery is rehearsed,
+and a validated independent copy is available. Structural evidence then
+publishes a per-layout and per-driver guarantee including its limits; a
 fault-injection harness kills the writer across metadata update, flush, and
-close and records for each point whether the file opens, opens after repair, or
-does not, and whether data read back differs from what was acknowledged
-written. The last case is reported separately and treated as a defect. Results
-published per supported release. \\
+close and records open, repair, and acknowledged-versus-read-back outcomes per
+supported release. Divergence is reported separately and treated as a defect. \\
 
 \hline
 \multicolumn{5}{@{}l}{\textbf{Core library and ecosystem --- privacy track}}\\
@@ -426,12 +432,15 @@ enabling the control. \\
 
 \code{FMT-S1} & Make the specification machine-readable and adjudicable.
 \code{INTEROP} &
-\code{FMT-SAF-001} (Near-term adjudication; Phase~3 artifact) &
+\code{FMT-SAF-001} (Evidence-conditional; 90-day administrative adjudication
+target; Phase~3 artifact) &
 \code{RM-2C}, \code{RM-3I} / Large &
 For a declared subset, the machine-readable description generates fixtures the
 reference library accepts and rejects as predicted, with every divergence
-classified as either a library defect or a description defect and no third
-category. Every dispute raised in the tracking period has a recorded
+classified as a library defect, a description/specification defect, or
+explicitly implementation-defined behavior with documented compatibility
+consequences; no unexplained residual category remains. Every dispute raised in
+the tracking period has a recorded
 disposition naming the authoritative artifact and the change made, with elapsed
 time from report to ruling published. A dispute closed by an implementation
 changing to match the reference library, without a ruling, is recorded
@@ -449,15 +458,15 @@ accountable compatibility disposition preserving checksums and provenance. \\
 
 \code{LONG-S1} & Make extension dependencies discoverable, then removable.
 \code{INTEROP}, \code{EXT} &
-\code{LONG-SAF-001} (Planned, recorded departure) &
-\code{RM-2C}, \code{RM-3E} / Medium &
-Every file in a defined corpus has a generated non-core dependency report,
-confirmed complete by opening the file with each declared dependency
-deliberately absent and finding no undeclared one. Archival-profile files read
-correctly in a reference build with \emph{all} non-core plugins disabled. For
-each retained dependency, archived specification and test vectors are
-demonstrated sufficient for an independent party to reproduce the codec
-output. \\
+\code{LONG-SAF-001} (Planned) &
+\code{RM-2H}, \code{RM-3H}, \code{RM-2C}, \code{RM-3E} / Medium &
+Within 90 days for the defined population, every file has a verified non-core
+dependency manifest, an absent-dependency test, a self-contained/external-view
+classification, and an accountable disposition for each unavailable or
+removable dependency. Structural acceptance then requires automated dependency
+reports, archival-profile files that read in a reference build with \emph{all}
+non-core plugins disabled, and reviewed specifications and test vectors shown
+sufficient for an independent party to reproduce each retained codec output. \\
 
 \code{SUP-S1} & Maintain a producer/consumer profile compatibility and
 migration matrix. \code{REL} &
@@ -533,7 +542,7 @@ Secure SDLC and code review, including review-blocking gates. \\
 
 \code{CORE-S4}, \code{CORE-S9}, \code{APP-S1}--\code{APP-S4} &
 \code{HDF5-SHINES-HARD-*} &
-Secure configuration and hardening; the profile work is the largest single
+Secure configuration and hardening; the profile work is a material
 contribution this report makes to that family. \\
 
 \code{CORE-S5}, \code{CORE-S6}, \code{IND-S1} &
@@ -591,7 +600,7 @@ security is outside its stated scope.
 
 \subsection{Recommendations Not Tied to a Formal Finding}
 
-Three recommendation groups deliberately address no rated finding, and this is
+Four recommendation groups deliberately address no rated finding, and this is
 recorded rather than hidden:
 
 \begin{description}
@@ -610,13 +619,18 @@ recorded rather than hidden:
           unrated evidence record \code{SUP-SAFE-001}. They also supply
           provenance inputs used across the register, but provenance is not
           treatment.
+    \item[\code{FMT-S1}] addresses the unrated evidence record
+          \code{FMT-SAF-001}. Its 90-day adjudication target is an
+          administrative assurance target rather than inherited risk urgency;
+          the larger machine-readable-format programme remains proposed
+          structural governance work.
 \end{description}
 
 In an earlier revision one finding had no recommendation at all:
 \code{CORE-SAFE-001} was recorded as a treatment gap. That gap is closed ---
 \code{CORE-SAFE-S1} now addresses it, drawing on treatment options that had
 already been proposed publicly by maintainers but had not been carried into
-this report. \textbf{Every registered finding now has at least one linked
+this report. \textbf{Every formal finding now has at least one linked
 recommendation.}
 
 \end{document}

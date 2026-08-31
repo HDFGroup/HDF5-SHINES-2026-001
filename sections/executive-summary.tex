@@ -122,18 +122,19 @@ Near-term (30 d) & \code{PRIV} \\
 
 \code{CORE-SAFE-001} &
 Storage exhaustion during write or close leaves an incomplete or corrupted
-file; no library mechanism detects or recovers from it. & Safety & Mod.--High &
-Provisional & Near-term (containment) & \code{CORE} \\
+file after the operation reports failure; the library defines no recovery or
+poisoned-file protocol. & Safety & Mod.--High & Provisional & Near-term
+(containment) & \code{APP}/\code{CORE} \\
 
 \code{CORE-SAFE-002} &
 Abrupt process or host termination during write leaves a file corrupted or not
 reopenable. & Safety & Mod.--High & Provisional & Near-term (containment) &
-\code{CORE} \\
+\code{APP}/\code{CORE} \\
 
 \code{LONG-SAF-001} &
-An archived file becomes unreadable because a required filter, VFD, or VOL
-connector is gone. Decadal horizon. & Safety & Mod.--High & Provisional &
-Planned (recorded departure) & \code{INTEROP} \\
+An archived dataset becomes unreadable because a required non-core filter is
+gone. Decadal horizon. & Safety & Moderate & Provisional & Planned (90 d) &
+\code{INTEROP} \\
 
 \code{CORE-SEC-002} &
 File-controlled work, allocation, traversal, or error paths terminate or
@@ -143,11 +144,6 @@ Planned (90 d) & \code{CORE} \\
 \code{APP-SEC-004} &
 Affected Keras weight loading allocates from an extreme file-declared shape
 and exhausts memory. & Sec. & Moderate & Rated & Planned (90 d) & \code{APP} \\
-
-\code{FMT-SAF-001} &
-The normative specification is incomplete, ambiguous, or contradicted by the
-reference library, so conformance is not determinable. & Safety & Mod.--High &
-Provisional & Near-term (adjudicate disputes) & \code{INTEROP} \\
 
 \code{IND-SAF-001} &
 HDF5 2.0/2.1 exact-width validation rejects a sufficient but nonminimal chunk
@@ -166,9 +162,16 @@ Planned (90 d) & \code{INTEROP} \\
 \code{CORE-SEC-003} &
 Candidate deserializer invariants derived from in-file bytes are enforced only
 inside \code{assert(...)} and may be absent from \code{-DNDEBUG} builds. One
-instance is confirmed and promoted into \code{CORE-SEC-002}; extent unknown. &
+development-tree instance has a source-reported adverse result; supported-
+release scope and population remain unverified. &
 Sec. & \emph{None} & Backlog &
 Evidence action (\code{RM-1E}, 30 d target) & \code{CORE} \\
+
+\code{FMT-SAF-001} &
+The specification and reference library disagree on one open group-info rule;
+the affected population and adverse consequence are not yet bounded. & Safety &
+\emph{None} & Backlog & Administrative adjudication and evidence action
+(90 d target) & \code{INTEROP} \\
 
 \code{EXT-PRIV-001} &
 Extensions can move data and metadata across storage, cache, logging, network,
@@ -183,26 +186,25 @@ Backlog & Evidence action (\code{RM-2F}) & \code{REL} \\
 \end{longtable}
 \endgroup
 
-Fifteen formal findings are registered: seven Rated and eight Provisional.
-Their tiers comprise one Critical, four High, six Moderate--High ranges, and
-four Moderate. Three further observations remain in the evidence-and-scoping
+Fourteen formal findings are registered: seven Rated and seven Provisional.
+Their tiers comprise one Critical, four High, four Moderate--High ranges, and
+five Moderate. Four further observations remain in the evidence-and-scoping
 backlog below the rule in the table. \textbf{A backlog record is an evidence
 gap, not a determination of Low risk.}
 
-One finding, \code{FMT-SAF-001}, is about the normative artifact rather than
-any implementation: where the specification and the reference library disagree
-and no procedure exists to rule between them, conformance cannot be
-established. Its exposure rises with the number of independent
-implementations, because each unresolved ambiguity is resolved independently by
-every one of them.
+One backlog record, \code{FMT-SAF-001}, is about the normative artifact rather
+than an implementation. Issue~\#6616 establishes an unresolved adjudication
+question, but the evidence does not yet bound an adverse consequence or
+affected population. It therefore carries an administrative action and no
+inherent-risk urgency.
 
 Three further findings --- \code{CORE-SAFE-001}, \code{CORE-SAFE-002}, and
 \code{LONG-SAF-001} --- are write-side and lifecycle safety risks that an
 earlier revision of this report either left unrated or did not register at all.
 They are called out here because they are the conditions HDF5 users encounter
-most often in ordinary operation, and because the rest of this report is
+in ordinary, non-adversarial operation, and because the rest of this report is
 organised around a different question: hostile input arriving from outside,
-rather than data failing to survive.
+rather than data failing to survive. This emphasis is not a prevalence claim.
 
 \subsection*{Where the priority actually falls}
 
@@ -223,6 +225,11 @@ effort, and dependencies do not create or revise it.
           deployment census (\code{RM-1A}), the affected-version treatment of
           \code{CORE-SEC-001} and \code{CORE-TOOL-001} (\code{RM-1B}), and the
           30-day assert-site catalog (\code{RM-1E}).
+    \item \textbf{Deployment and storage operators own the write-side
+          containment clock.} Within 30 days of identifying applicable scope,
+          \code{RM-1F} requires tested capacity monitoring, checkpoint and
+          recovery discipline, and a validated independent copy; \code{RM-1A}
+          supplies scope evidence but is not itself containment.
     \item \textbf{Two response clocks are distinct.} A finding's clock starts
           when an affected deployment or equivalent exposure is
           \emph{identified}. The census and assert-catalog clocks start when
@@ -236,8 +243,8 @@ effort, and dependencies do not create or revise it.
 The roadmap in Appendix~\ref{app:phased-roadmap} is scoped to risk, not to
 budget. Section~\ref{sec:roadmap-minimum-viable} identifies a
 capacity-constrained subset that preserves the response clocks and delivers
-the highest control coverage per unit of effort. It is a funding aid and
-explicitly not a risk rank.
+a bounded set of controls selected under the stated assumptions. It is a
+funding aid and explicitly not a risk rank or a quantitative efficiency result.
 
 \subsection*{What this report does not establish}
 

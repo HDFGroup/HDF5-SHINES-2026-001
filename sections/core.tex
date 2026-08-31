@@ -11,12 +11,14 @@
 \subsection{HDF5 Safety Observations and Evidence Gaps}
 
 Safety in this chapter means robustness and data integrity in the absence of a
-malicious actor, as defined in Section~\ref{sec:assessment-dimensions}. Three
-conditions were examined, and none reached the evidence threshold for a rated
-finding in this revision.
+malicious actor, as defined in Section~\ref{sec:assessment-dimensions}. This
+revision examines four condition families and registers five formal findings:
+two write-side findings, one filter-dependent archival finding, and two
+reader/writer compatibility findings. A separate format-governance observation
+remains in the evidence backlog because its adverse consequence and exposure
+are not yet bounded.
 
-Four conditions are registered as formal findings in this revision. The first
-three are write-side and lifecycle risks and were the least developed part of
+The first three condition families are write-side and lifecycle risks and were the least developed part of
 an earlier revision of this report; the discussion below states each as a
 distinct trigger, because conflating them --- as an earlier draft did by
 merging storage exhaustion and abrupt termination into one observation ---
@@ -25,16 +27,19 @@ treatment.
 
 \begin{description}[leftmargin=1.5em,style=nextline]
     \item[Storage exhaustion during write or close.]
-    Storage fills during a write, flush, or close; the write fails with
-    \code{ENOSPC}; and the library offers no notification, no recovery
-    procedure, and no way to mark the file suspect. The controlling evidence is
-    a maintainer statement that there is no HDF5 story for the condition and no
-    callback for it, together with four candidate treatments and a documented
-    cache workaround used in its place~\cite{forum-enospc-11714}. Registered as
+    Storage fills during a write, flush, or close, and the operation reports
+    failure through the ordinary HDF5 error path. The library offers no
+    structured VFD-level notification at the failure point, defined recovery
+    procedure, or supported way to mark the file suspect and abandon it safely.
+    The controlling evidence is a maintainer statement that there is no HDF5
+    recovery story for the condition and no VFD callback for it, together with
+    four candidate treatments and a documented cache workaround used in its
+    place~\cite{forum-enospc-11714}. Registered as
     \code{CORE-SAFE-001}, \textbf{Moderate--High}. An earlier revision recorded
     this as NE for want of a bounded recovery path; the recovery path is in
-    fact bounded --- it does not exist --- and that fact constrains exposure
-    rather than leaving it open.
+    absent at the cited architectural boundary. That establishes a control gap;
+    it does not establish how often storage exhaustion occurs or what durable
+    state follows it.
 
     \item[Corruption from abrupt termination.]
     A writer is killed, crashes, or loses power with metadata updates in
@@ -47,22 +52,23 @@ treatment.
     forum-flush-crash-3481,forum-flush-corrupt-4958,forum-recover-5441,
     forum-crash-corruption-7581,forum-crashproofing-12003}. Registered as
     \code{CORE-SAFE-002}, \textbf{Moderate--High}. This condition had no record
-    of any kind in an earlier revision, which was the largest single omission
-    in this chapter.
+    of any kind in an earlier revision.
 
     \item[Extension-dependent loss of interpretability.]
-    An archived file requires a filter, VFD, or VOL connector that is later
-    unavailable. Registered as \code{LONG-SAF-001}, \textbf{Moderate--High} at
+    An archived dataset requires a non-core filter that is later unavailable.
+    Registered as \code{LONG-SAF-001}, \textbf{Moderate} at
     a stated ten-year-or-more horizon, and developed in
     Section~\ref{sec:long-haul}. Because the horizon is material, decision
     rule 7 forbids ordering this rating directly against ratings that state no
-    horizon.
+    horizon. VFD and VOL archival dependencies remain a reasoned extension of
+    the inquiry, not part of this rated scenario.
 
     \item[Reader/writer disagreement.]
     The two 2026 chunk-layout cases in Section~\ref{sec:indie}, registered as
-    \code{IND-SAF-001} and \code{IND-SAF-002}. These are the short-horizon,
-    fully evidenced instance of the same family as \code{LONG-SAF-001}: a file
-    that a reader can no longer interpret.
+    \code{IND-SAF-001} and \code{IND-SAF-002}. They share an unreadability
+    outcome with \code{LONG-SAF-001}, but not its mechanism: these are
+    specification and metadata-conformance failures, whereas the archival
+    finding concerns an unavailable runtime dependency.
 \end{description}
 
 \noindent\textbf{The shape of the gap this closes.}
@@ -78,7 +84,7 @@ previously unregistered or unrated.
 
 \noindent\textbf{Coverage limitation, stated against an existing hazard
 analysis.}
-Safety is by a wide margin the least developed dimension in this revision. The
+Safety is the least developed dimension in this revision. The
 extent of the gap can be stated precisely rather than vaguely, because the SSP
 SIG has already published a sixteen-entry safety hazard registry built on a
 control-system hazard model with unsafe control actions, derived safety
@@ -184,9 +190,9 @@ H5Lens is relevant prior art (Section~\ref{sec:core-prior-art}). \\
 \textbf{Not assessed.} \\
 
 \code{HAZ-014} & Portability hazard from missing filter plugins & 9, Moderate &
-\textbf{Covered, and extended.} \code{LONG-SAF-001} rates the archival
-scenario at a stated decadal horizon and extends it to VFD and VOL dependency,
-which this registry does not cover. \\
+\textbf{Covered.} \code{LONG-SAF-001} rates the missing-filter archival
+scenario at a stated decadal horizon. VFD and VOL archival dependencies are
+identified as unmeasured extensions of the inquiry, not as part of the rating. \\
 
 \code{HAZ-015} & Misuse of metadata-cache flush controls & 8, Moderate &
 \textbf{Not assessed.} \\
@@ -262,23 +268,23 @@ candidate is a sole guard, release-reachable in a supported version, or capable
 of a particular adverse outcome. This report therefore tracks the condition as
 evidence record \code{CORE-SEC-003}, not as a separately rated formal finding.
 
-One member of that population has since been carried to reproduction, and it
-is worth stating precisely because it bounds what the rest of the record does
-and does not claim. A version-2 B-tree header declaring a zero record size
-reaches an integer division while the leaf record capacity is derived; the sole
-guard is an assertion in \code{H5B2hdr.c}, absent under \code{-DNDEBUG}. The
-reported measurement records \code{SIGFPE} from a shipped \code{h5dump -H}
-against HDF5 2.3.0 and from the public \code{H5Fopen}/\code{H5Gopen2}/
-\code{H5Gget\_info} path, at both 32- and 64-bit
-widths~\cite{h5policy-case-v2btree-recordsize}. That instance meets all three
-conditions the record leaves open, so it is promoted into \code{CORE-SEC-002}
-by its consequence; see Appendix~\ref{app:findings-register}. It does not
-establish the size of the remaining population, the affected version range ---
-which its reporters expressly decline to assert --- or that other candidates
-share its consequence class. A second candidate, the cache-image LRU rank
-relation, is reported without a measured release-build
-consequence~\cite{h5policy-case-mdci-lru}. One confirmed instance is a reason
-to complete the catalog, not a substitute for it.
+One member of that population has been carried further, and it is worth stating
+precisely because it illustrates both the mechanism and the remaining evidence
+boundary. A version-2 B-tree header declaring a zero record size reaches an
+integer division while the leaf record capacity is derived; the sole guard is
+an assertion in \code{H5B2hdr.c}, absent under \code{-DNDEBUG}. The cited case
+record reports \code{SIGFPE} from a locally built \code{h5dump -H} and the
+public \code{H5Fopen}/\code{H5Gopen2}/\code{H5Gget\_info} path using a
+release-configured HDF5 2.3.0 development source tree
+~\cite{h5policy-case-v2btree-recordsize}. It expressly records no 32-bit
+measurement and does not establish an affected supported release or version
+range. The case therefore corroborates an adverse \code{-DNDEBUG} path but
+does not satisfy this report's supported-version condition for promotion into
+a formal finding. It remains evidence under \code{CORE-SEC-003}. A second
+candidate, the cache-image LRU rank relation, is reported without a measured
+release-build consequence~\cite{h5policy-case-mdci-lru}. This bounded
+reproduction is a reason to complete the supported-release catalog, not a
+substitute for it.
 Regardless of the final count, a predicate whose validity depends on file bytes
 must have an always-active runtime check; an assertion may duplicate that check
 for diagnostics but must not enforce it alone.
@@ -1854,11 +1860,13 @@ those.
 
 \subsubsection*{Recommendation CORE-SAFE-S1: Give HDF5 an \code{ENOSPC} story}
 
-Today an application cannot learn that the virtual file driver hit
-\code{ENOSPC}, cannot choose how to respond, and cannot mark the resulting file
-as untrustworthy. Four candidate mechanisms have already been proposed in the
-public design discussion; they are complementary rather than alternatives, and
-they differ sharply in cost~\cite{forum-enospc-11714}.
+Today an application can receive an HDF5 write, flush, or close failure, but it
+has no structured callback identifying the VFD's \code{ENOSPC} event, no
+supported protocol for choosing retry versus abandonment at that boundary, and
+no library state that marks the resulting file as untrustworthy. Four candidate
+mechanisms have already been proposed in the public design discussion; they are
+complementary rather than alternatives, and they differ sharply in
+cost~\cite{forum-enospc-11714}.
 
 \begingroup
 \small

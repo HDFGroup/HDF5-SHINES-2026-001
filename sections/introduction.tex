@@ -183,9 +183,14 @@ research-ethics obligations.
 \label{sec:evidence-boundary}
 
 The evidence cutoff for this revision is August 27, 2026. Public evidence
-available on or before that date is eligible for consideration. Later
-developments are outside this revision unless expressly incorporated as
-subsequent-event updates.
+available on or before that date is eligible for consideration. A retrieval,
+archive-capture, or citation-access date after the cutoff may document an
+artifact or event that existed on or before August 27, provided that the cited
+record identifies that earlier artifact or event and the assessment does not
+rely on a later substantive change. A measurement, reproduction, fix, issue
+update, decision, or other substantive evidence first generated after the
+cutoff is a subsequent-event update and is outside this revision unless
+expressly incorporated and labelled as such.
 
 The historical analysis has no fixed lower date and includes earlier releases
 where necessary to examine cited vulnerabilities, compatibility behavior, and
@@ -586,15 +591,17 @@ assumes otherwise will misread both.
     \item[This report's finding identifiers.]
     \code{CORE-SEC-nnn}, \code{CORE-TOOL-nnn},
     \code{CORE-PRIV-nnn}, \code{CORE-SAFE-nnn},
-    \code{APP-SEC-nnn}, \code{IND-SAF-nnn},
-    \code{EXT-PRIV-nnn}, and \code{SUP-SAFE-nnn}. These name
-    the adverse-event scenarios registered in
+    \code{APP-SEC-nnn}, \code{FMT-SAF-nnn}, \code{IND-SAF-nnn},
+    \code{LONG-SAF-nnn}, \code{EXT-PRIV-nnn}, and
+    \code{SUP-SAFE-nnn}. These name
+    formal adverse-event scenarios and evidence-backlog records maintained in
     Appendix~\ref{app:findings-register} and exist only in this report.
 
     \item[This report's recommendation identifiers.]
-    \code{CORE-Sn}, \code{CORE-PRIV-Sn},
+    \code{CORE-Sn}, \code{CORE-SAFE-Sn}, \code{CORE-PRIV-Sn},
     \code{APP-Sn}, \code{VOL-Sn}, \code{FILTER-Sn},
-    \code{VFD-Sn}, \code{IND-Sn}, and \code{SUP-Sn},
+    \code{VFD-Sn}, \code{FMT-Sn}, \code{IND-Sn}, \code{LONG-Sn}, and
+    \code{SUP-Sn},
     registered in Appendix~\ref{app:recommendation-register}. Work-package
     identifiers \code{RM-nX} in
     Appendix~\ref{app:phased-roadmap} are likewise report-local.
@@ -745,12 +752,17 @@ re-derive one. \\
 
 \code{HAZ-005} out-of-space during write or close &
 15, High, with a full accident chain and three safety constraints &
-\code{CORE-SAFE-001}, NE, no tier &
-The most consequential divergence. This report declined to rate for want of a
-bounded API sequence, version, and recoverability evidence. The registry
-supplies the hazard analysis but not those measurements, so both records are
-waiting on the same \code{RM-2D} study; the entry's safety constraints SC-1 to
-SC-3 should be adopted as that study's hypotheses. \\
+\code{CORE-SAFE-001}, Moderate--High, Provisional, Low confidence &
+The two methods are not numerically convertible even though their bands overlap.
+This report bounds impact at I2--I3 and exposure at E2: finite storage must fill
+during an active write and the deployment must lack a control preserving a
+known-good recoverable state. Ordinary operation reports an I/O failure, but
+the cited interface defines no recovery, safe-abandonment, or poisoned-file
+contract. Low confidence records the absence of measured failure sequences,
+recoverability outcomes, recurrence, and population evidence. \code{RM-2D} therefore
+supplies acceptance and residual-risk evidence rather than gating whether the
+scenario receives a rating. The registry's safety constraints SC-1 to SC-3
+should be adopted as that study's hypotheses. \\
 
 \code{EXP-001} no standard whole-file encryption by default &
 20, Very High &

@@ -30,12 +30,12 @@ was the non-conforming party, while in another it is still undetermined which
 artifact is wrong. Fourth,
 privacy harm can arise during correct and authorized operation because payload
 protection does not necessarily protect metadata, structure, derived
-information, caches, logs, or other workflow artifacts. Fifth, and distinct
-from the preceding four in kind: a substantial part of HDF5's risk is not about
-input at all. Storage exhaustion, abrupt termination, and extension-dependent
-loss of interpretability threaten data that no adversary ever touched, and the
-library provides materially weaker guarantees against them than against
-malformed input.
+information, caches, logs, or other workflow artifacts. These four judgments do
+not exhaust the safety surface: storage exhaustion, abrupt termination, and
+filter-dependent loss of interpretability also threaten data that no adversary
+ever touched. This revision registers those bounded scenarios while leaving
+unmeasured VFD, VOL, and specification-governance questions in the evidence
+backlog.
 
 \begin{notebox}
 The registered scenarios have a determinate, conditional mitigation-priority
@@ -48,9 +48,9 @@ This is neither a universal HDF5 rating nor a certification or conclusion about
 an unassessed release or deployment.
 \end{notebox}
 
-The authoritative register contains fifteen formal findings: seven Rated and
-eight Provisional. Their tiers comprise one Critical, four High, six
-Moderate--High ranges, and four Moderate. Three additional observations remain
+The authoritative register contains fourteen formal findings: seven Rated and
+seven Provisional. Their tiers comprise one Critical, four High, four
+Moderate--High ranges, and five Moderate. Four additional observations remain
 in the evidence-and-scoping backlog. These
 counts describe the bounded scenarios in Appendix~\ref{app:findings-register};
 they are not prevalence estimates and must not be aggregated into a score for
@@ -62,8 +62,9 @@ Table~\ref{tab:conclusion-priority-reconciliation} summarizes the only
 report-wide ordering. The deployment census and assert-site source catalog are
 due within 30 days of roadmap adoption; a finding-response clock starts when an
 affected deployment or equivalent exposure is identified. Treatment removes or
-controls the concrete scenario; prevention addresses recurrence and may
-continue after the scoped finding is reassessed.
+controls the concrete scenario; \code{RM-1A} establishes scope and is not a
+substitute for the operator-owned \code{RM-1F} containment. Prevention addresses
+recurrence and may continue after the scoped finding is reassessed.
 
 \begingroup
 \small
@@ -96,8 +97,8 @@ continue after the scoped finding is reassessed.
 \endlastfoot
 
 Immediate---before the next untrusted job and within 24 hours of identification &
-\code{APP-SEC-001}; a separately confirmed Critical-equivalent service
-exposure under \code{APP-SEC-003} &
+\code{APP-SEC-001}; any separately scoped service scenario that is rerated
+Critical under the report-wide rubric &
 Stop or sandbox attacker-selected external-resource resolution; remove
 unnecessary worker authority, preserve evidence, and rotate exposed secrets
 where indicated. &
@@ -106,15 +107,15 @@ HDF5 service or to Hugging Face's present state. \\
 
 Near-term---treatment within 30 days of affected-scope identification &
 \code{CORE-SEC-001}, \code{CORE-TOOL-001}, \code{CORE-PRIV-001},
-\code{CORE-SAFE-001}, \code{CORE-SAFE-002}, \code{FMT-SAF-001},
+\code{CORE-SAFE-001}, \code{CORE-SAFE-002},
 \code{APP-SEC-002}, \code{APP-SEC-003}, \code{APP-SEC-005} &
 Use the program census to identify scope; patch, upgrade, isolate, or deploy a
 tested compensating control for each affected deployment; minimize sensitive
 plaintext metadata and verify the enforcing trust boundary. For the two
 write-side safety findings the obligation is tested operational containment ---
 capacity headroom and monitoring, flush and checkpoint discipline, a rehearsed
-recovery procedure, and an independent copy of unregenerable data --- not the
-library change. &
+recovery procedure, and an independent copy of unregenerable data under
+\code{RM-1F} --- not the library change or the \code{RM-1A} census. &
 Census: 30 days after roadmap adoption. Treatment: 30 days after affected-scope
 identification. Ranges route at their upper bound; dependencies do not extend
 treatment. \\
@@ -122,19 +123,22 @@ treatment. \\
 Planned---within 90 days or the next supported release or migration window,
 whichever is sooner &
 \code{CORE-SEC-002}, \code{APP-SEC-004}, \code{IND-SAF-001},
-\code{IND-SAF-002}, \code{LONG-SAF-001} (recorded departure) &
+\code{IND-SAF-002}, \code{LONG-SAF-001} &
 Bound file-controlled work and allocation; verify exact reader/writer behavior;
-inventory affected artifacts; and provide tested repair, migration, or
-controlled compatibility handling. &
+inventory affected artifacts and filter dependencies; and provide tested
+repair, migration, dependency-preservation, or controlled compatibility
+handling. &
 Expedite a scoped item when an affected production pipeline, archive, or
 service is identified. \\
 
 Evidence action---no assigned risk urgency &
-\code{CORE-SEC-003}, \code{EXT-PRIV-001}, \code{SUP-SAFE-001} &
+\code{CORE-SEC-003}, \code{FMT-SAF-001}, \code{EXT-PRIV-001},
+\code{SUP-SAFE-001} &
 Perform bounded, reproducible studies sufficient to rate and route a supported
 scenario or to document a negative result over the tested scope; catalog and
 compare assertion-enabled and \code{-DNDEBUG} behavior for file-derived
-assertions. &
+assertions; adjudicate the identified normative dispute and measure any
+dependent file or workflow consequence. &
 NE and backlog status do not mean Low risk. The 30-day Phase~1 source-catalog
 target and Phase~2 administrative targets are assurance schedules, not
 risk-response categories. \\
@@ -155,12 +159,14 @@ This ordering also reconciles the chapters. The application chapter owns the
 only Immediate route. The core and tool chapter combines Near-term treatment of
 confirmed affected High and upper-bound-High scope with Planned resource controls and
 longer-term class prevention; the assert-masking observation adds a 30-day
-source-catalog action but no risk tier of its own; its one reproduced instance
-is routed under \code{CORE-SEC-002} by that instance's consequence. The core chapter additionally owns two Near-term write-side safety
+source-catalog action but no risk tier of its own; its development-tree
+reproduction remains outside the rated population until a supported release
+path is established. The core chapter additionally owns two Near-term write-side safety
 containments and their longer structural treatments. The
 independent-implementation chapter owns two Planned interoperability
-treatments, and the long-term-access chapter owns one Planned, horizon-
-qualified archival finding that an earlier revision left unregistered. Extension privacy and supply-chain mismatch themes
+treatments and one format-governance evidence action, and the long-term-access
+chapter owns one Planned, horizon-qualified, filter-specific archival finding
+that an earlier revision left unregistered. Extension privacy and supply-chain mismatch themes
 remain evidence actions until a concrete affected population and harm are
 established. The wrappers chapter creates no additional formal priority in this revision. Appendix~\ref{app:phased-roadmap} then
 translates these lanes into accountable work packages without changing their
@@ -203,28 +209,27 @@ repair a supported adverse path as soon as it is confirmed, and use the
 results to order independently releasable Phase~3 migration tranches
 ~\cite{hdf5-pickles-issue-87}.
 
-The perimeter is no longer entirely hypothetical. One instance has been
-carried to reproduction and is promoted into \code{CORE-SEC-002}: a version-2
-B-tree header declaring a zero record size reaches an integer division whose
-only guard is an assertion, producing \code{SIGFPE} on a shipped tool in a
-release build, at both 32- and 64-bit
-widths~\cite{h5policy-case-v2btree-recordsize}. That single case settles the
-question of kind while leaving the question of extent open, and it does so in
-the direction the rubric anticipated: the mechanism is real, the consequence
-for this instance is termination rather than corruption, and the affected
-version range is still unestablished. It is evidence that the 30-day catalog is
-warranted, not evidence of its result. The promotion also demonstrates the
-routing rule working as designed --- a confirmed path leaves the backlog and
-acquires its consequence's tier, without the backlog record itself ever having
-been assigned one.
+The perimeter is not entirely static. One source-reported case shows a
+version-2 B-tree zero record size reaching an integer division whose only guard
+is an assertion, producing \code{SIGFPE} through a public API path on an
+\code{-DNDEBUG}, release-configured HDF5 2.3.0 development tree
+~\cite{h5policy-case-v2btree-recordsize}. The same case record states that
+32-bit behavior, affected supported releases, and the version range were not
+measured. It therefore corroborates the mechanism and supplies a concrete
+fixture, but it does not meet this report's supported-version condition for
+promotion into \code{CORE-SEC-002}. That distinction demonstrates the rubric
+working as designed: useful development-tree evidence can sharpen an audit
+perimeter without acquiring a tier before the rated population is established.
 
 The developments therefore reinforce the rubric rather than reorder it by
 recency or publicity. The Hugging Face evidence supports a Critical
 application-boundary scenario with an Immediate conditional response; the two
 independent-implementation cases support Moderate safety scenarios with Planned
-treatment; and the assert-masking observation remains an evidence action until
-exact paths and consequences are verified. Together they show why the enforcing
-actor, affected scope, consequence, and acceptance evidence must be explicit.
+treatment; issue~\#6616 creates an administrative adjudication and evidence
+action without a risk tier; and the assert-masking observation remains an
+evidence action until a supported-release path and consequence are verified.
+Together they show why the enforcing actor, affected scope, consequence, and
+acceptance evidence must be explicit.
 
 \subsection{Assurance, Closure, and Residual Risk}
 
