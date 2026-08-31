@@ -20,7 +20,7 @@
     \item[hdf5-pure and rustyhdf5-format/rustyhdf5] Pure Rust read/write.
     \item[async-hdf5 or h5coro] Cloud object-store chunk mapping.
     \item[JLD2.jl] Julia-native persistence in HDF5-compatible files.
-    \item[hdf5-pickles / H5Lens] Machine-readable format definitions with an
+    \item[h5lens / H5Lens] Machine-readable format definitions with an
           independent reader, validator, and preflight oracle. Distinct from
           the others in that its interpretation of the format is
           \emph{inspectable as data} rather than inferable from behaviour.
@@ -300,10 +300,10 @@ description/specification defect, or an explicitly implementation-defined
 construct with documented compatibility consequences. A producer change made
 without that ruling does not close the normative question.
 
-The candidate \code{hdf5-pickles} foundation is GPLv3 while HDF5 is BSD-style;
+The candidate \code{h5lens} foundation is GPLv3 while HDF5 is BSD-style;
 reuse therefore requires the provenance and licensing review in
 Section~\ref{sec:roadmap-licensing}, and generated artifacts become normative
-only through an explicit governance decision~\cite{hdf5-pickles}.
+only through an explicit governance decision~\cite{h5lens}.
 
 \subsubsection*{Recommendation IND-S1: Maintain a differential conformance corpus}
 
@@ -336,9 +336,9 @@ than replace review and adjudication. Encoding ``the group info message is
 optional'' forces the project to state whether that means optional to write,
 optional to read, optional only under a stated condition, or
 implementation-defined with documented compatibility consequences. The
-existing \code{hdf5-pickles} work is a candidate foundation and an independent
+existing \code{h5lens} work is a candidate foundation and an independent
 implementation in its own right rather than only a fixture
-generator~\cite{hdf5-pickles}.
+generator~\cite{h5lens}.
 
 Two constraints on that foundation. It is GPLv3 while HDF5 is BSD-style, so
 the relationship must be consumption of identifiers, boundaries, and fixtures
@@ -417,8 +417,8 @@ migration, or accountable supported-compatibility disposition for the complete
 defined legacy PureHDF population, preserving checksums and provenance when
 bytes change.
 
-The machine-readable specification project \code{hdf5-pickles} is a natural
-source for generating and checking these fixtures~\cite{hdf5-pickles}, and
+The machine-readable specification project \code{h5lens} is a natural
+source for generating and checking these fixtures~\cite{h5lens}, and
 under \code{FMT-S1} it is also the candidate normative artifact rather than
 only a generator of test material.
 \fi
